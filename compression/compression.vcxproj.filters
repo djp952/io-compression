@@ -1,0 +1,195 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="External Libraries">
+      <UniqueIdentifier>{90121046-7d0c-4d30-a387-04738088cfd3}</UniqueIdentifier>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="External Libraries\bzip2">
+      <UniqueIdentifier>{47ed5075-223e-4f18-bf2c-9a20abdd3ff9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External Libraries\lz4">
+      <UniqueIdentifier>{3d5967d5-c620-47d1-aa3a-39f737ad109d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External Libraries\lzma">
+      <UniqueIdentifier>{6f96527f-25c2-463e-9209-1346eb38aa45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External Libraries\minilzo">
+      <UniqueIdentifier>{66b525bf-0767-4523-988e-4b60a4aa06cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External Libraries\xz-embedded">
+      <UniqueIdentifier>{37a8a2d5-f11f-436c-8f4a-e1096079997f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External Libraries\zlib">
+      <UniqueIdentifier>{81f34e85-f060-4a37-9ca3-74d0c163ab52}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external-bzip2\bzlib.h">
+      <Filter>External Libraries\bzip2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external-lz4\lib\lz4.h">
+      <Filter>External Libraries\lz4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external-lzma\C\LzmaDec.h">
+      <Filter>External Libraries\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external-minilzo\lzoconf.h">
+      <Filter>External Libraries\minilzo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external-minilzo\lzodefs.h">
+      <Filter>External Libraries\minilzo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external-minilzo\minilzo.h">
+      <Filter>External Libraries\minilzo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external-xz-embedded\linux\include\linux\xz.h">
+      <Filter>External Libraries\xz-embedded</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external-zlib\zconf.h">
+      <Filter>External Libraries\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external-zlib\zlib.h">
+      <Filter>External Libraries\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="XzStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Bzip2Stream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GzipStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lz4Stream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LzmaStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LzoStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tmp\version.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AssemblyInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-bzip2\blocksort.c">
+      <Filter>External Libraries\bzip2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-bzip2\bzcompress.c">
+      <Filter>External Libraries\bzip2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-bzip2\bzlib.c">
+      <Filter>External Libraries\bzip2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-bzip2\crctable.c">
+      <Filter>External Libraries\bzip2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-bzip2\decompress.c">
+      <Filter>External Libraries\bzip2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-bzip2\huffman.c">
+      <Filter>External Libraries\bzip2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-bzip2\randtable.c">
+      <Filter>External Libraries\bzip2</Filter>
+    </ClCompile>
+    <ClCompile Include="bz_internal_error.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lz4\lib\lz4.c">
+      <Filter>External Libraries\lz4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\LzmaDec.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-minilzo\minilzo.c">
+      <Filter>External Libraries\minilzo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-xz-embedded\linux\lib\xz\xz_crc32.c">
+      <Filter>External Libraries\xz-embedded</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-xz-embedded\linux\lib\xz\xz_dec_bcj.c">
+      <Filter>External Libraries\xz-embedded</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-xz-embedded\linux\lib\xz\xz_dec_lzma2.c">
+      <Filter>External Libraries\xz-embedded</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-xz-embedded\linux\lib\xz\xz_dec_stream.c">
+      <Filter>External Libraries\xz-embedded</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-zlib\adler32.c">
+      <Filter>External Libraries\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-zlib\crc32.c">
+      <Filter>External Libraries\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-zlib\inffast.c">
+      <Filter>External Libraries\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-zlib\inflate.c">
+      <Filter>External Libraries\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-zlib\inftrees.c">
+      <Filter>External Libraries\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-zlib\zutil.c">
+      <Filter>External Libraries\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-zlib\deflate.c">
+      <Filter>External Libraries\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-zlib\trees.c">
+      <Filter>External Libraries\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="XzStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Bzip2Stream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GzipStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Lz4Stream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LzmaStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LzoStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="tmp\version.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="version.ini" />
+  </ItemGroup>
+</Project>
