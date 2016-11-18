@@ -85,6 +85,12 @@
     <ClInclude Include="LzoStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Bzip2Exception.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Bzip2SafeHandle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -183,6 +189,12 @@
     <ClCompile Include="LzoStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Bzip2Exception.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Bzip2SafeHandle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="tmp\version.rc">
@@ -191,5 +203,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="version.ini" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="compression.resx">
+      <Filter>Resource Files</Filter>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

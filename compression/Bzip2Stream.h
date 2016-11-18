@@ -24,6 +24,10 @@
 #define __Bzip2Stream_H_
 #pragma once
 
+#include <bzlib.h>
+
+#include "Bzip2SafeHandle.h"
+
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
 using namespace System;
@@ -41,9 +45,12 @@ public ref class Bzip2Stream : public Stream
 {
 public:
 
-	// Instance Constructor
+	// Instance Constructors
 	//
-	Bzip2Stream();
+	Bzip2Stream(Stream^ stream, Compression::CompressionLevel level);
+	Bzip2Stream(Stream^ stream, Compression::CompressionLevel level, bool leaveopen);
+	Bzip2Stream(Stream^ stream, Compression::CompressionMode mode);
+	Bzip2Stream(Stream^ stream, Compression::CompressionMode mode, bool leaveopen);
 
 	//-----------------------------------------------------------------------
 	// Member Functions
@@ -75,6 +82,14 @@ public:
 
 	//-----------------------------------------------------------------------
 	// Properties
+
+	// BaseStream
+	//
+	// Exposes the underlying base stream instance
+	property Stream^ BaseStream
+	{
+		Stream^ get(void);
+	}
 
 	// CanRead (Stream)
 	//
@@ -119,6 +134,15 @@ public:
 
 private:
 
+	// BUFFER_SIZE
+	//
+	// Size of the local input/output buffer, in bytes
+	static const int BUFFER_SIZE = 8192;
+
+	// Instance Constructor
+	//
+	Bzip2Stream(Stream^ stream, Compression::CompressionMode mode, Compression::CompressionLevel level, bool leaveopen);
+
 	// Destructor
 	//
 	~Bzip2Stream();
@@ -126,7 +150,14 @@ private:
 	//-----------------------------------------------------------------------
 	// Member Variables
 
-	bool					m_disposed;				// Object disposal flag
+	bool							m_disposed;		// Object disposal flag
+	Stream^							m_stream;		// Base Stream instance
+	Compression::CompressionMode	m_mode;			// Compression mode
+	bool							m_leaveopen;	// Flag to leave base stream open
+	array<unsigned __int8>^			m_buffer;		// BZIP2 stream buffer
+	size_t							m_bufferpos;	// Current position in the buffer
+	bool							m_finished;		// Flag if operation is finished
+	Bzip2SafeHandle^				m_bzstream;		// BZIP2 stream safe handle
 };
 
 //---------------------------------------------------------------------------

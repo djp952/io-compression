@@ -113,6 +113,7 @@
     <Link>
       <AdditionalDependencies />
       <GenerateDebugInformation>Debug</GenerateDebugInformation>
+      <EmbedManagedResourceFile>compression.resx;%(EmbedManagedResourceFile)</EmbedManagedResourceFile>
     </Link>
     <PreBuildEvent>
       <Command>"$(SolutionDir)..\build\zuki.build.tools.mkversion.exe" "$(ProjectDir)tmp" "-ini:$(ProjectDir)version.ini" -rebuild -format:rc,cpp,txt</Command>
@@ -130,6 +131,7 @@
     <Link>
       <AdditionalDependencies />
       <GenerateDebugInformation>Debug</GenerateDebugInformation>
+      <EmbedManagedResourceFile>compression.resx;%(EmbedManagedResourceFile)</EmbedManagedResourceFile>
     </Link>
     <PreBuildEvent>
       <Command>"$(SolutionDir)..\build\zuki.build.tools.mkversion.exe" "$(ProjectDir)tmp" "-ini:$(ProjectDir)version.ini" -rebuild -format:rc,cpp,txt</Command>
@@ -145,6 +147,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies />
+      <EmbedManagedResourceFile>compression.resx;%(EmbedManagedResourceFile)</EmbedManagedResourceFile>
     </Link>
     <PreBuildEvent>
       <Command>"$(SolutionDir)..\build\zuki.build.tools.mkversion.exe" "$(ProjectDir)tmp" "-ini:$(ProjectDir)version.ini" -rebuild -format:rc,cpp,txt</Command>
@@ -160,6 +163,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies />
+      <EmbedManagedResourceFile>compression.resx;%(EmbedManagedResourceFile)</EmbedManagedResourceFile>
     </Link>
     <PreBuildEvent>
       <Command>"$(SolutionDir)..\build\zuki.build.tools.mkversion.exe" "$(ProjectDir)tmp" "-ini:$(ProjectDir)version.ini" -rebuild -format:rc,cpp,txt</Command>
@@ -182,6 +186,8 @@
     <ClInclude Include="..\..\external-xz-embedded\linux\include\linux\xz.h" />
     <ClInclude Include="..\..\external-zlib\zconf.h" />
     <ClInclude Include="..\..\external-zlib\zlib.h" />
+    <ClInclude Include="Bzip2Exception.h" />
+    <ClInclude Include="Bzip2SafeHandle.h" />
     <ClInclude Include="Bzip2Stream.h" />
     <ClInclude Include="GzipStream.h" />
     <ClInclude Include="Lz4Stream.h" />
@@ -456,6 +462,8 @@
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="AssemblyInfo.cpp" />
+    <ClCompile Include="Bzip2Exception.cpp" />
+    <ClCompile Include="Bzip2SafeHandle.cpp" />
     <ClCompile Include="Bzip2Stream.cpp" />
     <ClCompile Include="bz_internal_error.cpp" />
     <ClCompile Include="GzipStream.cpp" />
@@ -476,6 +484,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="version.ini" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="compression.resx">
+      <LogicalName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(RootNamespace).resources</LogicalName>
+      <LogicalName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(RootNamespace).resources</LogicalName>
+      <LogicalName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(RootNamespace).resources</LogicalName>
+      <LogicalName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(RootNamespace).resources</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

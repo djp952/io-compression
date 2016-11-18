@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "compression.test", "compres
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0E8BFA1A-F609-47A5-9AB1-C1A55B069AE8}"
 	ProjectSection(SolutionItems) = preProject
+		default.runsettings = default.runsettings
+		io.msbuild = io.msbuild
 		README.md = README.md
 	EndProjectSection
 EndProject

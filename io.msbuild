@@ -1,0 +1,61 @@
+<!--
+Usage:
+
+  msbuild io.msbuild /t:[TARGET]
+
+Targets:
+
+  Clean                 - Cleans release versions
+  Build                 - Rebuilds release versions
+  UnitTest              - Executes release version unit tests
+  CodeCoverageReport    - Generates code coverage reports
+
+-->
+<Project DefaultTargets="Package" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <PropertyGroup>
+    <SolutionDir>.\</SolutionDir>
+    <VSTestConsoleExe>&quot;%VS140COMNTOOLS%..\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe&quot;</VSTestConsoleExe>
+    <OpenCoverConsoleExe>&quot;$(SolutionDir)..\external-opencover\tools\OpenCover.Console.exe&quot;</OpenCoverConsoleExe>
+    <ReportGeneratorExe>&quot;$(SolutionDir)..\external-reportgenerator\tools\ReportGenerator.exe&quot;</ReportGeneratorExe>
+  </PropertyGroup>
+  
+  <!-- Clean release targets and output directory -->
+  <Target Name="Clean">
+    <MSBuild Projects="io.sln" Properties="Configuration=Release;Platform=Win32" Targets="Clean" ContinueOnError="false"/>
+    <MSBuild Projects="io.sln" Properties="Configuration=Release;Platform=x64" Targets="Clean" ContinueOnError="false"/>
+    <RemoveDir Directories="$(SolutionDir)compression\tmp"/>
+    <RemoveDir Directories="$(SolutionDir)compression.test\tmp"/>
+    <RemoveDir Directories="$(SolutionDir)out"/>
+  </Target>
+
+  <!-- Build release targets -->
+  <Target Name="Build" DependsOnTargets="Clean">
+    <MSBuild Projects="io.sln" Properties="Configuration=Release;Platform=Win32" Targets="Rebuild" ContinueOnError="false"/>
+    <MSBuild Projects="io.sln" Properties="Configuration=Release;Platform=x64" Targets="Rebuild" ContinueOnError="false"/>
+  </Target>
+
+  <!-- Build release targets and execute unit tests -->
+  <Target Name="UnitTest" DependsOnTargets="Build">
+    <Exec Command="$(VSTestConsoleExe) /Settings:$(SolutionDir)default.runsettings /Platform:x86 /inIsolation $(SolutionDir)out\Win32\Release\zuki.io.compression.test.dll" ContinueOnError="false"/>
+    <Exec Command="$(VSTestConsoleExe) /Settings:$(SolutionDir)default.runsettings /Platform:x64 /inIsolation $(SolutionDir)out\x64\Release\zuki.io.compression.test.dll" ContinueOnError="false"/>
+  </Target>
+
+  <!-- Generate code coverage reports -->
+  <Target Name="CodeCoverageReport">
+
+    <PropertyGroup>
+      <CodeCoverageDir>$(SolutionDir)out\codecoverage\</CodeCoverageDir>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(CodeCoverageDir)" ContinueOnError="false"/>
+    
+    <MSBuild Projects="io.sln" Properties="Configuration=Debug;Platform=Win32" Targets="Rebuild" ContinueOnError="false"/>
+    
+    <!-- zuki.io.compression -->
+    <Exec Command="$(OpenCoverConsoleExe) -register:user -target:$(VsTestConsoleExe) -targetargs:&quot;/Settings:$(SolutionDir)default.runsettings /Logger:trx /inIsolation $(SolutionDir)out\Win32\Debug\zuki.io.compression.test.dll&quot; -filter:&quot;+[zuki.io.compression]*&quot; -mergebyhash -output:&quot;$(CodeCoverageDir)\compression.xml&quot;" ContinueOnError="true"/>
+    <Exec Command="$(ReportGeneratorExe) -reports:&quot;$(CodeCoverageDir)compression.xml&quot; -targetdir:&quot;$(CodeCoverageDir)compression&quot;" ContinueOnError="false"/>
+    
+  </Target>
+
+</Project>
