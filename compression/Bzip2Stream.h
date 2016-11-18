@@ -20,8 +20,8 @@
 // SOFTWARE.
 //---------------------------------------------------------------------------
 
-#ifndef __Bzip2Stream_H_
-#define __Bzip2Stream_H_
+#ifndef __BZIP2STREAM_H_
+#define __BZIP2STREAM_H_
 #pragma once
 
 #include <bzlib.h>
@@ -166,4 +166,4 @@ private:
 
 #pragma warning(pop)
 
-#endif	// __Bzip2Stream_H_
+#endif	// __BZIP2STREAM_H_

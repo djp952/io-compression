@@ -298,8 +298,8 @@ int Bzip2Stream::Read(array<unsigned __int8>^ buffer, int offset, int count)
 
 	msclr::lock lock(m_bzstream);
 
-	// A special flag has to be maintained since BZ_STREAM_END is only returned once
-	if(m_finished) return 0;
+	// If there is no buffer to read into or the stream is already done, return zero
+	if((count == 0) || (m_finished)) return 0;
 
 	// Pin both the input and output byte arrays in memory
 	pin_ptr<unsigned __int8> pinin = &m_buffer[0];
@@ -309,32 +309,31 @@ int Bzip2Stream::Read(array<unsigned __int8>^ buffer, int offset, int count)
 	m_bzstream->next_out = reinterpret_cast<char*>(&pinout[offset]);
 	m_bzstream->avail_out = count;
 
-	// Repeatedly decompress blocks of data until the output buffer has been filled
-	while(m_bzstream->avail_out > 0) {
+	do {
 
-		// Reset the input pointer based on the current position into the buffer
-		m_bzstream->next_in = reinterpret_cast<char*>(&pinin[m_bufferpos]);
-
-		// Attempt to decompress the next block of data
-		int result = BZ2_bzDecompress(m_bzstream);
-		
-		// BZ_STREAM_END indicates that there is no more data to decompress, but bzip
-		// will not return it more than once -- set a flag to prevent more attempts
-		if(result == BZ_STREAM_END) { m_finished = true; break; }
-		else if(result != BZ_OK) throw gcnew Bzip2Exception(result);
-
-		// If the input buffer was exhausted, refill it from the base stream
+		// If the input buffer was flushed from a previous iteration, refill it
 		if(m_bzstream->avail_in == 0) {
 
 			m_bzstream->avail_in = m_stream->Read(m_buffer, 0, BUFFER_SIZE);
 			if((m_bzstream->avail_in == 0) || (m_bzstream->avail_in > BUFFER_SIZE)) throw gcnew InvalidDataException();
 
-			m_bufferpos = 0;			// Reset saved position back to the beginning
+			m_bufferpos = 0;			// Reset stored offset to zero
 		}
 
-		// Input buffer is not exhausted, calculate the new position
-		else m_bufferpos = (uintptr_t(m_bzstream->next_in) - uintptr_t(pinin));
-	};
+		// Reset the input pointer based on the current position into the buffer, the address
+		// of the buffer itself may have changed between calls to Read() due to pinning
+		m_bzstream->next_in = reinterpret_cast<char*>(&pinin[m_bufferpos]);
+
+		// Attempt to decompress the next block of data and adjust the buffer offset
+		int result = BZ2_bzDecompress(m_bzstream);
+		m_bufferpos = (uintptr_t(m_bzstream->next_in) - uintptr_t(pinin));
+
+		// BZ_STREAM_END indicates that there is no more data to decompress, but bzip
+		// will not return it more than once -- set a flag to prevent more attempts
+		if(result == BZ_STREAM_END) { m_finished = true; break; }
+		else if(result != BZ_OK) throw gcnew Bzip2Exception(result);
+
+	} while(m_bzstream->avail_out > 0);
 
 	return (count - m_bzstream->avail_out);
 }

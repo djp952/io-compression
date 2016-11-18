@@ -20,8 +20,8 @@
 // SOFTWARE.
 //---------------------------------------------------------------------------
 
-#ifndef __BZIP2HANDLE_H_
-#define __BZIP2HANDLE_H_
+#ifndef __BZIP2SAFEHANDLE_H_
+#define __BZIP2SAFEHANDLE_H_
 #pragma once
 
 #include <bzlib.h>
@@ -91,4 +91,4 @@ private:
 
 #pragma warning(pop)
 
-#endif	// __BZIP2HANDLE_H_
+#endif	// __BZIP2SAFEHANDLE_H_
