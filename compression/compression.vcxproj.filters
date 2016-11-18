@@ -91,6 +91,12 @@
     <ClInclude Include="Bzip2SafeHandle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GzipSafeHandle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GzipException.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -193,6 +199,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Bzip2SafeHandle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GzipSafeHandle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GzipException.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

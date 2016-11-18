@@ -173,4 +173,40 @@
     <value>The end of the stream was detected during decompression</value>
     <comment>BZ_STREAM_END</comment>
   </data>
+  <data name="zlib-1" xml:space="preserve">
+    <value>File operation error</value>
+    <comment>Z_ERRNO</comment>
+  </data>
+  <data name="zlib-2" xml:space="preserve">
+    <value>Stream data is inconsistent or corrupt</value>
+    <comment>Z_STREAM_ERROR</comment>
+  </data>
+  <data name="zlib-3" xml:space="preserve">
+    <value>Stream data was released prematurely</value>
+    <comment>Z_DATA_ERROR</comment>
+  </data>
+  <data name="zlib-4" xml:space="preserve">
+    <value>A memory allocation request failed</value>
+    <comment>Z_MEM_ERROR</comment>
+  </data>
+  <data name="zlib-5" xml:space="preserve">
+    <value>An insufficient output buffer was provided</value>
+    <comment>Z_BUF_ERROR</comment>
+  </data>
+  <data name="zlib-6" xml:space="preserve">
+    <value>Incompatible compression library version</value>
+    <comment>Z_VERSION_ERROR</comment>
+  </data>
+  <data name="zlib0" xml:space="preserve">
+    <value>The operation completed successfully</value>
+    <comment>Z_OK</comment>
+  </data>
+  <data name="zlib1" xml:space="preserve">
+    <value>The end of the stream was detected during decompression</value>
+    <comment>Z_STREAM_END</comment>
+  </data>
+  <data name="zlib2" xml:space="preserve">
+    <value>A preset dictionary is required for decompression</value>
+    <comment>Z_NEED_DICT</comment>
+  </data>
 </root>

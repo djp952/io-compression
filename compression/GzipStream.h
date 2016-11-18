@@ -24,6 +24,10 @@
 #define __GzipStream_H_
 #pragma once
 
+#include <zlib.h>
+
+#include "GzipSafeHandle.h"
+
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
 using namespace System;
@@ -34,16 +38,19 @@ namespace zuki::io::compression {
 //---------------------------------------------------------------------------
 // Class GzipStream
 //
-// XZ-based compression/decompression stream implementation
+// GZIP-based compression/decompression stream implementation
 //---------------------------------------------------------------------------
 
 public ref class GzipStream : public Stream
 {
 public:
 
-	// Instance Constructor
+	// Instance Constructors
 	//
-	GzipStream();
+	GzipStream(Stream^ stream, Compression::CompressionLevel level);
+	GzipStream(Stream^ stream, Compression::CompressionLevel level, bool leaveopen);
+	GzipStream(Stream^ stream, Compression::CompressionMode mode);
+	GzipStream(Stream^ stream, Compression::CompressionMode mode, bool leaveopen);
 
 	//-----------------------------------------------------------------------
 	// Member Functions
@@ -75,6 +82,14 @@ public:
 
 	//-----------------------------------------------------------------------
 	// Properties
+
+	// BaseStream
+	//
+	// Exposes the underlying base stream instance
+	property Stream^ BaseStream
+	{
+		Stream^ get(void);
+	}
 
 	// CanRead (Stream)
 	//
@@ -119,6 +134,15 @@ public:
 
 private:
 
+	// BUFFER_SIZE
+	//
+	// Size of the local input/output buffer, in bytes
+	static const int BUFFER_SIZE = 8192;
+
+	// Instance Constructor
+	//
+	GzipStream(Stream^ stream, Compression::CompressionMode mode, Compression::CompressionLevel level, bool leaveopen);
+
 	// Destructor
 	//
 	~GzipStream();
@@ -126,7 +150,14 @@ private:
 	//-----------------------------------------------------------------------
 	// Member Variables
 
-	bool					m_disposed;				// Object disposal flag
+	bool							m_disposed;		// Object disposal flag
+	Stream^							m_stream;		// Base Stream instance
+	Compression::CompressionMode	m_mode;			// Compression mode
+	bool							m_leaveopen;	// Flag to leave base stream open
+	array<unsigned __int8>^			m_buffer;		// GZIP stream buffer
+	size_t							m_bufferpos;	// Current position in the buffer
+	bool							m_finished;		// Flag if operation is finished
+	GzipSafeHandle^					m_zstream;		// GZIP stream safe handle
 };
 
 //---------------------------------------------------------------------------

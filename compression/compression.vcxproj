@@ -189,6 +189,8 @@
     <ClInclude Include="Bzip2Exception.h" />
     <ClInclude Include="Bzip2SafeHandle.h" />
     <ClInclude Include="Bzip2Stream.h" />
+    <ClInclude Include="GzipException.h" />
+    <ClInclude Include="GzipSafeHandle.h" />
     <ClInclude Include="GzipStream.h" />
     <ClInclude Include="Lz4Stream.h" />
     <ClInclude Include="LzmaStream.h" />
@@ -466,6 +468,8 @@
     <ClCompile Include="Bzip2SafeHandle.cpp" />
     <ClCompile Include="Bzip2Stream.cpp" />
     <ClCompile Include="bz_internal_error.cpp" />
+    <ClCompile Include="GzipException.cpp" />
+    <ClCompile Include="GzipSafeHandle.cpp" />
     <ClCompile Include="GzipStream.cpp" />
     <ClCompile Include="Lz4Stream.cpp" />
     <ClCompile Include="LzmaStream.cpp" />
