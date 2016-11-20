@@ -192,7 +192,7 @@
     <ClInclude Include="GzipException.h" />
     <ClInclude Include="GzipSafeHandle.h" />
     <ClInclude Include="GzipStream.h" />
-    <ClInclude Include="Lz4Stream.h" />
+    <ClInclude Include="Lz4LegacyReader.h" />
     <ClInclude Include="LzmaStream.h" />
     <ClInclude Include="LzoStream.h" />
     <ClInclude Include="stdafx.h" />
@@ -471,7 +471,7 @@
     <ClCompile Include="GzipException.cpp" />
     <ClCompile Include="GzipSafeHandle.cpp" />
     <ClCompile Include="GzipStream.cpp" />
-    <ClCompile Include="Lz4Stream.cpp" />
+    <ClCompile Include="Lz4LegacyReader.cpp" />
     <ClCompile Include="LzmaStream.cpp" />
     <ClCompile Include="LzoStream.cpp" />
     <ClCompile Include="stdafx.cpp">

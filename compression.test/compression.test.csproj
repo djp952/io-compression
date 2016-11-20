@@ -79,7 +79,7 @@
     <Compile Include="TestBzip2Stream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestGzipStream.cs" />
-    <Compile Include="TestLz4Stream.cs" />
+    <Compile Include="TestLz4Legacy.cs" />
     <Compile Include="TestLzmaStream.cs" />
     <Compile Include="TestLzoStream.cs" />
     <Compile Include="TestXzStream.cs" />

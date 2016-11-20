@@ -76,9 +76,6 @@
     <ClInclude Include="GzipStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Lz4Stream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LzmaStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -95,6 +92,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GzipException.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lz4LegacyReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -186,9 +186,6 @@
     <ClCompile Include="GzipStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Lz4Stream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LzmaStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -205,6 +202,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GzipException.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Lz4LegacyReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

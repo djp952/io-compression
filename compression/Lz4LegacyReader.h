@@ -20,9 +20,11 @@
 // SOFTWARE.
 //---------------------------------------------------------------------------
 
-#ifndef __Lz4Stream_H_
-#define __Lz4Stream_H_
+#ifndef __LZ4LEGACYREADER_H_
+#define __LZ4LEGACYREADER_H_
 #pragma once
+
+#include <lz4.h>
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -32,18 +34,19 @@ using namespace System::IO;
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// Class Lz4Stream
+// Class Lz4LegacyReader
 //
-// XZ-based compression/decompression stream implementation
+// LZ4 legacy format decompressor compatible with "lz4 -l" input streams
 //---------------------------------------------------------------------------
 
-public ref class Lz4Stream : public Stream
+public ref class Lz4LegacyReader : public Stream
 {
 public:
 
-	// Instance Constructor
+	// Instance Constructors
 	//
-	Lz4Stream();
+	Lz4LegacyReader(Stream^ stream);
+	Lz4LegacyReader(Stream^ stream, bool leaveopen);
 
 	//-----------------------------------------------------------------------
 	// Member Functions
@@ -75,6 +78,14 @@ public:
 
 	//-----------------------------------------------------------------------
 	// Properties
+
+	// BaseStream
+	//
+	// Exposes the underlying base stream instance
+	property Stream^ BaseStream
+	{
+		Stream^ get(void);
+	}
 
 	// CanRead (Stream)
 	//
@@ -119,14 +130,40 @@ public:
 
 private:
 
+	// LEGACY_MAGICNUMBER
+	//
+	// Legacy lz4 magic number
+	static const unsigned int LEGACY_MAGICNUMBER = 0x184C2102;
+
+	// LEGACY_BLOCKSIZE
+	//
+	// Legacy lz4 block size
+	static const int LEGACY_BLOCKSIZE = (8 << 20);
+
 	// Destructor
 	//
-	~Lz4Stream();
+	~Lz4LegacyReader();
+
+	//-----------------------------------------------------------------------
+	// Private Member Functions
+
+	// ReadLE32 (static)
+	//
+	// Reads a little endian 32-bit number from a stream
+	static bool ReadLE32(Stream^ stream, unsigned int% value);
 
 	//-----------------------------------------------------------------------
 	// Member Variables
 
-	bool					m_disposed;				// Object disposal flag
+	bool							m_disposed;			// Object disposal flag
+	Stream^							m_stream;			// Base Stream instance
+	bool							m_leaveopen;		// Flag to leave base stream open
+	bool							m_hasmagic;			// Flag if magic number was present
+	array<unsigned __int8>^			m_buffer;			// Output (decompressed) data buffer
+	int								m_bufferpos;		// Position within the buffer
+	int								m_bufferavail;		// Available data in the buffer
+
+	Object^	m_lock = gcnew Object();		// Synchronization object
 };
 
 //---------------------------------------------------------------------------
@@ -135,4 +172,4 @@ private:
 
 #pragma warning(pop)
 
-#endif	// __Lz4Stream_H_
+#endif	// __LZ4LEGACYREADER_H_
