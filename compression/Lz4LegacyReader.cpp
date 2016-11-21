@@ -124,7 +124,7 @@ bool Lz4LegacyReader::CanWrite::get(void)
 void Lz4LegacyReader::Flush(void)
 {
 	CHECK_DISPOSED(m_disposed);
-	return;
+	m_stream->Flush();
 }
 
 //--------------------------------------------------------------------------

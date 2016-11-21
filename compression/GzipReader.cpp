@@ -154,6 +154,7 @@ bool GzipReader::CanWrite::get(void)
 void GzipReader::Flush(void)
 {
 	CHECK_DISPOSED(m_disposed);
+	m_stream->Flush();
 }
 
 //--------------------------------------------------------------------------

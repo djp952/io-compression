@@ -153,6 +153,7 @@ bool Bzip2Reader::CanWrite::get(void)
 void Bzip2Reader::Flush(void)
 {
 	CHECK_DISPOSED(m_disposed);
+	m_stream->Flush();
 }
 
 //--------------------------------------------------------------------------
