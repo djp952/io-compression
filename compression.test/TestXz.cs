@@ -20,20 +20,18 @@
 // SOFTWARE.
 //---------------------------------------------------------------------------
 
+using System.IO.Compression;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace zuki.io.compression.test
 {
 	[TestClass()]
-	public class TestLzmaStream
+	public class TestXz
 	{
-		[TestMethod(), TestCategory("LzmaStream")]
-		public void LzmaStream_Stub()
+		[TestMethod(), TestCategory("Xz")]
+		public void Xz_Stub()
 		{
-			// Stub test method
-			using (LzmaStream stream = new LzmaStream())
-			{
-			}
+			Assert.Fail("not implemented");
 		}
 	}
 }

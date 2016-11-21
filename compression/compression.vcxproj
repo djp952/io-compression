@@ -194,7 +194,7 @@
     <ClInclude Include="GzipWriter.h" />
     <ClInclude Include="Lz4LegacyReader.h" />
     <ClInclude Include="LzmaStream.h" />
-    <ClInclude Include="LzoStream.h" />
+    <ClInclude Include="LzopStream.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="XzStream.h" />
   </ItemGroup>
@@ -473,7 +473,7 @@
     <ClCompile Include="GzipWriter.cpp" />
     <ClCompile Include="Lz4LegacyReader.cpp" />
     <ClCompile Include="LzmaStream.cpp" />
-    <ClCompile Include="LzoStream.cpp" />
+    <ClCompile Include="LzopStream.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

@@ -21,38 +21,77 @@
 //---------------------------------------------------------------------------
 
 #include "stdafx.h"
-#include "LzoStream.h"
+#include "LzopStream.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// LzoStream Constructor
+// LzopStream Constructor
 //
 // Arguments:
 //
-//	NONE
+//	stream		- The stream the compressed data is written to
+//	level		- Indicates whether to emphasize speed or compression efficiency
 
-LzoStream::LzoStream()
+LzopStream::LzopStream(Stream^ stream, Compression::CompressionLevel level) : LzopStream(stream, level, false)
 {
 }
 
 //---------------------------------------------------------------------------
-// LzoStream Destructor
+// LzopStream Constructor
+//
+// Arguments:
+//
+//	stream		- The stream the compressed data is written to
+//	level		- Indicates whether to emphasize speed or compression efficiency
+//	leaveopen	- Flag to leave the base stream open after disposal
 
-LzoStream::~LzoStream()
+LzopStream::LzopStream(Stream^ stream, Compression::CompressionLevel level, bool leaveopen)
+{
+}
+
+//---------------------------------------------------------------------------
+// LzopStream Constructor
+//
+// Arguments:
+//
+//	stream		- The stream the compressed or decompressed data is written to
+//	mode		- Indicates whether to compress or decompress the stream
+
+LzopStream::LzopStream(Stream^ stream, Compression::CompressionMode mode) : LzopStream(stream, mode, false)
+{
+}
+
+//---------------------------------------------------------------------------
+// LzopStream Constructor
+//
+// Arguments:
+//
+//	stream		- The stream the compressed or decompressed data is written to
+//	mode		- Indicates whether to compress or decompress the stream
+//	leaveopen	- Flag to leave the base stream open after disposal
+
+LzopStream::LzopStream(Stream^ stream, Compression::CompressionMode mode, bool leaveopen)
+{
+}
+
+//---------------------------------------------------------------------------
+// LzopStream Destructor
+
+LzopStream::~LzopStream()
 {
 	if(m_disposed) return;
 	m_disposed = true;
 }
 
 //---------------------------------------------------------------------------
-// LzoStream::CanRead::get
+// LzopStream::CanRead::get
 //
 // Gets a value indicating whether the current stream supports reading
 
-bool LzoStream::CanRead::get(void)
+bool LzopStream::CanRead::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
 
@@ -60,11 +99,11 @@ bool LzoStream::CanRead::get(void)
 }
 
 //---------------------------------------------------------------------------
-// LzoStream::CanSeek::get
+// LzopStream::CanSeek::get
 //
 // Gets a value indicating whether the current stream supports seeking
 
-bool LzoStream::CanSeek::get(void)
+bool LzopStream::CanSeek::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
 
@@ -72,11 +111,11 @@ bool LzoStream::CanSeek::get(void)
 }
 
 //---------------------------------------------------------------------------
-// LzoStream::CanWrite::get
+// LzopStream::CanWrite::get
 //
 // Gets a value indicating whether the current stream supports writing
 
-bool LzoStream::CanWrite::get(void)
+bool LzopStream::CanWrite::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
 
@@ -84,7 +123,7 @@ bool LzoStream::CanWrite::get(void)
 }
 
 //---------------------------------------------------------------------------
-// LzoStream::Flush
+// LzopStream::Flush
 //
 // Clears all buffers for this stream and causes any buffered data to be written
 //
@@ -92,7 +131,7 @@ bool LzoStream::CanWrite::get(void)
 //
 //	NONE
 
-void LzoStream::Flush(void)
+void LzopStream::Flush(void)
 {
 	CHECK_DISPOSED(m_disposed);
 
@@ -100,11 +139,11 @@ void LzoStream::Flush(void)
 }
 
 //--------------------------------------------------------------------------
-// LzoStream::Length::get
+// LzopStream::Length::get
 //
 // Gets the length in bytes of the stream
 
-__int64 LzoStream::Length::get(void)
+__int64 LzopStream::Length::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
 
@@ -112,11 +151,11 @@ __int64 LzoStream::Length::get(void)
 }
 
 //---------------------------------------------------------------------------
-// LzoStream::Position::get
+// LzopStream::Position::get
 //
 // Gets the current position within the stream
 
-__int64 LzoStream::Position::get(void)
+__int64 LzopStream::Position::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
 
@@ -124,11 +163,11 @@ __int64 LzoStream::Position::get(void)
 }
 
 //---------------------------------------------------------------------------
-// LzoStream::Position::set
+// LzopStream::Position::set
 //
 // Sets the current position within the stream
 
-void LzoStream::Position::set(__int64 value)
+void LzopStream::Position::set(__int64 value)
 {
 	CHECK_DISPOSED(m_disposed);
 	
@@ -137,7 +176,7 @@ void LzoStream::Position::set(__int64 value)
 }
 
 //---------------------------------------------------------------------------
-// LzoStream::Read
+// LzopStream::Read
 //
 // Reads a sequence of bytes from the current stream and advances the position within the stream
 //
@@ -147,7 +186,7 @@ void LzoStream::Position::set(__int64 value)
 //	offset		- Offset within buffer to begin copying data
 //	count		- Maximum number of bytes to write into the destination buffer
 
-int LzoStream::Read(array<unsigned __int8>^ buffer, int offset, int count)
+int LzopStream::Read(array<unsigned __int8>^ buffer, int offset, int count)
 {
 	CHECK_DISPOSED(m_disposed);
 
@@ -158,7 +197,7 @@ int LzoStream::Read(array<unsigned __int8>^ buffer, int offset, int count)
 }
 
 //---------------------------------------------------------------------------
-// LzoStream::Seek
+// LzopStream::Seek
 //
 // Sets the position within the current stream
 //
@@ -167,7 +206,7 @@ int LzoStream::Read(array<unsigned __int8>^ buffer, int offset, int count)
 //	offset		- Byte offset relative to origin
 //	origin		- Reference point used to obtain the new position
 
-__int64 LzoStream::Seek(__int64 offset, SeekOrigin origin)
+__int64 LzopStream::Seek(__int64 offset, SeekOrigin origin)
 {
 	CHECK_DISPOSED(m_disposed);
 
@@ -177,7 +216,7 @@ __int64 LzoStream::Seek(__int64 offset, SeekOrigin origin)
 }
 
 //---------------------------------------------------------------------------
-// LzoStream::SetLength
+// LzopStream::SetLength
 //
 // Sets the length of the current stream
 //
@@ -185,7 +224,7 @@ __int64 LzoStream::Seek(__int64 offset, SeekOrigin origin)
 //
 //	value		- Desired length of the current stream in bytes
 
-void LzoStream::SetLength(__int64 value)
+void LzopStream::SetLength(__int64 value)
 {
 	CHECK_DISPOSED(m_disposed);
 
@@ -194,7 +233,7 @@ void LzoStream::SetLength(__int64 value)
 }
 
 //---------------------------------------------------------------------------
-// LzoStream::Write
+// LzopStream::Write
 //
 // Writes a sequence of bytes to the current stream and advances the current position
 //
@@ -204,7 +243,7 @@ void LzoStream::SetLength(__int64 value)
 //	offset		- Offset within buffer to begin copying from
 //	count		- Maximum number of bytes to read from the source buffer
 
-void LzoStream::Write(array<unsigned __int8>^ buffer, int offset, int count)
+void LzopStream::Write(array<unsigned __int8>^ buffer, int offset, int count)
 {
 	CHECK_DISPOSED(m_disposed);
 

@@ -41,9 +41,12 @@ public ref class XzStream : public Stream
 {
 public:
 
-	// Instance Constructor
+	// Instance Constructors
 	//
-	XzStream();
+	XzStream(Stream^ stream, Compression::CompressionLevel level);
+	XzStream(Stream^ stream, Compression::CompressionLevel level, bool leaveopen);
+	XzStream(Stream^ stream, Compression::CompressionMode mode);
+	XzStream(Stream^ stream, Compression::CompressionMode mode, bool leaveopen);
 
 	//-----------------------------------------------------------------------
 	// Member Functions

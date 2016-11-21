@@ -20,8 +20,8 @@
 // SOFTWARE.
 //---------------------------------------------------------------------------
 
-#ifndef __LzoStream_H_
-#define __LzoStream_H_
+#ifndef __LZOPSTREAM_H_
+#define __LZOPSTREAM_H_
 #pragma once
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
@@ -32,18 +32,21 @@ using namespace System::IO;
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// Class LzoStream
+// Class LzopStream
 //
-// XZ-based compression/decompression stream implementation
+// LZO-based compression/decompression stream implementation
 //---------------------------------------------------------------------------
 
-public ref class LzoStream : public Stream
+public ref class LzopStream : public Stream
 {
 public:
 
-	// Instance Constructor
+	// Instance Constructors
 	//
-	LzoStream();
+	LzopStream(Stream^ stream, Compression::CompressionLevel level);
+	LzopStream(Stream^ stream, Compression::CompressionLevel level, bool leaveopen);
+	LzopStream(Stream^ stream, Compression::CompressionMode mode);
+	LzopStream(Stream^ stream, Compression::CompressionMode mode, bool leaveopen);
 
 	//-----------------------------------------------------------------------
 	// Member Functions
@@ -121,7 +124,7 @@ private:
 
 	// Destructor
 	//
-	~LzoStream();
+	~LzopStream();
 
 	//-----------------------------------------------------------------------
 	// Member Variables
@@ -135,4 +138,4 @@ private:
 
 #pragma warning(pop)
 
-#endif	// __LzoStream_H_
+#endif	// __LZOPSTREAM_H_

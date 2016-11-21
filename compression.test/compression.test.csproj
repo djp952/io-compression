@@ -80,9 +80,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestGzip.cs" />
     <Compile Include="TestLz4Legacy.cs" />
-    <Compile Include="TestLzmaStream.cs" />
-    <Compile Include="TestLzoStream.cs" />
-    <Compile Include="TestXzStream.cs" />
+    <Compile Include="TestLzma.cs" />
+    <Compile Include="TestLzop.cs" />
+    <Compile Include="TestXz.cs" />
     <Compile Include="tmp\version.cs" />
   </ItemGroup>
   <ItemGroup>

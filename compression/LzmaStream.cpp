@@ -32,9 +32,48 @@ namespace zuki::io::compression {
 //
 // Arguments:
 //
-//	NONE
+//	stream		- The stream the compressed data is written to
+//	level		- Indicates whether to emphasize speed or compression efficiency
 
-LzmaStream::LzmaStream()
+LzmaStream::LzmaStream(Stream^ stream, Compression::CompressionLevel level) : LzmaStream(stream, level, false)
+{
+}
+
+//---------------------------------------------------------------------------
+// LzmaStream Constructor
+//
+// Arguments:
+//
+//	stream		- The stream the compressed data is written to
+//	level		- Indicates whether to emphasize speed or compression efficiency
+//	leaveopen	- Flag to leave the base stream open after disposal
+
+LzmaStream::LzmaStream(Stream^ stream, Compression::CompressionLevel level, bool leaveopen)
+{
+}
+
+//---------------------------------------------------------------------------
+// LzmaStream Constructor
+//
+// Arguments:
+//
+//	stream		- The stream the compressed or decompressed data is written to
+//	mode		- Indicates whether to compress or decompress the stream
+
+LzmaStream::LzmaStream(Stream^ stream, Compression::CompressionMode mode) : LzmaStream(stream, mode, false)
+{
+}
+
+//---------------------------------------------------------------------------
+// LzmaStream Constructor
+//
+// Arguments:
+//
+//	stream		- The stream the compressed or decompressed data is written to
+//	mode		- Indicates whether to compress or decompress the stream
+//	leaveopen	- Flag to leave the base stream open after disposal
+
+LzmaStream::LzmaStream(Stream^ stream, Compression::CompressionMode mode, bool leaveopen)
 {
 }
 
