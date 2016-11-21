@@ -87,7 +87,7 @@ Stream^ Lz4LegacyReader::BaseStream::get(void)
 bool Lz4LegacyReader::CanRead::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
-	return (m_stream->CanRead);
+	return m_stream->CanRead;
 }
 
 //---------------------------------------------------------------------------
@@ -192,11 +192,8 @@ int Lz4LegacyReader::Read(array<unsigned __int8>^ buffer, int offset, int count)
 	// Wait to check the magic number of the input stream until the first Read() attempt
 	if(!m_hasmagic) {
 
-		// If there is insufficient input for the magic number, there is no input
-		if(!ReadLE32(m_stream, nextblock)) return 0;
-
-		// Verify that LEGACY_MAGICNUMBER has been returned
-		if(nextblock != LEGACY_MAGICNUMBER) throw gcnew InvalidDataException();
+		// Verify that the first 4 bytes of the stream are the legacy magic number
+		if(!ReadLE32(m_stream, nextblock) || (nextblock != LEGACY_MAGICNUMBER)) throw gcnew InvalidDataException();
 		m_hasmagic = true;
 	}
 

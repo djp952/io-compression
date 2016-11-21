@@ -179,6 +179,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\external-bzip2\bzlib.h" />
     <ClInclude Include="..\..\external-lz4\lib\lz4.h" />
+    <ClInclude Include="..\..\external-lz4\lib\lz4hc.h" />
     <ClInclude Include="..\..\external-lzma\C\LzmaDec.h" />
     <ClInclude Include="..\..\external-minilzo\lzoconf.h" />
     <ClInclude Include="..\..\external-minilzo\lzodefs.h" />
@@ -193,6 +194,7 @@
     <ClInclude Include="GzipReader.h" />
     <ClInclude Include="GzipWriter.h" />
     <ClInclude Include="Lz4LegacyReader.h" />
+    <ClInclude Include="Lz4LegacyWriter.h" />
     <ClInclude Include="LzmaStream.h" />
     <ClInclude Include="LzopStream.h" />
     <ClInclude Include="stdafx.h" />
@@ -306,6 +308,16 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lz4\lib\lz4hc.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="..\..\external-lzma\C\LzmaDec.c">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
@@ -472,6 +484,7 @@
     <ClCompile Include="GzipReader.cpp" />
     <ClCompile Include="GzipWriter.cpp" />
     <ClCompile Include="Lz4LegacyReader.cpp" />
+    <ClCompile Include="Lz4LegacyWriter.cpp" />
     <ClCompile Include="LzmaStream.cpp" />
     <ClCompile Include="LzopStream.cpp" />
     <ClCompile Include="stdafx.cpp">

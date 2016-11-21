@@ -97,6 +97,12 @@
     <ClInclude Include="LzopStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Lz4LegacyWriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external-lz4\lib\lz4hc.h">
+      <Filter>External Libraries\lz4</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -206,6 +212,12 @@
     </ClCompile>
     <ClCompile Include="LzopStream.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Lz4LegacyWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lz4\lib\lz4hc.c">
+      <Filter>External Libraries\lz4</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

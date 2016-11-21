@@ -86,6 +86,8 @@
     <Compile Include="tmp\version.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="thethreemusketeers.fast.legacy.lz4" />
+    <EmbeddedResource Include="thethreemusketeers.optimal.legacy.lz4" />
     <None Include="version.ini" />
   </ItemGroup>
   <ItemGroup>
