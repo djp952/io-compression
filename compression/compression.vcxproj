@@ -187,11 +187,11 @@
     <ClInclude Include="..\..\external-zlib\zconf.h" />
     <ClInclude Include="..\..\external-zlib\zlib.h" />
     <ClInclude Include="Bzip2Exception.h" />
-    <ClInclude Include="Bzip2SafeHandle.h" />
-    <ClInclude Include="Bzip2Stream.h" />
+    <ClInclude Include="Bzip2Reader.h" />
+    <ClInclude Include="Bzip2Writer.h" />
     <ClInclude Include="GzipException.h" />
-    <ClInclude Include="GzipSafeHandle.h" />
-    <ClInclude Include="GzipStream.h" />
+    <ClInclude Include="GzipReader.h" />
+    <ClInclude Include="GzipWriter.h" />
     <ClInclude Include="Lz4LegacyReader.h" />
     <ClInclude Include="LzmaStream.h" />
     <ClInclude Include="LzoStream.h" />
@@ -465,12 +465,12 @@
     </ClCompile>
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="Bzip2Exception.cpp" />
-    <ClCompile Include="Bzip2SafeHandle.cpp" />
-    <ClCompile Include="Bzip2Stream.cpp" />
+    <ClCompile Include="Bzip2Reader.cpp" />
+    <ClCompile Include="Bzip2Writer.cpp" />
     <ClCompile Include="bz_internal_error.cpp" />
     <ClCompile Include="GzipException.cpp" />
-    <ClCompile Include="GzipSafeHandle.cpp" />
-    <ClCompile Include="GzipStream.cpp" />
+    <ClCompile Include="GzipReader.cpp" />
+    <ClCompile Include="GzipWriter.cpp" />
     <ClCompile Include="Lz4LegacyReader.cpp" />
     <ClCompile Include="LzmaStream.cpp" />
     <ClCompile Include="LzoStream.cpp" />

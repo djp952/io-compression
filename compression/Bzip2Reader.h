@@ -20,13 +20,11 @@
 // SOFTWARE.
 //---------------------------------------------------------------------------
 
-#ifndef __BZIP2STREAM_H_
-#define __BZIP2STREAM_H_
+#ifndef __BZIP2READER_H_
+#define __BZIP2READER_H_
 #pragma once
 
 #include <bzlib.h>
-
-#include "Bzip2SafeHandle.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -36,21 +34,19 @@ using namespace System::IO;
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// Class Bzip2Stream
+// Class Bzip2Reader
 //
-// BZIP2-based compression/decompression stream implementation
+// BZIP2-based decompression stream implementation
 //---------------------------------------------------------------------------
 
-public ref class Bzip2Stream : public Stream
+public ref class Bzip2Reader : public Stream
 {
 public:
 
 	// Instance Constructors
 	//
-	Bzip2Stream(Stream^ stream, Compression::CompressionLevel level);
-	Bzip2Stream(Stream^ stream, Compression::CompressionLevel level, bool leaveopen);
-	Bzip2Stream(Stream^ stream, Compression::CompressionMode mode);
-	Bzip2Stream(Stream^ stream, Compression::CompressionMode mode, bool leaveopen);
+	Bzip2Reader(Stream^ stream);
+	Bzip2Reader(Stream^ stream, bool leaveopen);
 
 	//-----------------------------------------------------------------------
 	// Member Functions
@@ -139,25 +135,23 @@ private:
 	// Size of the local input/output buffer, in bytes
 	static const int BUFFER_SIZE = 8192;
 
-	// Instance Constructor
+	// Destructor / Finalizer
 	//
-	Bzip2Stream(Stream^ stream, Compression::CompressionMode mode, Compression::CompressionLevel level, bool leaveopen);
-
-	// Destructor
-	//
-	~Bzip2Stream();
+	~Bzip2Reader();
+	!Bzip2Reader();
 
 	//-----------------------------------------------------------------------
 	// Member Variables
 
 	bool							m_disposed;		// Object disposal flag
 	Stream^							m_stream;		// Base Stream instance
-	Compression::CompressionMode	m_mode;			// Compression mode
 	bool							m_leaveopen;	// Flag to leave base stream open
 	array<unsigned __int8>^			m_buffer;		// BZIP2 stream buffer
 	size_t							m_bufferpos;	// Current position in the buffer
 	bool							m_finished;		// Flag if operation is finished
-	Bzip2SafeHandle^				m_bzstream;		// BZIP2 stream safe handle
+	bz_stream*						m_bzstream;		// BZIP2 stream safe handle
+
+	Object^	m_lock = gcnew Object();		// Synchronization object
 };
 
 //---------------------------------------------------------------------------
@@ -166,4 +160,4 @@ private:
 
 #pragma warning(pop)
 
-#endif	// __BZIP2STREAM_H_
+#endif	// __BZIP2READER_H_

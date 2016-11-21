@@ -20,13 +20,11 @@
 // SOFTWARE.
 //---------------------------------------------------------------------------
 
-#ifndef __GzipStream_H_
-#define __GzipStream_H_
+#ifndef __GZIPREADER_H_
+#define __GZIPREADER_H_
 #pragma once
 
 #include <zlib.h>
-
-#include "GzipSafeHandle.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -36,21 +34,19 @@ using namespace System::IO;
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// Class GzipStream
+// Class GzipReader
 //
-// GZIP-based compression/decompression stream implementation
+// GZIP-based decompression stream implementation
 //---------------------------------------------------------------------------
 
-public ref class GzipStream : public Stream
+public ref class GzipReader : public Stream
 {
 public:
 
 	// Instance Constructors
 	//
-	GzipStream(Stream^ stream, Compression::CompressionLevel level);
-	GzipStream(Stream^ stream, Compression::CompressionLevel level, bool leaveopen);
-	GzipStream(Stream^ stream, Compression::CompressionMode mode);
-	GzipStream(Stream^ stream, Compression::CompressionMode mode, bool leaveopen);
+	GzipReader(Stream^ stream);
+	GzipReader(Stream^ stream, bool leaveopen);
 
 	//-----------------------------------------------------------------------
 	// Member Functions
@@ -139,25 +135,23 @@ private:
 	// Size of the local input/output buffer, in bytes
 	static const int BUFFER_SIZE = 8192;
 
-	// Instance Constructor
+	// Destructor / Finalzier
 	//
-	GzipStream(Stream^ stream, Compression::CompressionMode mode, Compression::CompressionLevel level, bool leaveopen);
-
-	// Destructor
-	//
-	~GzipStream();
+	~GzipReader();
+	!GzipReader();
 
 	//-----------------------------------------------------------------------
 	// Member Variables
 
 	bool							m_disposed;		// Object disposal flag
 	Stream^							m_stream;		// Base Stream instance
-	Compression::CompressionMode	m_mode;			// Compression mode
 	bool							m_leaveopen;	// Flag to leave base stream open
 	array<unsigned __int8>^			m_buffer;		// GZIP stream buffer
 	size_t							m_bufferpos;	// Current position in the buffer
 	bool							m_finished;		// Flag if operation is finished
-	GzipSafeHandle^					m_zstream;		// GZIP stream safe handle
+	z_stream*						m_zstream;		// GZIP stream safe handle
+
+	Object^	m_lock = gcnew Object();		// Synchronization object
 };
 
 //---------------------------------------------------------------------------
@@ -166,4 +160,4 @@ private:
 
 #pragma warning(pop)
 
-#endif	// __GzipStream_H_
+#endif	// __GZIPREADER_H_

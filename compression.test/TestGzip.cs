@@ -31,7 +31,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace zuki.io.compression.test
 {
 	[TestClass()]
-	public class TestBzip2Stream
+	public class TestGzip
 	{
 		static byte[] s_sampledata;
 
@@ -45,8 +45,8 @@ namespace zuki.io.compression.test
 			}
 		}
 
-		[TestMethod(), TestCategory("Bzip2Stream")]
-		public void Bzip2Stream_CompressDecompress()
+		[TestMethod(), TestCategory("Gzip")]
+		public void Gzip_CompressDecompress()
 		{
 			// Start with a MemoryStream created from the sample data
 			using (MemoryStream source = new MemoryStream(s_sampledata))
@@ -54,16 +54,16 @@ namespace zuki.io.compression.test
 				using (MemoryStream dest = new MemoryStream())
 				{
 					// Compress the data into the destination memory stream instance
-					using (Bzip2Stream compressor = new Bzip2Stream(dest, CompressionLevel.Optimal, true)) source.CopyTo(compressor);
+					using (GzipWriter compressor = new GzipWriter(dest, CompressionLevel.Optimal, true)) source.CopyTo(compressor);
 
 					// The compressed data should be smaller than the source data
 					Assert.IsTrue(dest.Length < source.Length);
 
-					source.SetLength(0);			// Clear the source stream
-					dest.Position = 0;				// Reset the destination stream
+					source.SetLength(0);            // Clear the source stream
+					dest.Position = 0;              // Reset the destination stream
 
 					// Decompress the data back into the source memory stream
-					using (Bzip2Stream decompressor = new Bzip2Stream(dest, CompressionMode.Decompress, true)) decompressor.CopyTo(source);
+					using (GzipReader decompressor = new GzipReader(dest, true)) decompressor.CopyTo(source);
 
 					// Ensure that the original data has been restored
 					Assert.AreEqual(source.Length, s_sampledata.Length);
@@ -72,21 +72,27 @@ namespace zuki.io.compression.test
 			}
 		}
 
-		[TestMethod(), TestCategory("Bzip2Stream")]
-		public void Bzip2Stream_CompressionLevel()
+		[TestMethod(), TestCategory("Gzip")]
+		public void Gzip_CompressionLevel()
 		{
 			using (MemoryStream source = new MemoryStream(s_sampledata))
 			{
-				long fastest, optimal;				// Size of compressed streams
+				long none, fastest, optimal;        // Size of compressed streams
 
-				// CompressionLevel.NoCompression is not valid
-				try { using (Bzip2Stream stream = new Bzip2Stream(source, CompressionLevel.NoCompression)) Assert.Fail("Method call should have thrown an exception"); }
-				catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
-
+				// Compress using CompressionLevel.NoCompression
+				using (MemoryStream compressed = new MemoryStream())
+				{
+					using (GzipWriter compressor = new GzipWriter(compressed, CompressionLevel.NoCompression))
+					{
+						compressor.Write(s_sampledata, 0, s_sampledata.Length);
+						compressor.Flush();
+						none = compressed.Length;
+					}
+				}
 				// Compress using CompressionLevel.Fastest
 				using (MemoryStream compressed = new MemoryStream())
 				{
-					using (Bzip2Stream compressor = new Bzip2Stream(compressed, CompressionLevel.Fastest))
+					using (GzipWriter compressor = new GzipWriter(compressed, CompressionLevel.Fastest))
 					{
 						compressor.Write(s_sampledata, 0, s_sampledata.Length);
 						compressor.Flush();
@@ -97,7 +103,7 @@ namespace zuki.io.compression.test
 				// Compress using CompressionLevel.Optimal
 				using (MemoryStream compressed = new MemoryStream())
 				{
-					using (Bzip2Stream compressor = new Bzip2Stream(compressed, CompressionLevel.Optimal))
+					using (GzipWriter compressor = new GzipWriter(compressed, CompressionLevel.Optimal))
 					{
 						compressor.Write(s_sampledata, 0, s_sampledata.Length);
 						compressor.Flush();
@@ -105,20 +111,27 @@ namespace zuki.io.compression.test
 					}
 				}
 
-				// Optimal compression should result in a smaller output stream than fastest
-				// and fastest should result in a smaller output stream than uncompressed
+				// Fastest should produce better results than no compression
+				Assert.IsTrue(fastest < none);
+
+				// Optimal should produce better results than fastest
 				Assert.IsTrue(optimal < fastest);
+
+				// Fastest should be smaller than the original length
 				Assert.IsTrue(fastest < source.Length);
+
+				// No compression should be BIGGER than the original length
+				Assert.IsTrue(source.Length < none);
 			}
 		}
 
-		[TestMethod(), TestCategory("Bzip2Stream")]
-		public void Bzip2Stream_Dispose()
+		[TestMethod(), TestCategory("Gzip")]
+		public void Gzip_Dispose()
 		{
-			byte[] buffer = new byte[8192];			// 8KiB data buffer
+			byte[] buffer = new byte[8192];         // 8KiB data buffer
 
 			// Create a dummy stream and immediately dispose of it
-			Bzip2Stream stream = new Bzip2Stream(new MemoryStream(s_sampledata), CompressionLevel.Optimal);
+			GzipWriter stream = new GzipWriter(new MemoryStream(s_sampledata), CompressionLevel.Optimal);
 			stream.Dispose();
 
 			// All properties and methods should throw an ObjectDisposedException
@@ -160,23 +173,23 @@ namespace zuki.io.compression.test
 
 			// Ensure that an underlying stream is disposed of properly if leaveopen is not set
 			MemoryStream ms = new MemoryStream(s_sampledata);
-			using (Bzip2Stream compressor = new Bzip2Stream(ms, CompressionLevel.Fastest)) { }
+			using (GzipWriter compressor = new GzipWriter(ms, CompressionLevel.Fastest)) { }
 			try { ms.Write(buffer, 0, 8192); Assert.Fail("Method call should have thrown an exception"); }
 			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ObjectDisposedException)); }
 
 			// Ensure that an underlying stream is not disposed of if leaveopen is set
 			ms = new MemoryStream(s_sampledata);
-			using (Bzip2Stream compressor = new Bzip2Stream(ms, CompressionLevel.Fastest, true)) { }
+			using (GzipWriter compressor = new GzipWriter(ms, CompressionLevel.Fastest, true)) { }
 			ms.Write(buffer, 0, 8192);
 			ms.Dispose();
 		}
 
-		[TestMethod(), TestCategory("Bzip2Stream")]
-		public void Bzip2Stream_BaseStream()
+		[TestMethod(), TestCategory("Gzip")]
+		public void Gzip_BaseStream()
 		{
 			using (MemoryStream source = new MemoryStream())
 			{
-				using (Bzip2Stream stream = new Bzip2Stream(source, CompressionLevel.Optimal))
+				using (GzipWriter stream = new GzipWriter(source, CompressionLevel.Optimal))
 				{
 					Assert.IsNotNull(stream.BaseStream);
 					Assert.AreSame(source, stream.BaseStream);
@@ -184,79 +197,79 @@ namespace zuki.io.compression.test
 			}
 		}
 
-		[TestMethod(), TestCategory("Bzip2Stream")]
-		public void Bzip2Stream_CanRead()
+		[TestMethod(), TestCategory("Gzip")]
+		public void Gzip_CanRead()
 		{
 			// Verify behavior of a compression stream
-			using (Bzip2Stream stream = new Bzip2Stream(new MemoryStream(), CompressionMode.Compress))
+			using (GzipWriter stream = new GzipWriter(new MemoryStream()))
 			{
 				Assert.IsFalse(stream.CanRead);
 			}
 
 			// Verify behavior of a decompression stream
-			using (Bzip2Stream stream = new Bzip2Stream(new MemoryStream(s_sampledata), CompressionMode.Decompress))
+			using (GzipReader stream = new GzipReader(new MemoryStream(s_sampledata)))
 			{
 				Assert.IsTrue(stream.CanRead);
 			}
 		}
 
-		[TestMethod(), TestCategory("Bzip2Stream")]
-		public void Bzip2Stream_CanSeek()
+		[TestMethod(), TestCategory("Gzip")]
+		public void Gzip_CanSeek()
 		{
 			// Verify behavior of a compression stream
-			using (Bzip2Stream stream = new Bzip2Stream(new MemoryStream(), CompressionMode.Compress))
+			using (GzipWriter stream = new GzipWriter(new MemoryStream()))
 			{
 				Assert.IsFalse(stream.CanSeek);
 			}
 
 			// Verify behavior of a decompression stream
-			using (Bzip2Stream stream = new Bzip2Stream(new MemoryStream(s_sampledata), CompressionMode.Decompress))
+			using (GzipReader stream = new GzipReader(new MemoryStream(s_sampledata)))
 			{
 				Assert.IsFalse(stream.CanSeek);
 			}
 		}
 
-		[TestMethod(), TestCategory("Bzip2Stream")]
-		public void Bzip2Stream_CanWrite()
+		[TestMethod(), TestCategory("Gzip")]
+		public void Gzip_CanWrite()
 		{
 			// Verify behavior of a compression stream
-			using (Bzip2Stream stream = new Bzip2Stream(new MemoryStream(), CompressionMode.Compress))
+			using (GzipWriter stream = new GzipWriter(new MemoryStream()))
 			{
 				Assert.IsTrue(stream.CanWrite);
 			}
 
 			// Verify behavior of a decompression stream
-			using (Bzip2Stream stream = new Bzip2Stream(new MemoryStream(s_sampledata), CompressionMode.Decompress))
+			using (GzipReader stream = new GzipReader(new MemoryStream(s_sampledata)))
 			{
 				Assert.IsFalse(stream.CanWrite);
 			}
 		}
 
-		[TestMethod(), TestCategory("Bzip2Stream")]
-		public void Bzip2Stream_Length()
+		[TestMethod(), TestCategory("Gzip")]
+		public void Gzip_Length()
 		{
 			// Verify behavior of a compression stream
-			using (Bzip2Stream stream = new Bzip2Stream(new MemoryStream(), CompressionMode.Compress))
+			using (GzipWriter stream = new GzipWriter(new MemoryStream()))
 			{
 				try { var l = stream.Length; Assert.Fail("Method call should have thrown an exception"); }
 				catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(NotSupportedException)); }
 			}
 
 			// Verify behavior of a decompression stream
-			using (Bzip2Stream stream = new Bzip2Stream(new MemoryStream(s_sampledata), CompressionMode.Decompress))
+			using (GzipReader stream = new GzipReader(new MemoryStream(s_sampledata)))
 			{
 				try { var l = stream.Length; Assert.Fail("Method call should have thrown an exception"); }
 				catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(NotSupportedException)); }
 			}
 		}
 
-		[TestMethod(), TestCategory("Bzip2Stream")]
-		public void Bzip2Stream_Flush()
+		[TestMethod(), TestCategory("Gzip")]
+		public void Gzip_Flush()
 		{
 			// Verify behavior of flushing a compression stream
 			using (MemoryStream compressed = new MemoryStream())
 			{
-				using (Bzip2Stream stream = new Bzip2Stream(compressed, CompressionMode.Compress, true))
+				using (GzipWriter stream = new GzipWriter(compressed, true))
 				{
 					stream.Write(s_sampledata, 0, s_sampledata.Length);
 
@@ -278,15 +291,15 @@ namespace zuki.io.compression.test
 			}
 
 			// Verify behavior of flushing a decompression stream
-			using (Bzip2Stream stream = new Bzip2Stream(new MemoryStream(s_sampledata), CompressionMode.Decompress))
+			using (GzipReader stream = new GzipReader(new MemoryStream(s_sampledata)))
 			{
 				// Flush has no effect on decompression streams, just ensure it doesn't throw
 				stream.Flush();
 			}
 		}
 
-		[TestMethod(), TestCategory("Bzip2Stream")]
-		public void Bzip2Stream_Position()
+		[TestMethod(), TestCategory("Gzip")]
+		public void Gzip_Position()
 		{
 			// Start with a MemoryStream created from the sample data
 			using (MemoryStream source = new MemoryStream(s_sampledata))
@@ -294,7 +307,7 @@ namespace zuki.io.compression.test
 				using (MemoryStream dest = new MemoryStream())
 				{
 					// Test a compression stream
-					using (Bzip2Stream compressor = new Bzip2Stream(dest, CompressionLevel.Optimal, true))
+					using (GzipWriter compressor = new GzipWriter(dest, CompressionLevel.Optimal, true))
 					{
 						// The stream should report position zero prior to compression
 						Assert.AreEqual(0L, compressor.Position);
@@ -312,12 +325,12 @@ namespace zuki.io.compression.test
 					dest.Position = 0;              // Reset the destination stream
 
 					// Test a decompression stream
-					using (Bzip2Stream decompressor = new Bzip2Stream(dest, CompressionMode.Decompress, true))
+					using (GzipReader decompressor = new GzipReader(dest, true))
 					{
 						// The stream should report position zero prior to compression
 						Assert.AreEqual(0L, decompressor.Position);
 						decompressor.CopyTo(source);
-						
+
 						// The stream should report non-zero after compression
 						Assert.AreNotEqual(0L, decompressor.Position);
 
@@ -329,22 +342,22 @@ namespace zuki.io.compression.test
 			}
 		}
 
-		[TestMethod(), TestCategory("Bzip2Stream")]
-		public void Bzip2Stream_Read()
+		[TestMethod(), TestCategory("Gzip")]
+		public void Gzip_Read()
 		{
-			byte[] buffer = new byte[8192];			// 8KiB data buffer
+			byte[] buffer = new byte[8192];         // 8KiB data buffer
 
 			using (MemoryStream compressed = new MemoryStream())
 			{
 				// Start with a compressed MemoryStream created from the sample data
-				using (Bzip2Stream compressor = new Bzip2Stream(compressed, CompressionLevel.Optimal, true))
+				using (GzipWriter compressor = new GzipWriter(compressed, CompressionLevel.Optimal, true))
 				{
 					compressor.Write(s_sampledata, 0, s_sampledata.Length);
 					compressor.Flush();
 				}
 
 				// Create a decompressor to test some of the error cases
-				using (Bzip2Stream decompressor = new Bzip2Stream(compressed, CompressionMode.Decompress, true))
+				using (GzipReader decompressor = new GzipReader(compressed, true))
 				{
 					// Send in some bum arguments to Read() to check they are caught
 					try { decompressor.Read(null, 0, 0); Assert.Fail("Method call should have thrown an exception"); }
@@ -363,32 +376,32 @@ namespace zuki.io.compression.test
 					try { decompressor.Read(buffer, 0, 8192); Assert.Fail("Method call should have thrown an exception"); }
 					catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(InvalidDataException)); }
 
-					// Attempting to read from the middle of the compressed stream should throw a Bzip2Exception
+					// Attempting to read from the middle of the compressed stream should throw a GzipException
 					compressed.Position = compressed.Position / 2;
 					try { decompressor.Read(buffer, 0, 8192); Assert.Fail("Method call should have thrown an exception"); }
-					catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(Bzip2Exception)); }
+					catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(GzipException)); }
 
 					// The decompression stream is trashed at this point since the input buffer was filled
 					// with data from the middle.  Thought about a special case handler for that, but it's
 					// a fringe case.  Verify that the stream is indeed trashed ...
 					compressed.Position = 0;
 					try { decompressor.Read(buffer, 0, 8192); Assert.Fail("Method call should have thrown an exception"); }
-					catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(Bzip2Exception)); }
+					catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(GzipException)); }
 				}
 
 				// Create a new decompressor against the same stream and make sure it doesn't throw
-				using (Bzip2Stream decompressor = new Bzip2Stream(compressed, CompressionMode.Decompress, true))
+				using (GzipReader decompressor = new GzipReader(compressed, true))
 				{
 					while (decompressor.Read(buffer, 0, 8192) != 0) { }
 				}
 			}
 		}
 
-		[TestMethod(), TestCategory("Bzip2Stream")]
-		public void Bzip2Stream_Seek()
+		[TestMethod(), TestCategory("Gzip")]
+		public void Gzip_Seek()
 		{
 			// Verify behavior of a compression stream
-			using (Bzip2Stream stream = new Bzip2Stream(new MemoryStream(), CompressionMode.Compress))
+			using (GzipWriter stream = new GzipWriter(new MemoryStream()))
 			{
 				try { stream.Seek(50, SeekOrigin.Begin); Assert.Fail("Method call should have thrown an exception"); }
 				catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(NotSupportedException)); }
@@ -401,7 +414,7 @@ namespace zuki.io.compression.test
 			}
 
 			// Verify behavior of a decompression stream
-			using (Bzip2Stream stream = new Bzip2Stream(new MemoryStream(s_sampledata), CompressionMode.Decompress))
+			using (GzipReader stream = new GzipReader(new MemoryStream(s_sampledata)))
 			{
 				try { stream.Seek(50, SeekOrigin.Begin); Assert.Fail("Method call should have thrown an exception"); }
 				catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(NotSupportedException)); }
@@ -414,33 +427,33 @@ namespace zuki.io.compression.test
 			}
 		}
 
-		[TestMethod(), TestCategory("Bzip2Stream")]
-		public void Bzip2Stream_SetLength()
+		[TestMethod(), TestCategory("Gzip")]
+		public void Gzip_SetLength()
 		{
 			// Verify behavior of a compression stream
-			using (Bzip2Stream stream = new Bzip2Stream(new MemoryStream(), CompressionMode.Compress))
+			using (GzipWriter stream = new GzipWriter(new MemoryStream()))
 			{
 				try { stream.SetLength(12345L); Assert.Fail("Method call should have thrown an exception"); }
 				catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(NotSupportedException)); }
 			}
 
 			// Verify behavior of a decompression stream
-			using (Bzip2Stream stream = new Bzip2Stream(new MemoryStream(s_sampledata), CompressionMode.Decompress))
+			using (GzipReader stream = new GzipReader(new MemoryStream(s_sampledata)))
 			{
 				try { stream.SetLength(12345L); Assert.Fail("Method call should have thrown an exception"); }
 				catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(NotSupportedException)); }
 			}
 		}
 
-		[TestMethod(), TestCategory("Bzip2Stream")]
-		public void Bzip2Stream_Write()
+		[TestMethod(), TestCategory("Gzip")]
+		public void Gzip_Write()
 		{
 			byte[] buffer = new byte[8192];         // 8KiB data buffer
 
 			// Compress the sample data using a call to Write directly
 			using (MemoryStream compressed = new MemoryStream())
 			{
-				using (Bzip2Stream compressor = new Bzip2Stream(compressed, CompressionLevel.Optimal, true))
+				using (GzipWriter compressor = new GzipWriter(compressed, CompressionLevel.Optimal, true))
 				{
 					// Send in some bum arguments to Write() to check they are caught
 					try { compressor.Write(null, 0, 0); Assert.Fail("Method call should have thrown an exception"); }

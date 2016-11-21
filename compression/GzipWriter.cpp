@@ -21,7 +21,7 @@
 //---------------------------------------------------------------------------
 
 #include "stdafx.h"
-#include "GzipStream.h"
+#include "GzipWriter.h"
 
 #include "GzipException.h"
 
@@ -30,114 +30,104 @@
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// GzipStream Constructor
+// GzipWriter Constructor
+//
+// Arguments:
+//
+//	stream		- The stream the compressed data is written to
+
+GzipWriter::GzipWriter(Stream^ stream) : GzipWriter(stream, Compression::CompressionLevel::Optimal, false)
+{
+}
+
+//---------------------------------------------------------------------------
+// GzipWriter Constructor
 //
 // Arguments:
 //
 //	stream		- The stream the compressed data is written to
 //	level		- Indicates whether to emphasize speed or compression efficiency
 
-GzipStream::GzipStream(Stream^ stream, Compression::CompressionLevel level) : GzipStream(stream, Compression::CompressionMode::Compress, level, false)
+GzipWriter::GzipWriter(Stream^ stream, Compression::CompressionLevel level) : GzipWriter(stream, level, false)
 {
 }
 
 //---------------------------------------------------------------------------
-// GzipStream Constructor
+// GzipWriter Constructor
 //
 // Arguments:
 //
 //	stream		- The stream the compressed data is written to
-//	level		- Indicates whether to emphasize speed or compression efficiency
 //	leaveopen	- Flag to leave the base stream open after disposal
 
-GzipStream::GzipStream(Stream^ stream, Compression::CompressionLevel level, bool leaveopen) : GzipStream(stream, Compression::CompressionMode::Compress, level, leaveopen)
+GzipWriter::GzipWriter(Stream^ stream, bool leaveopen) : GzipWriter(stream, Compression::CompressionLevel::Optimal, leaveopen)
 {
 }
 
 //---------------------------------------------------------------------------
-// GzipStream Constructor
+// GzipWriter Constructor
 //
 // Arguments:
 //
 //	stream		- The stream the compressed or decompressed data is written to
-//	mode		- Indicates whether to compress or decompress the stream
-
-GzipStream::GzipStream(Stream^ stream, Compression::CompressionMode mode) : GzipStream(stream, mode, Compression::CompressionLevel::Optimal, false)
-{
-}
-
-//---------------------------------------------------------------------------
-// GzipStream Constructor
-//
-// Arguments:
-//
-//	stream		- The stream the compressed or decompressed data is written to
-//	mode		- Indicates whether to compress or decompress the stream
-//	leaveopen	- Flag to leave the base stream open after disposal
-
-GzipStream::GzipStream(Stream^ stream, Compression::CompressionMode mode, bool leaveopen) : GzipStream(stream, mode, Compression::CompressionLevel::Optimal, leaveopen)
-{
-}
-
-//---------------------------------------------------------------------------
-// GzipStream Constructor (private)
-//
-// Arguments:
-//
-//	stream		- The stream the compressed or decompressed data is written to
-//	mode		- Indicates whether to compress or decompress the stream
 //	level		- If compressing, indicates the level of compression to use
 //	leaveopen	- Flag to leave the base stream open after disposal
 
-GzipStream::GzipStream(Stream^ stream, Compression::CompressionMode mode, Compression::CompressionLevel level, bool leaveopen) : 
-	m_stream(stream), m_mode(mode), m_leaveopen(leaveopen), m_bufferpos(0), m_finished(false)
+GzipWriter::GzipWriter(Stream^ stream, Compression::CompressionLevel level, bool leaveopen) : m_disposed(false), m_stream(stream), m_leaveopen(leaveopen)
 {
 	if(Object::ReferenceEquals(stream, nullptr)) throw gcnew ArgumentNullException("stream");
 
-	// Allocate the unmanaged z_stream SafeHandle and the managed input/output buffer
-	m_zstream = gcnew GzipSafeHandle(mode, level);
+	// Allocate and initialize the unmanaged z_stream structure
+	try { m_zstream = new z_stream; memset(m_zstream, 0, sizeof(z_stream)); }
+	catch(Exception^) { throw gcnew OutOfMemoryException(); }
+
+	// Allocate the managed input/output buffer for this instance
 	m_buffer = gcnew array<unsigned __int8>(BUFFER_SIZE);
+
+	// Choose a zlib compression level
+	int compresslevel = Z_DEFAULT_COMPRESSION;
+	if(level == Compression::CompressionLevel::NoCompression) compresslevel = 0;
+	else if(level == Compression::CompressionLevel::Fastest) compresslevel = 1;
+	else if(level == Compression::CompressionLevel::Optimal) compresslevel = 9;
+
+	// Initialize the z_stream for compression
+	int result = deflateInit2(m_zstream, compresslevel, Z_DEFLATED, 16 + MAX_WBITS, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
+	if(result != Z_OK) throw gcnew GzipException(result);
 }
 
 //---------------------------------------------------------------------------
-// GzipStream Destructor
+// GzipWriter Destructor
 
-GzipStream::~GzipStream()
+GzipWriter::~GzipWriter()
 {
+	int result = Z_OK;					// Result from zlib operation
+
 	if(m_disposed) return;
 
-	msclr::lock lock(m_zstream);
+	msclr::lock lock(m_lock);
 
-	// Compression streams have to be finished before the z_stream is destroyed
-	if(m_mode == Compression::CompressionMode::Compress) {
+	// Pin the output buffer into memory
+	pin_ptr<unsigned __int8> pinout = &m_buffer[0];
 
-		int result = Z_OK;			// Result from zlib operation
+	// Input is not consumed when finishing the zlib stream
+	m_zstream->next_in = nullptr;
+	m_zstream->avail_in = 0;
 
-		// Pin the output buffer into memory
-		pin_ptr<unsigned __int8> pinout = &m_buffer[0];
+	do {
 
-		// Input is not consumed when finishing the zlib stream
-		m_zstream->next_in = nullptr;
-		m_zstream->avail_in = 0;
+		// Reset the output buffer to point into the managed array
+		m_zstream->next_out = reinterpret_cast<Bytef*>(pinout);
+		m_zstream->avail_out = BUFFER_SIZE;
 
-		do {
+		// Finish the next block of data in the zlib buffers and write it
+		result = deflate(m_zstream, Z_FINISH);
+		m_stream->Write(m_buffer, 0, BUFFER_SIZE - m_zstream->avail_out);
 
-			// Reset the output buffer to point into the managed array
-			m_zstream->next_out = reinterpret_cast<Bytef*>(pinout);
-			m_zstream->avail_out = BUFFER_SIZE;
+	} while (result == Z_OK);
 
-			// Finish the next block of data in the zlib buffers and write it
-			result = deflate(m_zstream, Z_FINISH);
-			m_stream->Write(m_buffer, 0, BUFFER_SIZE - m_zstream->avail_out);
-
-		} while (result == Z_OK);
-
-		// The end result of FINISH should be Z_STREAM_END
-		if(result != Z_STREAM_END) throw gcnew GzipException(result);
-
-		m_stream->Flush();						// Ensure the base stream is flushed
-	}
-		
+	// The end result of FINISH should be Z_STREAM_END
+	if(result != Z_STREAM_END) throw gcnew GzipException(result);
+	
 	if(!m_leaveopen) delete m_stream;		// Optionally dispose of the base stream
 	delete m_zstream;						// Dispose of the SafeHandle instance
 	
@@ -145,51 +135,68 @@ GzipStream::~GzipStream()
 }
 
 //---------------------------------------------------------------------------
-// GzipStream::BaseStream::get
+// GzipWriter Finalizer
+
+GzipWriter::!GzipWriter()
+{
+	if(m_zstream == nullptr) return;
+
+	// Reset all of the input/output buffer pointers and size information
+	m_zstream->next_in = m_zstream->next_out = nullptr;
+	m_zstream->avail_in = m_zstream->avail_out = 0;
+
+	deflateEnd(m_zstream);
+	delete m_zstream;
+
+	m_zstream = nullptr;
+}
+
+//---------------------------------------------------------------------------
+// GzipWriter::BaseStream::get
 //
 // Accesses the underlying base stream instance
 
-Stream^ GzipStream::BaseStream::get(void)
+Stream^ GzipWriter::BaseStream::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
 	return m_stream;
 }
 
 //---------------------------------------------------------------------------
-// GzipStream::CanRead::get
+// GzipWriter::CanRead::get
 //
 // Gets a value indicating whether the current stream supports reading
 
-bool GzipStream::CanRead::get(void)
-{
-	CHECK_DISPOSED(m_disposed);
-	return ((m_mode == Compression::CompressionMode::Decompress) && (m_stream->CanRead));
-}
-
-//---------------------------------------------------------------------------
-// GzipStream::CanSeek::get
-//
-// Gets a value indicating whether the current stream supports seeking
-
-bool GzipStream::CanSeek::get(void)
+bool GzipWriter::CanRead::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
 	return false;
 }
 
 //---------------------------------------------------------------------------
-// GzipStream::CanWrite::get
+// GzipWriter::CanSeek::get
 //
-// Gets a value indicating whether the current stream supports writing
+// Gets a value indicating whether the current stream supports seeking
 
-bool GzipStream::CanWrite::get(void)
+bool GzipWriter::CanSeek::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
-	return ((m_mode == Compression::CompressionMode::Compress) && (m_stream->CanWrite));
+	return false;
 }
 
 //---------------------------------------------------------------------------
-// GzipStream::Flush
+// GzipWriter::CanWrite::get
+//
+// Gets a value indicating whether the current stream supports writing
+
+bool GzipWriter::CanWrite::get(void)
+{
+	CHECK_DISPOSED(m_disposed);
+	return m_stream->CanWrite;
+}
+
+//---------------------------------------------------------------------------
+// GzipWriter::Flush
 //
 // Clears all buffers for this stream and causes any buffered data to be written
 //
@@ -197,16 +204,13 @@ bool GzipStream::CanWrite::get(void)
 //
 //	NONE
 
-void GzipStream::Flush(void)
+void GzipWriter::Flush(void)
 {
 	int result = Z_OK;			// Result from zlib operation
 
 	CHECK_DISPOSED(m_disposed);
 
-	// This is a no-operation for decompression streams
-	if(m_mode == Compression::CompressionMode::Decompress) return;
-
-	msclr::lock lock(m_zstream);
+	msclr::lock lock(m_lock);
 
 	// Pin the output buffer into memory
 	pin_ptr<unsigned __int8> pinout = &m_buffer[0];
@@ -234,38 +238,35 @@ void GzipStream::Flush(void)
 }
 
 //--------------------------------------------------------------------------
-// GzipStream::Length::get
+// GzipWriter::Length::get
 //
 // Gets the length in bytes of the stream
 
-__int64 GzipStream::Length::get(void)
+__int64 GzipWriter::Length::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
 	throw gcnew NotSupportedException();
 }
 
 //---------------------------------------------------------------------------
-// GzipStream::Position::get
+// GzipWriter::Position::get
 //
 // Gets the current position within the stream
 
-__int64 GzipStream::Position::get(void)
+__int64 GzipWriter::Position::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
 
-	msclr::lock lock(m_zstream);
-
-	// Decompress --> total_out / Compress --> total_in
-	if(m_mode == Compression::CompressionMode::Decompress) return static_cast<__int64>(m_zstream->total_out);
-	else return static_cast<__int64>(m_zstream->total_in);
+	msclr::lock lock(m_lock);
+	return static_cast<__int64>(m_zstream->total_in);
 }
 
 //---------------------------------------------------------------------------
-// GzipStream::Position::set
+// GzipWriter::Position::set
 //
 // Sets the current position within the stream
 
-void GzipStream::Position::set(__int64 value)
+void GzipWriter::Position::set(__int64 value)
 {
 	UNREFERENCED_PARAMETER(value);
 
@@ -274,7 +275,7 @@ void GzipStream::Position::set(__int64 value)
 }
 
 //---------------------------------------------------------------------------
-// GzipStream::Read
+// GzipWriter::Read
 //
 // Reads a sequence of bytes from the current stream and advances the position within the stream
 //
@@ -284,59 +285,17 @@ void GzipStream::Position::set(__int64 value)
 //	offset		- Offset within buffer to begin copying data
 //	count		- Maximum number of bytes to write into the destination buffer
 
-int GzipStream::Read(array<unsigned __int8>^ buffer, int offset, int count)
+int GzipWriter::Read(array<unsigned __int8>^ buffer, int offset, int count)
 {
+	UNREFERENCED_PARAMETER(buffer);
+	UNREFERENCED_PARAMETER(offset);
+	UNREFERENCED_PARAMETER(count);
+
 	CHECK_DISPOSED(m_disposed);
-
-	if(Object::ReferenceEquals(buffer, nullptr)) throw gcnew ArgumentNullException("buffer");
-	if(offset < 0) throw gcnew ArgumentOutOfRangeException("offset");
-	if(count < 0) throw gcnew ArgumentOutOfRangeException("offset");
-	if((offset + count) > buffer->Length) throw gcnew ArgumentException("The sum of offset and count is larger than the buffer length");
-
-	msclr::lock lock(m_zstream);
-
-	// If there is no buffer to read into or the stream is already done, return zero
-	if((count == 0) || (m_finished)) return 0;
-
-	// Pin both the input and output byte arrays in memory
-	pin_ptr<unsigned __int8> pinin = &m_buffer[0];
-	pin_ptr<unsigned __int8> pinout = &buffer[0];
-
-	// Set up the output buffer pointer and available length
-	m_zstream->next_out = reinterpret_cast<Bytef*>(&pinout[offset]);
-	m_zstream->avail_out = count;
-
-	do {
-
-		// If the input buffer was flushed from a previous iteration, refill it
-		if(m_zstream->avail_in == 0) {
-
-			m_zstream->avail_in = m_stream->Read(m_buffer, 0, BUFFER_SIZE);
-			if((m_zstream->avail_in == 0) || (m_zstream->avail_in > BUFFER_SIZE)) throw gcnew InvalidDataException();
-
-			m_bufferpos = 0;			// Reset stored offset to zero
-		}
-
-		// Reset the input pointer based on the current position into the buffer, the address
-		// of the buffer itself may have changed between calls to Read() due to pinning
-		m_zstream->next_in = reinterpret_cast<Bytef*>(&pinin[m_bufferpos]);
-
-		// Attempt to decompress the next block of data and adjust the buffer offset
-		int result = inflate(m_zstream, Z_NO_FLUSH);
-		m_bufferpos = (uintptr_t(m_zstream->next_in) - uintptr_t(pinin));
-
-		// Z_STREAM_END indicates that there is no more data to decompress, but zlib
-		// will not return it more than once -- set a flag to prevent more attempts
-		if(result == Z_STREAM_END) { m_finished = true; break; }
-		else if(result != Z_OK) throw gcnew GzipException(result);
-
-	} while(m_zstream->avail_out > 0);
-
-	return (count - m_zstream->avail_out);
-}
+	throw gcnew NotSupportedException();}
 
 //---------------------------------------------------------------------------
-// GzipStream::Seek
+// GzipWriter::Seek
 //
 // Sets the position within the current stream
 //
@@ -345,7 +304,7 @@ int GzipStream::Read(array<unsigned __int8>^ buffer, int offset, int count)
 //	offset		- Byte offset relative to origin
 //	origin		- Reference point used to obtain the new position
 
-__int64 GzipStream::Seek(__int64 offset, SeekOrigin origin)
+__int64 GzipWriter::Seek(__int64 offset, SeekOrigin origin)
 {
 	UNREFERENCED_PARAMETER(offset);
 	UNREFERENCED_PARAMETER(origin);
@@ -355,7 +314,7 @@ __int64 GzipStream::Seek(__int64 offset, SeekOrigin origin)
 }
 
 //---------------------------------------------------------------------------
-// GzipStream::SetLength
+// GzipWriter::SetLength
 //
 // Sets the length of the current stream
 //
@@ -363,7 +322,7 @@ __int64 GzipStream::Seek(__int64 offset, SeekOrigin origin)
 //
 //	value		- Desired length of the current stream in bytes
 
-void GzipStream::SetLength(__int64 value)
+void GzipWriter::SetLength(__int64 value)
 {
 	UNREFERENCED_PARAMETER(value);
 
@@ -372,7 +331,7 @@ void GzipStream::SetLength(__int64 value)
 }
 
 //---------------------------------------------------------------------------
-// GzipStream::Write
+// GzipWriter::Write
 //
 // Writes a sequence of bytes to the current stream and advances the current position
 //
@@ -382,16 +341,16 @@ void GzipStream::SetLength(__int64 value)
 //	offset		- Offset within buffer to begin copying from
 //	count		- Maximum number of bytes to read from the source buffer
 
-void GzipStream::Write(array<unsigned __int8>^ buffer, int offset, int count)
+void GzipWriter::Write(array<unsigned __int8>^ buffer, int offset, int count)
 {
 	CHECK_DISPOSED(m_disposed);
 
 	if(Object::ReferenceEquals(buffer, nullptr)) throw gcnew ArgumentNullException("buffer");
 	if(offset < 0) throw gcnew ArgumentOutOfRangeException("offset");
-	if(count < 0) throw gcnew ArgumentOutOfRangeException("offset");
+	if(count < 0) throw gcnew ArgumentOutOfRangeException("count");
 	if((offset + count) > buffer->Length) throw gcnew ArgumentException("The sum of offset and count is larger than the buffer length");
 
-	msclr::lock lock(m_zstream);
+	msclr::lock lock(m_lock);
 
 	// Pin both the input and output byte arrays in memory
 	pin_ptr<unsigned __int8> pinin = &buffer[0];

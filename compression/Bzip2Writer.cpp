@@ -21,7 +21,7 @@
 //---------------------------------------------------------------------------
 
 #include "stdafx.h"
-#include "Bzip2Stream.h"
+#include "Bzip2Writer.h"
 
 #include "Bzip2Exception.h"
 
@@ -30,114 +30,98 @@
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// Bzip2Stream Constructor
+// Bzip2Writer Constructor
+//
+// Arguments:
+//
+//	stream		- The stream the compressed data is written to
+
+Bzip2Writer::Bzip2Writer(Stream^ stream) : Bzip2Writer(stream, Compression::CompressionLevel::Optimal, false)
+{
+}
+
+//---------------------------------------------------------------------------
+// Bzip2Writer Constructor
 //
 // Arguments:
 //
 //	stream		- The stream the compressed data is written to
 //	level		- Indicates whether to emphasize speed or compression efficiency
 
-Bzip2Stream::Bzip2Stream(Stream^ stream, Compression::CompressionLevel level) : Bzip2Stream(stream, Compression::CompressionMode::Compress, level, false)
+Bzip2Writer::Bzip2Writer(Stream^ stream, Compression::CompressionLevel level) : Bzip2Writer(stream, level, false)
 {
 }
 
 //---------------------------------------------------------------------------
-// Bzip2Stream Constructor
+// Bzip2Writer Constructor
 //
 // Arguments:
 //
 //	stream		- The stream the compressed data is written to
-//	level		- Indicates whether to emphasize speed or compression efficiency
 //	leaveopen	- Flag to leave the base stream open after disposal
 
-Bzip2Stream::Bzip2Stream(Stream^ stream, Compression::CompressionLevel level, bool leaveopen) : Bzip2Stream(stream, Compression::CompressionMode::Compress, level, leaveopen)
+Bzip2Writer::Bzip2Writer(Stream^ stream, bool leaveopen) : Bzip2Writer(stream, Compression::CompressionLevel::Optimal, leaveopen)
 {
 }
 
 //---------------------------------------------------------------------------
-// Bzip2Stream Constructor
+// Bzip2Writer Constructor
 //
 // Arguments:
 //
 //	stream		- The stream the compressed or decompressed data is written to
-//	mode		- Indicates whether to compress or decompress the stream
-
-Bzip2Stream::Bzip2Stream(Stream^ stream, Compression::CompressionMode mode) : Bzip2Stream(stream, mode, Compression::CompressionLevel::Optimal, false)
-{
-}
-
-//---------------------------------------------------------------------------
-// Bzip2Stream Constructor
-//
-// Arguments:
-//
-//	stream		- The stream the compressed or decompressed data is written to
-//	mode		- Indicates whether to compress or decompress the stream
-//	leaveopen	- Flag to leave the base stream open after disposal
-
-Bzip2Stream::Bzip2Stream(Stream^ stream, Compression::CompressionMode mode, bool leaveopen) : Bzip2Stream(stream, mode, Compression::CompressionLevel::Optimal, leaveopen)
-{
-}
-
-//---------------------------------------------------------------------------
-// Bzip2Stream Constructor (private)
-//
-// Arguments:
-//
-//	stream		- The stream the compressed or decompressed data is written to
-//	mode		- Indicates whether to compress or decompress the stream
 //	level		- If compressing, indicates the level of compression to use
 //	leaveopen	- Flag to leave the base stream open after disposal
 
-Bzip2Stream::Bzip2Stream(Stream^ stream, Compression::CompressionMode mode, Compression::CompressionLevel level, bool leaveopen) : 
-	m_stream(stream), m_mode(mode), m_leaveopen(leaveopen), m_bufferpos(0), m_finished(false)
+Bzip2Writer::Bzip2Writer(Stream^ stream, Compression::CompressionLevel level, bool leaveopen) : m_disposed(false), m_stream(stream), m_leaveopen(leaveopen)
 {
 	if(Object::ReferenceEquals(stream, nullptr)) throw gcnew ArgumentNullException("stream");
 
 	// bzip does not provide a 'no compression' option
 	if(level == Compression::CompressionLevel::NoCompression) throw gcnew ArgumentOutOfRangeException("level");
 
-	// Allocate the unmanaged bz_stream SafeHandle and the managed input/output buffer
-	m_bzstream = gcnew Bzip2SafeHandle(mode, level);
+	// Allocate and initialize the unmanaged bz_stream structure
+	try { m_bzstream = new bz_stream; memset(m_bzstream, 0, sizeof(bz_stream)); }
+	catch(Exception^) { throw gcnew OutOfMemoryException(); }
+
+	// Allocate the managed input/output buffer for this instance
 	m_buffer = gcnew array<unsigned __int8>(BUFFER_SIZE);
+
+	// Initialize the bz_stream for compression
+	int result = BZ2_bzCompressInit(m_bzstream, (level == Compression::CompressionLevel::Optimal) ? 9 : 1, 0, 0);
+	if(result != BZ_OK) throw gcnew Bzip2Exception(result);
 }
 
 //---------------------------------------------------------------------------
-// Bzip2Stream Destructor
+// Bzip2Writer Destructor
 
-Bzip2Stream::~Bzip2Stream()
+Bzip2Writer::~Bzip2Writer()
 {
+	int result = BZ_OK;							// Result from bzip operation
+
 	if(m_disposed) return;
 
-	msclr::lock lock(m_bzstream);
+	msclr::lock lock(m_lock);
 
-	// Compression streams have to be finished before the bz_stream is destroyed
-	if(m_mode == Compression::CompressionMode::Compress) {
+	// Pin the output buffer into memory
+	pin_ptr<unsigned __int8> pinout = &m_buffer[0];
 
-		int result = BZ_OK;			// Result from bzip operation
+	// Input is not consumed when finishing the bzip stream
+	m_bzstream->next_in = nullptr;
+	m_bzstream->avail_in = 0;
 
-		// Pin the output buffer into memory
-		pin_ptr<unsigned __int8> pinout = &m_buffer[0];
+	do {
 
-		// Input is not consumed when finishing the bzip stream
-		m_bzstream->next_in = nullptr;
-		m_bzstream->avail_in = 0;
+		// Reset the output buffer to point into the managed array
+		m_bzstream->next_out = reinterpret_cast<char*>(pinout);
+		m_bzstream->avail_out = BUFFER_SIZE;
 
-		do {
+		// Finish the next block of data in the bzip buffers and write it
+		result = BZ2_bzCompress(m_bzstream, BZ_FINISH);
+		m_stream->Write(m_buffer, 0, BUFFER_SIZE - m_bzstream->avail_out);
 
-			// Reset the output buffer to point into the managed array
-			m_bzstream->next_out = reinterpret_cast<char*>(pinout);
-			m_bzstream->avail_out = BUFFER_SIZE;
+	} while (result == BZ_FINISH_OK);
 
-			// Finish the next block of data in the bzip buffers and write it
-			result = BZ2_bzCompress(m_bzstream, BZ_FINISH);
-			m_stream->Write(m_buffer, 0, BUFFER_SIZE - m_bzstream->avail_out);
-
-		} while (result == BZ_FINISH_OK);
-
-		m_stream->Flush();						// Ensure the base stream is flushed
-	}
-		
 	if(!m_leaveopen) delete m_stream;		// Optionally dispose of the base stream
 	delete m_bzstream;						// Dispose of the SafeHandle instance
 	
@@ -145,51 +129,68 @@ Bzip2Stream::~Bzip2Stream()
 }
 
 //---------------------------------------------------------------------------
-// Bzip2Stream::BaseStream::get
+// Bzip2Writer Finalizer
+
+Bzip2Writer::!Bzip2Writer()
+{
+	if(m_bzstream == nullptr) return;
+
+	// Reset all of the input/output buffer pointers and size information
+	m_bzstream->next_in = m_bzstream->next_out = nullptr;
+	m_bzstream->avail_in = m_bzstream->avail_out = 0;
+
+	BZ2_bzCompressEnd(m_bzstream);
+	delete m_bzstream;
+
+	m_bzstream = nullptr;
+}
+
+//---------------------------------------------------------------------------
+// Bzip2Writer::BaseStream::get
 //
 // Accesses the underlying base stream instance
 
-Stream^ Bzip2Stream::BaseStream::get(void)
+Stream^ Bzip2Writer::BaseStream::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
 	return m_stream;
 }
 
 //---------------------------------------------------------------------------
-// Bzip2Stream::CanRead::get
+// Bzip2Writer::CanRead::get
 //
 // Gets a value indicating whether the current stream supports reading
 
-bool Bzip2Stream::CanRead::get(void)
-{
-	CHECK_DISPOSED(m_disposed);
-	return ((m_mode == Compression::CompressionMode::Decompress) && (m_stream->CanRead));
-}
-
-//---------------------------------------------------------------------------
-// Bzip2Stream::CanSeek::get
-//
-// Gets a value indicating whether the current stream supports seeking
-
-bool Bzip2Stream::CanSeek::get(void)
+bool Bzip2Writer::CanRead::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
 	return false;
 }
 
 //---------------------------------------------------------------------------
-// Bzip2Stream::CanWrite::get
+// Bzip2Writer::CanSeek::get
 //
-// Gets a value indicating whether the current stream supports writing
+// Gets a value indicating whether the current stream supports seeking
 
-bool Bzip2Stream::CanWrite::get(void)
+bool Bzip2Writer::CanSeek::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
-	return ((m_mode == Compression::CompressionMode::Compress) && (m_stream->CanWrite));
+	return false;
 }
 
 //---------------------------------------------------------------------------
-// Bzip2Stream::Flush
+// Bzip2Writer::CanWrite::get
+//
+// Gets a value indicating whether the current stream supports writing
+
+bool Bzip2Writer::CanWrite::get(void)
+{
+	CHECK_DISPOSED(m_disposed);
+	return m_stream->CanWrite;
+}
+
+//---------------------------------------------------------------------------
+// Bzip2Writer::Flush
 //
 // Clears all buffers for this stream and causes any buffered data to be written
 //
@@ -197,16 +198,13 @@ bool Bzip2Stream::CanWrite::get(void)
 //
 //	NONE
 
-void Bzip2Stream::Flush(void)
+void Bzip2Writer::Flush(void)
 {
 	int result = BZ_OK;			// Result from bzip operation
 
 	CHECK_DISPOSED(m_disposed);
 
-	// This is a no-operation for decompression streams
-	if(m_mode == Compression::CompressionMode::Decompress) return;
-
-	msclr::lock lock(m_bzstream);
+	msclr::lock lock(m_lock);
 
 	// Pin the output buffer into memory
 	pin_ptr<unsigned __int8> pinout = &m_buffer[0];
@@ -234,41 +232,35 @@ void Bzip2Stream::Flush(void)
 }
 
 //--------------------------------------------------------------------------
-// Bzip2Stream::Length::get
+// Bzip2Writer::Length::get
 //
 // Gets the length in bytes of the stream
 
-__int64 Bzip2Stream::Length::get(void)
+__int64 Bzip2Writer::Length::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
 	throw gcnew NotSupportedException();
 }
 
 //---------------------------------------------------------------------------
-// Bzip2Stream::Position::get
+// Bzip2Writer::Position::get
 //
 // Gets the current position within the stream
 
-__int64 Bzip2Stream::Position::get(void)
+__int64 Bzip2Writer::Position::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
 
-	msclr::lock lock(m_bzstream);
-
-	// Decompress --> total_out
-	if(m_mode == Compression::CompressionMode::Decompress)
-		return static_cast<__int64>(m_bzstream->total_out_hi32) << 32 | m_bzstream->total_out_lo32;
-
-	// Compress --> total_in
-	else return static_cast<__int64>(m_bzstream->total_in_hi32) << 32 | m_bzstream->total_in_lo32;
+	msclr::lock lock(m_lock);
+	return static_cast<__int64>(m_bzstream->total_in_hi32) << 32 | m_bzstream->total_in_lo32;
 }
 
 //---------------------------------------------------------------------------
-// Bzip2Stream::Position::set
+// Bzip2Writer::Position::set
 //
 // Sets the current position within the stream
 
-void Bzip2Stream::Position::set(__int64 value)
+void Bzip2Writer::Position::set(__int64 value)
 {
 	UNREFERENCED_PARAMETER(value);
 
@@ -277,7 +269,7 @@ void Bzip2Stream::Position::set(__int64 value)
 }
 
 //---------------------------------------------------------------------------
-// Bzip2Stream::Read
+// Bzip2Writer::Read
 //
 // Reads a sequence of bytes from the current stream and advances the position within the stream
 //
@@ -287,59 +279,18 @@ void Bzip2Stream::Position::set(__int64 value)
 //	offset		- Offset within buffer to begin copying data
 //	count		- Maximum number of bytes to write into the destination buffer
 
-int Bzip2Stream::Read(array<unsigned __int8>^ buffer, int offset, int count)
+int Bzip2Writer::Read(array<unsigned __int8>^ buffer, int offset, int count)
 {
+	UNREFERENCED_PARAMETER(buffer);
+	UNREFERENCED_PARAMETER(offset);
+	UNREFERENCED_PARAMETER(count);
+
 	CHECK_DISPOSED(m_disposed);
-
-	if(Object::ReferenceEquals(buffer, nullptr)) throw gcnew ArgumentNullException("buffer");
-	if(offset < 0) throw gcnew ArgumentOutOfRangeException("offset");
-	if(count < 0) throw gcnew ArgumentOutOfRangeException("offset");
-	if((offset + count) > buffer->Length) throw gcnew ArgumentException("The sum of offset and count is larger than the buffer length");
-
-	msclr::lock lock(m_bzstream);
-
-	// If there is no buffer to read into or the stream is already done, return zero
-	if((count == 0) || (m_finished)) return 0;
-
-	// Pin both the input and output byte arrays in memory
-	pin_ptr<unsigned __int8> pinin = &m_buffer[0];
-	pin_ptr<unsigned __int8> pinout = &buffer[0];
-
-	// Set up the output buffer pointer and available length
-	m_bzstream->next_out = reinterpret_cast<char*>(&pinout[offset]);
-	m_bzstream->avail_out = count;
-
-	do {
-
-		// If the input buffer was flushed from a previous iteration, refill it
-		if(m_bzstream->avail_in == 0) {
-
-			m_bzstream->avail_in = m_stream->Read(m_buffer, 0, BUFFER_SIZE);
-			if((m_bzstream->avail_in == 0) || (m_bzstream->avail_in > BUFFER_SIZE)) throw gcnew InvalidDataException();
-
-			m_bufferpos = 0;			// Reset stored offset to zero
-		}
-
-		// Reset the input pointer based on the current position into the buffer, the address
-		// of the buffer itself may have changed between calls to Read() due to pinning
-		m_bzstream->next_in = reinterpret_cast<char*>(&pinin[m_bufferpos]);
-
-		// Attempt to decompress the next block of data and adjust the buffer offset
-		int result = BZ2_bzDecompress(m_bzstream);
-		m_bufferpos = (uintptr_t(m_bzstream->next_in) - uintptr_t(pinin));
-
-		// BZ_STREAM_END indicates that there is no more data to decompress, but bzip
-		// will not return it more than once -- set a flag to prevent more attempts
-		if(result == BZ_STREAM_END) { m_finished = true; break; }
-		else if(result != BZ_OK) throw gcnew Bzip2Exception(result);
-
-	} while(m_bzstream->avail_out > 0);
-
-	return (count - m_bzstream->avail_out);
+	throw gcnew NotImplementedException();
 }
 
 //---------------------------------------------------------------------------
-// Bzip2Stream::Seek
+// Bzip2Writer::Seek
 //
 // Sets the position within the current stream
 //
@@ -348,7 +299,7 @@ int Bzip2Stream::Read(array<unsigned __int8>^ buffer, int offset, int count)
 //	offset		- Byte offset relative to origin
 //	origin		- Reference point used to obtain the new position
 
-__int64 Bzip2Stream::Seek(__int64 offset, SeekOrigin origin)
+__int64 Bzip2Writer::Seek(__int64 offset, SeekOrigin origin)
 {
 	UNREFERENCED_PARAMETER(offset);
 	UNREFERENCED_PARAMETER(origin);
@@ -358,7 +309,7 @@ __int64 Bzip2Stream::Seek(__int64 offset, SeekOrigin origin)
 }
 
 //---------------------------------------------------------------------------
-// Bzip2Stream::SetLength
+// Bzip2Writer::SetLength
 //
 // Sets the length of the current stream
 //
@@ -366,7 +317,7 @@ __int64 Bzip2Stream::Seek(__int64 offset, SeekOrigin origin)
 //
 //	value		- Desired length of the current stream in bytes
 
-void Bzip2Stream::SetLength(__int64 value)
+void Bzip2Writer::SetLength(__int64 value)
 {
 	UNREFERENCED_PARAMETER(value);
 
@@ -375,7 +326,7 @@ void Bzip2Stream::SetLength(__int64 value)
 }
 
 //---------------------------------------------------------------------------
-// Bzip2Stream::Write
+// Bzip2Writer::Write
 //
 // Writes a sequence of bytes to the current stream and advances the current position
 //
@@ -385,16 +336,16 @@ void Bzip2Stream::SetLength(__int64 value)
 //	offset		- Offset within buffer to begin copying from
 //	count		- Maximum number of bytes to read from the source buffer
 
-void Bzip2Stream::Write(array<unsigned __int8>^ buffer, int offset, int count)
+void Bzip2Writer::Write(array<unsigned __int8>^ buffer, int offset, int count)
 {
 	CHECK_DISPOSED(m_disposed);
 
 	if(Object::ReferenceEquals(buffer, nullptr)) throw gcnew ArgumentNullException("buffer");
 	if(offset < 0) throw gcnew ArgumentOutOfRangeException("offset");
-	if(count < 0) throw gcnew ArgumentOutOfRangeException("offset");
+	if(count < 0) throw gcnew ArgumentOutOfRangeException("count");
 	if((offset + count) > buffer->Length) throw gcnew ArgumentException("The sum of offset and count is larger than the buffer length");
 
-	msclr::lock lock(m_bzstream);
+	msclr::lock lock(m_lock);
 
 	// Pin both the input and output byte arrays in memory
 	pin_ptr<unsigned __int8> pinin = &buffer[0];
