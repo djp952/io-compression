@@ -66,7 +66,7 @@ public:
 
 	// ErrorCode
 	//
-	// Exposes the clang error code
+	// Exposes the gzip error code
 	property int ErrorCode
 	{
 		int get(void);

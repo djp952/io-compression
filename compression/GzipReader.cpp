@@ -72,12 +72,10 @@ GzipReader::~GzipReader()
 {
 	if(m_disposed) return;
 	
-	// Dispose of the SafeHandle instance
-	delete m_zstream;
-
 	// Optionally dispose of the base stream
 	if(!m_leaveopen) delete m_stream;
 	
+	this->!GzipReader();
 	m_disposed = true;
 }
 

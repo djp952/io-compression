@@ -70,7 +70,7 @@ GzipWriter::GzipWriter(Stream^ stream, bool leaveopen) : GzipWriter(stream, Comp
 // Arguments:
 //
 //	stream		- The stream the compressed or decompressed data is written to
-//	level		- If compressing, indicates the level of compression to use
+//	level		- Indicates the level of compression to use
 //	leaveopen	- Flag to leave the base stream open after disposal
 
 GzipWriter::GzipWriter(Stream^ stream, Compression::CompressionLevel level, bool leaveopen) : m_disposed(false), m_stream(stream), m_leaveopen(leaveopen)
@@ -129,8 +129,8 @@ GzipWriter::~GzipWriter()
 	if(result != Z_STREAM_END) throw gcnew GzipException(result);
 	
 	if(!m_leaveopen) delete m_stream;		// Optionally dispose of the base stream
-	delete m_zstream;						// Dispose of the SafeHandle instance
 	
+	this->!GzipWriter();
 	m_disposed = true;
 }
 
@@ -349,6 +349,8 @@ void GzipWriter::Write(array<unsigned __int8>^ buffer, int offset, int count)
 	if(offset < 0) throw gcnew ArgumentOutOfRangeException("offset");
 	if(count < 0) throw gcnew ArgumentOutOfRangeException("count");
 	if((offset + count) > buffer->Length) throw gcnew ArgumentException("The sum of offset and count is larger than the buffer length");
+
+	if(count == 0) return;
 
 	msclr::lock lock(m_lock);
 

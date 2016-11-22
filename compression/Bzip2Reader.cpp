@@ -71,12 +71,10 @@ Bzip2Reader::~Bzip2Reader()
 {
 	if(m_disposed) return;
 	
-	// Dispose of the SafeHandle instance
-	delete m_bzstream;
-
 	// Optionally dispose of the base stream
 	if(!m_leaveopen) delete m_stream;
 	
+	this->!Bzip2Reader();
 	m_disposed = true;
 }
 

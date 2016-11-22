@@ -70,7 +70,7 @@ Bzip2Writer::Bzip2Writer(Stream^ stream, bool leaveopen) : Bzip2Writer(stream, C
 // Arguments:
 //
 //	stream		- The stream the compressed or decompressed data is written to
-//	level		- If compressing, indicates the level of compression to use
+//	level		- Indicates the level of compression to use
 //	leaveopen	- Flag to leave the base stream open after disposal
 
 Bzip2Writer::Bzip2Writer(Stream^ stream, Compression::CompressionLevel level, bool leaveopen) : m_disposed(false), m_stream(stream), m_leaveopen(leaveopen)
@@ -123,8 +123,8 @@ Bzip2Writer::~Bzip2Writer()
 	} while (result == BZ_FINISH_OK);
 
 	if(!m_leaveopen) delete m_stream;		// Optionally dispose of the base stream
-	delete m_bzstream;						// Dispose of the SafeHandle instance
 	
+	this->!Bzip2Writer();
 	m_disposed = true;
 }
 
@@ -345,8 +345,9 @@ void Bzip2Writer::Write(array<unsigned __int8>^ buffer, int offset, int count)
 	if(count < 0) throw gcnew ArgumentOutOfRangeException("count");
 	if((offset + count) > buffer->Length) throw gcnew ArgumentException("The sum of offset and count is larger than the buffer length");
 
-	msclr::lock lock(m_lock);
+	if(count == 0) return;
 
+	msclr::lock lock(m_lock);
 	// Pin both the input and output byte arrays in memory
 	pin_ptr<unsigned __int8> pinin = &buffer[0];
 	pin_ptr<unsigned __int8> pinout = &m_buffer[0];

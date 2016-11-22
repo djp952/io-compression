@@ -89,6 +89,7 @@ namespace zuki.io.compression.test
 						none = compressed.Length;
 					}
 				}
+
 				// Compress using CompressionLevel.Fastest
 				using (MemoryStream compressed = new MemoryStream())
 				{

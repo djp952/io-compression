@@ -45,7 +45,6 @@ public:
 
 	// Instance Constructors
 	//
-	// todo: add BZIP2-specific compression options
 	Bzip2Writer(Stream^ stream);
 	Bzip2Writer(Stream^ stream, Compression::CompressionLevel level);
 	Bzip2Writer(Stream^ stream, bool leaveopen);

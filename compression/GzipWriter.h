@@ -45,7 +45,6 @@ public:
 
 	// Instance Constructors
 	//
-	// todo: add GZIP-specific compression options
 	GzipWriter(Stream^ stream);
 	GzipWriter(Stream^ stream, Compression::CompressionLevel level);
 	GzipWriter(Stream^ stream, bool leaveopen);
