@@ -20,12 +20,11 @@
 // SOFTWARE.
 //---------------------------------------------------------------------------
 
-#ifndef __LZ4LEGACYWRITER_H_
-#define __LZ4LEGACYWRITER_H_
+#ifndef __LZ4WRITER_H_
+#define __LZ4WRITER_H_
 #pragma once
 
-#include <lz4.h>
-#include <lz4hc.h>
+#include <lz4frame.h>
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -35,21 +34,21 @@ using namespace System::IO;
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// Class Lz4LegacyWriter
+// Class Lz4Writer
 //
-// LZ4 legacy format compressor compatible with "lz4 -l" input streams
+// LZ4 stream compressor
 //---------------------------------------------------------------------------
 
-public ref class Lz4LegacyWriter : public Stream
+public ref class Lz4Writer : public Stream
 {
 public:
 
 	// Instance Constructors
 	//
-	Lz4LegacyWriter(Stream^ stream);
-	Lz4LegacyWriter(Stream^ stream, Compression::CompressionLevel level);
-	Lz4LegacyWriter(Stream^ stream, bool leaveopen);
-	Lz4LegacyWriter(Stream^ stream, Compression::CompressionLevel level, bool leaveopen);
+	Lz4Writer(Stream^ stream);
+	Lz4Writer(Stream^ stream, Compression::CompressionLevel level);
+	Lz4Writer(Stream^ stream, bool leaveopen);
+	Lz4Writer(Stream^ stream, Compression::CompressionLevel level, bool leaveopen);
 
 	//-----------------------------------------------------------------------
 	// Member Functions
@@ -133,37 +132,10 @@ public:
 
 private:
 
-	// LEGACY_MAGICNUMBER
+	// Destructor / Finalizer
 	//
-	// Legacy lz4 magic number
-	static const unsigned int LEGACY_MAGICNUMBER = 0x184C2102;
-
-	// LEGACY_BLOCKSIZE
-	//
-	// Legacy lz4 block size
-	static const int LEGACY_BLOCKSIZE = (8 << 20);
-
-	// CompressFunc
-	//
-	// Function pointer to an LZ4 compressor implementation
-	using CompressFunc = int (*)(char const* src, char* dst, int srcSize, int dstSize, int cLevel);
-
-	// Destructor
-	//
-	~Lz4LegacyWriter();
-
-	//-----------------------------------------------------------------------
-	// Private Member Functions
-
-	// WriteLE32 (static)
-	//
-	// Reads a little endian 32-bit number into a stream
-	static void WriteLE32(Stream^ stream, unsigned int value);
-
-	// WriteNextBlock
-	//
-	// Writes the next block of data into the output stream
-	int WriteNextBlock(void);
+	~Lz4Writer();
+	!Lz4Writer();
 
 	//-----------------------------------------------------------------------
 	// Member Variables
@@ -171,11 +143,8 @@ private:
 	bool							m_disposed;			// Object disposal flag
 	Stream^							m_stream;			// Base Stream instance
 	bool							m_leaveopen;		// Flag to leave base stream open
-	CompressFunc					m_compressor;		// Pointer to the compression func
-	int								m_level;			// Compression level
-	bool							m_hasmagic;			// Flag if magic number was written
-	array<unsigned __int8>^			m_buffer;			// Compression data buffer
-	int								m_bufferpos;		// Position within the buffer
+	LZ4F_compressionContext_t*		m_context;			// LZ4 compression context
+	LZ4F_preferences_t*				m_prefs;			// LZ4 compression preferences
 
 	Object^	m_lock = gcnew Object();		// Synchronization object
 };
@@ -186,4 +155,4 @@ private:
 
 #pragma warning(pop)
 
-#endif	// __LZ4LEGACYWRITER_H_
+#endif	// __LZ4WRITER_H_

@@ -103,6 +103,21 @@
     <ClInclude Include="..\..\external-lz4\lib\lz4hc.h">
       <Filter>External Libraries\lz4</Filter>
     </ClInclude>
+    <ClInclude Include="Lz4Reader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lz4Writer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lz4Exception.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external-lz4\lib\lz4frame.h">
+      <Filter>External Libraries\lz4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external-lz4\lib\xxhash.h">
+      <Filter>External Libraries\lz4</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -217,6 +232,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\external-lz4\lib\lz4hc.c">
+      <Filter>External Libraries\lz4</Filter>
+    </ClCompile>
+    <ClCompile Include="Lz4Reader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Lz4Writer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Lz4Exception.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lz4\lib\lz4frame.c">
+      <Filter>External Libraries\lz4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lz4\lib\xxhash.c">
       <Filter>External Libraries\lz4</Filter>
     </ClCompile>
   </ItemGroup>

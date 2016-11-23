@@ -79,6 +79,7 @@
     <Compile Include="TestBzip2.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestGzip.cs" />
+    <Compile Include="TestLz4.cs" />
     <Compile Include="TestLz4Legacy.cs" />
     <Compile Include="TestLzma.cs" />
     <Compile Include="TestLzop.cs" />
@@ -86,8 +87,6 @@
     <Compile Include="tmp\version.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="thethreemusketeers.fast.legacy.lz4" />
-    <EmbeddedResource Include="thethreemusketeers.optimal.legacy.lz4" />
     <None Include="version.ini" />
   </ItemGroup>
   <ItemGroup>

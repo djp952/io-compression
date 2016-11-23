@@ -31,7 +31,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace zuki.io.compression.test
 {
 	[TestClass()]
-	public class TestLz4Legacy
+	public class TestLz4
 	{
 		static byte[] s_sampledata;
 
@@ -45,8 +45,8 @@ namespace zuki.io.compression.test
 			}
 		}
 
-		[TestMethod(), TestCategory("Lz4Legacy")]
-		public void Lz4Legacy_CompressDecompress()
+		[TestMethod(), TestCategory("Lz4")]
+		public void Lz4_CompressDecompress()
 		{
 			// Start with a MemoryStream created from the sample data
 			using (MemoryStream source = new MemoryStream(s_sampledata))
@@ -54,7 +54,7 @@ namespace zuki.io.compression.test
 				using (MemoryStream dest = new MemoryStream())
 				{
 					// Compress the data into the destination memory stream instance
-					using (Lz4LegacyWriter compressor = new Lz4LegacyWriter(dest, CompressionLevel.Optimal, true)) source.CopyTo(compressor);
+					using (Lz4Writer compressor = new Lz4Writer(dest, CompressionLevel.Optimal, true)) source.CopyTo(compressor);
 
 					// The compressed data should be smaller than the source data
 					Assert.IsTrue(dest.Length < source.Length);
@@ -63,7 +63,7 @@ namespace zuki.io.compression.test
 					dest.Position = 0;              // Reset the destination stream
 
 					// Decompress the data back into the source memory stream
-					using (Lz4LegacyReader decompressor = new Lz4LegacyReader(dest, true)) decompressor.CopyTo(source);
+					using (Lz4Reader decompressor = new Lz4Reader(dest, true)) decompressor.CopyTo(source);
 
 					// Ensure that the original data has been restored
 					Assert.AreEqual(source.Length, s_sampledata.Length);
@@ -72,21 +72,21 @@ namespace zuki.io.compression.test
 			}
 		}
 
-		[TestMethod(), TestCategory("Lz4Legacy")]
-		public void Lz4Legacy_CompressionLevel()
+		[TestMethod(), TestCategory("Lz4")]
+		public void Lz4_CompressionLevel()
 		{
 			using (MemoryStream source = new MemoryStream(s_sampledata))
 			{
-				long fastest, optimal;			// Size of compressed streams
+				long fastest, optimal;          // Size of compressed streams
 
 				// CompressionLevel.NoCompression is not valid
-				try { using (Lz4LegacyWriter stream = new Lz4LegacyWriter(source, CompressionLevel.NoCompression)) Assert.Fail("Method call should have thrown an exception"); }
+				try { using (Lz4Writer stream = new Lz4Writer(source, CompressionLevel.NoCompression)) Assert.Fail("Method call should have thrown an exception"); }
 				catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
 
 				// Compress using CompressionLevel.Fastest
 				using (MemoryStream compressed = new MemoryStream())
 				{
-					using (Lz4LegacyWriter compressor = new Lz4LegacyWriter(compressed, CompressionLevel.Fastest))
+					using (Lz4Writer compressor = new Lz4Writer(compressed, CompressionLevel.Fastest))
 					{
 						compressor.Write(s_sampledata, 0, s_sampledata.Length);
 						compressor.Flush();
@@ -97,7 +97,7 @@ namespace zuki.io.compression.test
 				// Compress using CompressionLevel.Optimal
 				using (MemoryStream compressed = new MemoryStream())
 				{
-					using (Lz4LegacyWriter compressor = new Lz4LegacyWriter(compressed, CompressionLevel.Optimal))
+					using (Lz4Writer compressor = new Lz4Writer(compressed, CompressionLevel.Optimal))
 					{
 						compressor.Write(s_sampledata, 0, s_sampledata.Length);
 						compressor.Flush();
@@ -112,13 +112,13 @@ namespace zuki.io.compression.test
 			}
 		}
 
-		[TestMethod(), TestCategory("Lz4Legacy")]
-		public void Lz4Legacy_Dispose()
+		[TestMethod(), TestCategory("Lz4")]
+		public void Lz4_Dispose()
 		{
 			byte[] buffer = new byte[8192];         // 8KiB data buffer
 
 			// Create a dummy stream and immediately dispose of it
-			Lz4LegacyWriter stream = new Lz4LegacyWriter(new MemoryStream(s_sampledata), CompressionLevel.Optimal);
+			Lz4Writer stream = new Lz4Writer(new MemoryStream(s_sampledata), CompressionLevel.Optimal);
 			stream.Dispose();
 
 			// All properties and methods should throw an ObjectDisposedException
@@ -160,23 +160,23 @@ namespace zuki.io.compression.test
 
 			// Ensure that an underlying stream is disposed of properly if leaveopen is not set
 			MemoryStream ms = new MemoryStream(s_sampledata);
-			using (Lz4LegacyWriter compressor = new Lz4LegacyWriter(ms, CompressionLevel.Fastest)) { }
+			using (Lz4Writer compressor = new Lz4Writer(ms, CompressionLevel.Fastest)) { }
 			try { ms.Write(buffer, 0, 8192); Assert.Fail("Method call should have thrown an exception"); }
 			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ObjectDisposedException)); }
 
 			// Ensure that an underlying stream is not disposed of if leaveopen is set
 			ms = new MemoryStream(s_sampledata);
-			using (Lz4LegacyWriter compressor = new Lz4LegacyWriter(ms, CompressionLevel.Fastest, true)) { }
+			using (Lz4Writer compressor = new Lz4Writer(ms, CompressionLevel.Fastest, true)) { }
 			ms.Write(buffer, 0, 8192);
 			ms.Dispose();
 		}
 
-		[TestMethod(), TestCategory("Lz4Legacy")]
-		public void Lz4Legacy_BaseStream()
+		[TestMethod(), TestCategory("Lz4")]
+		public void Lz4_BaseStream()
 		{
 			using (MemoryStream source = new MemoryStream())
 			{
-				using (Lz4LegacyWriter stream = new Lz4LegacyWriter(source, CompressionLevel.Optimal))
+				using (Lz4Writer stream = new Lz4Writer(source, CompressionLevel.Optimal))
 				{
 					Assert.IsNotNull(stream.BaseStream);
 					Assert.AreSame(source, stream.BaseStream);
@@ -184,79 +184,79 @@ namespace zuki.io.compression.test
 			}
 		}
 
-		[TestMethod(), TestCategory("Lz4Legacy")]
-		public void Lz4Legacy_CanRead()
+		[TestMethod(), TestCategory("Lz4")]
+		public void Lz4_CanRead()
 		{
 			// Verify behavior of a compression stream
-			using (Lz4LegacyWriter stream = new Lz4LegacyWriter(new MemoryStream()))
+			using (Lz4Writer stream = new Lz4Writer(new MemoryStream()))
 			{
 				Assert.IsFalse(stream.CanRead);
 			}
 
 			// Verify behavior of a decompression stream
-			using (Lz4LegacyReader stream = new Lz4LegacyReader(new MemoryStream(s_sampledata)))
+			using (Lz4Reader stream = new Lz4Reader(new MemoryStream(s_sampledata)))
 			{
 				Assert.IsTrue(stream.CanRead);
 			}
 		}
 
-		[TestMethod(), TestCategory("Lz4Legacy")]
-		public void Lz4Legacy_CanSeek()
+		[TestMethod(), TestCategory("Lz4")]
+		public void Lz4_CanSeek()
 		{
 			// Verify behavior of a compression stream
-			using (Lz4LegacyWriter stream = new Lz4LegacyWriter(new MemoryStream()))
+			using (Lz4Writer stream = new Lz4Writer(new MemoryStream()))
 			{
 				Assert.IsFalse(stream.CanSeek);
 			}
 
 			// Verify behavior of a decompression stream
-			using (Lz4LegacyReader stream = new Lz4LegacyReader(new MemoryStream(s_sampledata)))
+			using (Lz4Reader stream = new Lz4Reader(new MemoryStream(s_sampledata)))
 			{
 				Assert.IsFalse(stream.CanSeek);
 			}
 		}
 
-		[TestMethod(), TestCategory("Lz4Legacy")]
-		public void Lz4Legacy_CanWrite()
+		[TestMethod(), TestCategory("Lz4")]
+		public void Lz4_CanWrite()
 		{
 			// Verify behavior of a compression stream
-			using (Lz4LegacyWriter stream = new Lz4LegacyWriter(new MemoryStream()))
+			using (Lz4Writer stream = new Lz4Writer(new MemoryStream()))
 			{
 				Assert.IsTrue(stream.CanWrite);
 			}
 
 			// Verify behavior of a decompression stream
-			using (Lz4LegacyReader stream = new Lz4LegacyReader(new MemoryStream(s_sampledata)))
+			using (Lz4Reader stream = new Lz4Reader(new MemoryStream(s_sampledata)))
 			{
 				Assert.IsFalse(stream.CanWrite);
 			}
 		}
 
-		[TestMethod(), TestCategory("Lz4Legacy")]
-		public void Lz4Legacy_Length()
+		[TestMethod(), TestCategory("Lz4")]
+		public void Lz4_Length()
 		{
 			// Verify behavior of a compression stream
-			using (Lz4LegacyWriter stream = new Lz4LegacyWriter(new MemoryStream()))
+			using (Lz4Writer stream = new Lz4Writer(new MemoryStream()))
 			{
 				try { var l = stream.Length; Assert.Fail("Method call should have thrown an exception"); }
 				catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(NotSupportedException)); }
 			}
 
 			// Verify behavior of a decompression stream
-			using (Lz4LegacyReader stream = new Lz4LegacyReader(new MemoryStream(s_sampledata)))
+			using (Lz4Reader stream = new Lz4Reader(new MemoryStream(s_sampledata)))
 			{
 				try { var l = stream.Length; Assert.Fail("Method call should have thrown an exception"); }
 				catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(NotSupportedException)); }
 			}
 		}
 
-		[TestMethod(), TestCategory("Lz4Legacy")]
-		public void Lz4Legacy_Flush()
+		[TestMethod(), TestCategory("Lz4")]
+		public void Lz4_Flush()
 		{
 			// Verify behavior of flushing a compression stream
 			using (MemoryStream compressed = new MemoryStream())
 			{
-				using (Lz4LegacyWriter stream = new Lz4LegacyWriter(compressed, true))
+				using (Lz4Writer stream = new Lz4Writer(compressed, true))
 				{
 					stream.Write(s_sampledata, 0, s_sampledata.Length);
 
@@ -278,15 +278,15 @@ namespace zuki.io.compression.test
 			}
 
 			// Verify behavior of flushing a decompression stream
-			using (Lz4LegacyReader stream = new Lz4LegacyReader(new MemoryStream(s_sampledata)))
+			using (Lz4Reader stream = new Lz4Reader(new MemoryStream(s_sampledata)))
 			{
 				// Flush has no effect on decompression streams, just ensure it doesn't throw
 				stream.Flush();
 			}
 		}
 
-		[TestMethod(), TestCategory("Lz4Legacy")]
-		public void Lz4Legacy_Position()
+		[TestMethod(), TestCategory("Lz4")]
+		public void Lz4_Position()
 		{
 			// Start with a MemoryStream created from the sample data
 			using (MemoryStream source = new MemoryStream(s_sampledata))
@@ -294,9 +294,9 @@ namespace zuki.io.compression.test
 				using (MemoryStream dest = new MemoryStream())
 				{
 					// Test a compression stream
-					using (Lz4LegacyWriter compressor = new Lz4LegacyWriter(dest, CompressionLevel.Optimal, true))
+					using (Lz4Writer compressor = new Lz4Writer(dest, CompressionLevel.Optimal, true))
 					{
-						// Lz4Legacy streams do not report position
+						// Lz4 streams do not report position
 						try { var pos = compressor.Position; Assert.Fail("Property should have thrown an exception"); }
 						catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(NotSupportedException)); }
 
@@ -309,9 +309,9 @@ namespace zuki.io.compression.test
 					dest.Position = 0;              // Reset the destination stream
 
 					// Test a decompression stream
-					using (Lz4LegacyReader decompressor = new Lz4LegacyReader(dest, true))
+					using (Lz4Reader decompressor = new Lz4Reader(dest, true))
 					{
-						// Lz4Legacy streams do not report position
+						// Lz4 streams do not report position
 						try { var pos = decompressor.Position; Assert.Fail("Property should have thrown an exception"); }
 						catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(NotSupportedException)); }
 
@@ -323,22 +323,25 @@ namespace zuki.io.compression.test
 			}
 		}
 
-		[TestMethod(), TestCategory("Lz4Legacy")]
-		public void Lz4Legacy_Read()
+		[TestMethod(), TestCategory("Lz4")]
+		public void Lz4_Read()
 		{
 			byte[] buffer = new byte[8192];         // 8KiB data buffer
 
 			using (MemoryStream compressed = new MemoryStream())
 			{
 				// Start with a compressed MemoryStream created from the sample data
-				using (Lz4LegacyWriter compressor = new Lz4LegacyWriter(compressed, CompressionLevel.Optimal, true))
+				using (Lz4Writer compressor = new Lz4Writer(compressed, CompressionLevel.Optimal, true))
 				{
 					compressor.Write(s_sampledata, 0, s_sampledata.Length);
 					compressor.Flush();
 				}
 
+				compressed.Position = 0;
+				using (Stream file = File.Create("D:\\test.lz4")) { compressed.CopyTo(file); file.Flush(); }
+
 				// Create a decompressor to test some of the error cases
-				using (Lz4LegacyReader decompressor = new Lz4LegacyReader(compressed, true))
+				using (Lz4Reader decompressor = new Lz4Reader(compressed, true))
 				{
 					// Send in some bum arguments to Read() to check they are caught
 					try { decompressor.Read(null, 0, 0); Assert.Fail("Method call should have thrown an exception"); }
@@ -357,26 +360,26 @@ namespace zuki.io.compression.test
 					try { decompressor.Read(buffer, 0, 8192); Assert.Fail("Method call should have thrown an exception"); }
 					catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(InvalidDataException)); }
 
-					// Attempting to read from the middle of the compressed stream should throw an InvalidDataException
+					// Attempting to read from the middle of the compressed stream should throw an Lz4Exception
 					compressed.Position = compressed.Position / 2;
 					try { decompressor.Read(buffer, 0, 8192); Assert.Fail("Method call should have thrown an exception"); }
-					catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(InvalidDataException)); }
+					catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(Lz4Exception)); }
 				}
 
 				// Create a new decompressor against the same stream and make sure it doesn't throw
 				compressed.Position = 0;
-				using (Lz4LegacyReader decompressor = new Lz4LegacyReader(compressed, true))
+				using (Lz4Reader decompressor = new Lz4Reader(compressed, true))
 				{
 					while (decompressor.Read(buffer, 0, 8192) != 0) { }
 				}
 			}
 		}
 
-		[TestMethod(), TestCategory("Lz4Legacy")]
-		public void Lz4Legacy_Seek()
+		[TestMethod(), TestCategory("Lz4")]
+		public void Lz4_Seek()
 		{
 			// Verify behavior of a compression stream
-			using (Lz4LegacyWriter stream = new Lz4LegacyWriter(new MemoryStream()))
+			using (Lz4Writer stream = new Lz4Writer(new MemoryStream()))
 			{
 				try { stream.Seek(50, SeekOrigin.Begin); Assert.Fail("Method call should have thrown an exception"); }
 				catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(NotSupportedException)); }
@@ -389,7 +392,7 @@ namespace zuki.io.compression.test
 			}
 
 			// Verify behavior of a decompression stream
-			using (Lz4LegacyReader stream = new Lz4LegacyReader(new MemoryStream(s_sampledata)))
+			using (Lz4Reader stream = new Lz4Reader(new MemoryStream(s_sampledata)))
 			{
 				try { stream.Seek(50, SeekOrigin.Begin); Assert.Fail("Method call should have thrown an exception"); }
 				catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(NotSupportedException)); }
@@ -402,33 +405,33 @@ namespace zuki.io.compression.test
 			}
 		}
 
-		[TestMethod(), TestCategory("Lz4Legacy")]
-		public void Lz4Legacy_SetLength()
+		[TestMethod(), TestCategory("Lz4")]
+		public void Lz4_SetLength()
 		{
 			// Verify behavior of a compression stream
-			using (Lz4LegacyWriter stream = new Lz4LegacyWriter(new MemoryStream()))
+			using (Lz4Writer stream = new Lz4Writer(new MemoryStream()))
 			{
 				try { stream.SetLength(12345L); Assert.Fail("Method call should have thrown an exception"); }
 				catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(NotSupportedException)); }
 			}
 
 			// Verify behavior of a decompression stream
-			using (Lz4LegacyReader stream = new Lz4LegacyReader(new MemoryStream(s_sampledata)))
+			using (Lz4Reader stream = new Lz4Reader(new MemoryStream(s_sampledata)))
 			{
 				try { stream.SetLength(12345L); Assert.Fail("Method call should have thrown an exception"); }
 				catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(NotSupportedException)); }
 			}
 		}
 
-		[TestMethod(), TestCategory("Lz4Legacy")]
-		public void Lz4Legacy_Write()
+		[TestMethod(), TestCategory("Lz4")]
+		public void Lz4_Write()
 		{
 			byte[] buffer = new byte[8192];         // 8KiB data buffer
 
 			// Compress the sample data using a call to Write directly
 			using (MemoryStream compressed = new MemoryStream())
 			{
-				using (Lz4LegacyWriter compressor = new Lz4LegacyWriter(compressed, CompressionLevel.Optimal, true))
+				using (Lz4Writer compressor = new Lz4Writer(compressed, CompressionLevel.Optimal, true))
 				{
 					// Send in some bum arguments to Write() to check they are caught
 					try { compressor.Write(null, 0, 0); Assert.Fail("Method call should have thrown an exception"); }
