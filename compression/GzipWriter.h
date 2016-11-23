@@ -136,7 +136,7 @@ private:
 	// BUFFER_SIZE
 	//
 	// Size of the local input/output buffer, in bytes
-	static const int BUFFER_SIZE = 8192;
+	static const int BUFFER_SIZE = 65536;
 
 	// Destructor / Finalizer
 	//
