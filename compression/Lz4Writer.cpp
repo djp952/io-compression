@@ -25,6 +25,10 @@
 
 #include "Lz4Exception.h"
 
+// LZ4F_cctx_s is an incomplete type; causes LNK4248
+//
+struct LZ4F_cctx_s {};
+
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
 namespace zuki::io::compression {
