@@ -159,9 +159,9 @@ private:
 	Stream^							m_stream;			// Base Stream instance
 	bool							m_leaveopen;		// Flag to leave base stream open
 	bool							m_hasmagic;			// Flag if magic number was present
-	array<unsigned __int8>^			m_buffer;			// Output (decompressed) data buffer
-	int								m_bufferpos;		// Position within the buffer
-	int								m_bufferavail;		// Available data in the buffer
+	array<unsigned __int8>^			m_out;				// Output data buffer
+	int								m_outpos;			// Position within the buffer
+	int								m_outavail;			// Available data in the buffer
 
 	Object^	m_lock = gcnew Object();		// Synchronization object
 };

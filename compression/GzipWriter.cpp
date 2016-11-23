@@ -81,9 +81,6 @@ GzipWriter::GzipWriter(Stream^ stream, Compression::CompressionLevel level, bool
 	try { m_zstream = new z_stream; memset(m_zstream, 0, sizeof(z_stream)); }
 	catch(Exception^) { throw gcnew OutOfMemoryException(); }
 
-	// Allocate the managed input/output buffer for this instance
-	m_buffer = gcnew array<unsigned __int8>(BUFFER_SIZE);
-
 	// Choose a zlib compression level
 	int compresslevel = Z_DEFAULT_COMPRESSION;
 	if(level == Compression::CompressionLevel::NoCompression) compresslevel = 0;
@@ -106,8 +103,9 @@ GzipWriter::~GzipWriter()
 
 	msclr::lock lock(m_lock);
 
-	// Pin the output buffer into memory
-	pin_ptr<unsigned __int8> pinout = &m_buffer[0];
+	// Create and pin a local compression buffer
+	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(BUFFER_SIZE);
+	pin_ptr<unsigned __int8> pinout = &out[0];
 
 	// Input is not consumed when finishing the zlib stream
 	m_zstream->next_in = nullptr;
@@ -121,13 +119,14 @@ GzipWriter::~GzipWriter()
 
 		// Finish the next block of data in the zlib buffers and write it
 		result = deflate(m_zstream, Z_FINISH);
-		m_stream->Write(m_buffer, 0, BUFFER_SIZE - m_zstream->avail_out);
+		m_stream->Write(out, 0, BUFFER_SIZE - m_zstream->avail_out);
 
 	} while (result == Z_OK);
 
 	// The end result of FINISH should be Z_STREAM_END
 	if(result != Z_STREAM_END) throw gcnew GzipException(result);
 	
+	delete out;								// Dispose of the compression buffer
 	if(!m_leaveopen) delete m_stream;		// Optionally dispose of the base stream
 	
 	this->!GzipWriter();
@@ -212,8 +211,9 @@ void GzipWriter::Flush(void)
 
 	msclr::lock lock(m_lock);
 
-	// Pin the output buffer into memory
-	pin_ptr<unsigned __int8> pinout = &m_buffer[0];
+	// Create and pin a local compression buffer
+	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(BUFFER_SIZE);
+	pin_ptr<unsigned __int8> pinout = &out[0];
 
 	// Input is not consumed when flushing the zlib stream
 	m_zstream->next_in = nullptr;
@@ -227,13 +227,14 @@ void GzipWriter::Flush(void)
 
 		// Flush the next block of data in the zlib buffers and write it
 		result = deflate(m_zstream, Z_SYNC_FLUSH);
-		m_stream->Write(m_buffer, 0, BUFFER_SIZE - m_zstream->avail_out);
+		m_stream->Write(out, 0, BUFFER_SIZE - m_zstream->avail_out);
 	
 	} while(result == Z_OK);
 
 	// The end state of a zlib flush operation will be Z_BUF_ERROR
 	if(result != Z_BUF_ERROR) throw gcnew GzipException(result);
 
+	delete out;						// Dispose of the compression buffer
 	m_stream->Flush();				// Flush the underlying base stream
 }
 
@@ -354,9 +355,12 @@ void GzipWriter::Write(array<unsigned __int8>^ buffer, int offset, int count)
 
 	msclr::lock lock(m_lock);
 
+	// Create a temporary local buffer to hold the compressed data
+	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(BUFFER_SIZE);
+		
 	// Pin both the input and output byte arrays in memory
 	pin_ptr<unsigned __int8> pinin = &buffer[0];
-	pin_ptr<unsigned __int8> pinout = &m_buffer[0];
+	pin_ptr<unsigned __int8> pinout = &out[0];
 
 	// Set up the input buffer pointer and available length
 	m_zstream->next_in = reinterpret_cast<Bytef*>(&pinin[offset]);
@@ -366,7 +370,7 @@ void GzipWriter::Write(array<unsigned __int8>^ buffer, int offset, int count)
 	while(m_zstream->avail_in > 0) {
 
 		// Reset the output buffer pointer and length
-		m_zstream->next_out = reinterpret_cast<Bytef*>(&pinout[0]);
+		m_zstream->next_out = reinterpret_cast<Bytef*>(pinout);
 		m_zstream->avail_out = BUFFER_SIZE;
 
 		// Compress the next block of input data into the output buffer
@@ -374,7 +378,7 @@ void GzipWriter::Write(array<unsigned __int8>^ buffer, int offset, int count)
 		if(result != Z_OK) throw gcnew GzipException(result);
 
 		// Write the compressed data into the underlying base stream
-		m_stream->Write(m_buffer, 0, BUFFER_SIZE - m_zstream->avail_out);
+		m_stream->Write(out, 0, BUFFER_SIZE - m_zstream->avail_out);
 	};
 }
 

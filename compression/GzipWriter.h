@@ -149,7 +149,6 @@ private:
 	bool							m_disposed;		// Object disposal flag
 	Stream^							m_stream;		// Base Stream instance
 	bool							m_leaveopen;	// Flag to leave base stream open
-	array<unsigned __int8>^			m_buffer;		// GZIP stream buffer
 	z_stream*						m_zstream;		// GZIP stream safe handle
 
 	Object^	m_lock = gcnew Object();		// Synchronization object

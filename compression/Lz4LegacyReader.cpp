@@ -46,10 +46,13 @@ Lz4LegacyReader::Lz4LegacyReader(Stream^ stream) : Lz4LegacyReader(stream, false
 //	stream		- The stream the compressed data is read from
 //	leaveopen	- Flag to leave the base stream open after disposal
 
-Lz4LegacyReader::Lz4LegacyReader(Stream^ stream, bool leaveopen) : m_disposed(false), m_stream(stream), m_leaveopen(leaveopen),
-	m_hasmagic(false), m_buffer(gcnew array<unsigned __int8>(LEGACY_BLOCKSIZE)), m_bufferavail(0), m_bufferpos(0)
+Lz4LegacyReader::Lz4LegacyReader(Stream^ stream, bool leaveopen) : m_disposed(false), m_stream(stream), m_leaveopen(leaveopen), 
+	m_hasmagic(false), m_outavail(0), m_outpos(0)
 {
 	if(Object::ReferenceEquals(stream, nullptr)) throw gcnew ArgumentNullException("stream");
+
+	// Allocate the managed output buffer for this instance
+	m_out = gcnew array<unsigned __int8>(LEGACY_BLOCKSIZE);
 }
 
 //---------------------------------------------------------------------------
@@ -59,8 +62,8 @@ Lz4LegacyReader::~Lz4LegacyReader()
 {
 	if(m_disposed) return;
 
-	// Destroy the managed decompressed data buffer
-	delete m_buffer;
+	// Destroy the managed output data buffer
+	delete m_out;
 
 	// Optionally dispose of the input stream instance
 	if(!m_leaveopen) delete m_stream;
@@ -199,8 +202,8 @@ int Lz4LegacyReader::Read(array<unsigned __int8>^ buffer, int offset, int count)
 
 	do {
 
-		// If there is no more decompressed data available, go get some
-		if(m_bufferavail == 0) {
+		// If there is no more output data available, decompress some more
+		if(m_outavail == 0) {
 
 			// Get the length of the next block of data to be decompressed; if there
 			// is insufficient data left in the stream, decompression is finished
@@ -213,22 +216,22 @@ int Lz4LegacyReader::Read(array<unsigned __int8>^ buffer, int offset, int count)
 
 			// Pin both the input and output buffers so the LZ4 API can access them
 			pin_ptr<unsigned __int8> pinin = &in[0];
-			pin_ptr<unsigned __int8> pinout = &m_buffer[0];
+			pin_ptr<unsigned __int8> pinout = &m_out[0];
 
 			// Decompress the next block of data into the output buffer
-			m_bufferavail = LZ4_decompress_safe(reinterpret_cast<char const*>(pinin), reinterpret_cast<char*>(pinout), nextblock, m_buffer->Length);
-			if(m_bufferavail <= 0) throw gcnew InvalidDataException();
+			m_outavail = LZ4_decompress_safe(reinterpret_cast<char const*>(pinin), reinterpret_cast<char*>(pinout), nextblock, m_out->Length);
+			if(m_outavail <= 0) throw gcnew InvalidDataException();
 
-			m_bufferpos = 0;				// Reset the stored buffer offset
+			m_outpos = 0;					// Reset the stored buffer offset
 			delete in;						// Dispose of the input buffer
 		}
 
 		// Copy data from the decompression buffer into the output buffer
-		int next = Math::Min(m_bufferavail, count);
-		Array::Copy(m_buffer, m_bufferpos, buffer, offset, next);
+		int next = Math::Min(m_outavail, count);
+		Array::Copy(m_out, m_outpos, buffer, offset, next);
 
-		m_bufferpos += next;				// Move offset into the decompression buffer
-		m_bufferavail -= next;				// Reduce length of the decompression buffer
+		m_outpos += next;					// Move offset into the decompression buffer
+		m_outavail -= next;					// Reduce length of the decompression buffer
 		out += next;						// Increment the amount of data written to the caller
 		count -= next;						// Decrement the amount of data still to read
 	

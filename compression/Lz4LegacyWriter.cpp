@@ -84,7 +84,7 @@ Lz4LegacyWriter::Lz4LegacyWriter(Stream^ stream, bool leaveopen) : Lz4LegacyWrit
 //	leaveopen	- Flag to leave the base stream open after disposal
 
 Lz4LegacyWriter::Lz4LegacyWriter(Stream^ stream, Compression::CompressionLevel level, bool leaveopen) : m_disposed(false), 
-	m_stream(stream), m_leaveopen(leaveopen), m_hasmagic(false), m_buffer(gcnew array<unsigned __int8>(LEGACY_BLOCKSIZE)), m_bufferpos(0)
+	m_stream(stream), m_leaveopen(leaveopen), m_hasmagic(false), m_inpos(0)
 {
 	if(Object::ReferenceEquals(stream, nullptr)) throw gcnew ArgumentNullException("stream");
 
@@ -95,6 +95,9 @@ Lz4LegacyWriter::Lz4LegacyWriter(Stream^ stream, Compression::CompressionLevel l
 
 	// Select a compression function based on the requested compression level
 	m_compressor = (m_level < 3) ? LZ4IO_LZ4_compress : LZ4_compress_HC;
+
+	// Create the managed input data buffer
+	m_in = gcnew array<unsigned __int8>(LEGACY_BLOCKSIZE);
 }
 
 //---------------------------------------------------------------------------
@@ -105,10 +108,10 @@ Lz4LegacyWriter::~Lz4LegacyWriter()
 	if(m_disposed) return;
 
 	// On disposal, finish compressing any partial block still in the buffer
-	if(m_bufferpos > 0) WriteNextBlock();
+	if(m_inpos > 0) WriteNextBlock();
 
-	// Destroy the managed decompressed data buffer
-	delete m_buffer;
+	// Destroy the managed input data buffer
+	delete m_in;
 
 	// Optionally dispose of the input stream instance
 	if(!m_leaveopen) delete m_stream;
@@ -175,7 +178,7 @@ void Lz4LegacyWriter::Flush(void)
 
 	msclr::lock lock(m_lock);
 
-	if(m_bufferpos > 0) WriteNextBlock();	// Flush buffered data
+	if(m_inpos > 0) WriteNextBlock();		// Flush buffered data
 	m_stream->Flush();						// Flush underlying stream
 }
 
@@ -301,14 +304,14 @@ void Lz4LegacyWriter::Write(array<unsigned __int8>^ buffer, int offset, int coun
 	while(count > 0) {
 
 		// Copy the next chunk of input data into the buffer
-		int next = Math::Min(m_buffer->Length - m_bufferpos, count);
-		Array::Copy(buffer, offset, m_buffer, m_bufferpos, next);
+		int next = Math::Min(m_in->Length - m_inpos, count);
+		Array::Copy(buffer, offset, m_in, m_inpos, next);
 
-		m_bufferpos += next;			// Increment length of buffer
+		m_inpos += next;				// Increment length of buffer
 		count -= next;					// Decrement bytes remaining
 
 		// If the input buffer has been filled, write the next block to output
-		if(m_bufferpos == m_buffer->Length) WriteNextBlock();
+		if(m_inpos == m_in->Length) WriteNextBlock();
 	}
 }
 
@@ -347,23 +350,23 @@ int Lz4LegacyWriter::WriteNextBlock(void)
 	msclr::lock lock(m_lock);
 
 	// If there is nothing in the buffer, there is no work to do
-	if(m_bufferpos == 0) return 0;
+	if(m_inpos == 0) return 0;
 
 	// Generate a temporary buffer large enough for LZ4 to compress into
-	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(LZ4_compressBound(m_bufferpos));
+	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(LZ4_compressBound(m_inpos));
 
 	// Pin both the input and output buffers in memory
-	pin_ptr<unsigned __int8> pinin = &m_buffer[0];
+	pin_ptr<unsigned __int8> pinin = &m_in[0];
 	pin_ptr<unsigned __int8> pinout = &out[0];
 
 	// Compress the data using the specified compressor and level
-	int outlen = m_compressor(reinterpret_cast<char const*>(pinin), reinterpret_cast<char*>(pinout), m_bufferpos, out->Length, m_level);
+	int outlen = m_compressor(reinterpret_cast<char const*>(pinin), reinterpret_cast<char*>(pinout), m_inpos, out->Length, m_level);
 
 	WriteLE32(m_stream, outlen);			// Write the length prefix
 	m_stream->Write(out, 0, outlen);		// Write the compressed data
 
 	delete out;								// Get rid of the temporary buffer
-	m_bufferpos = 0;						// Reset buffer position to zero
+	m_inpos = 0;							// Reset buffer position to zero
 
 	return outlen + 4;						// Include the LE32 length prefix
 }

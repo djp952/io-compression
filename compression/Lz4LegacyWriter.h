@@ -174,8 +174,8 @@ private:
 	CompressFunc					m_compressor;		// Pointer to the compression func
 	int								m_level;			// Compression level
 	bool							m_hasmagic;			// Flag if magic number was written
-	array<unsigned __int8>^			m_buffer;			// Compression data buffer
-	int								m_bufferpos;		// Position within the buffer
+	array<unsigned __int8>^			m_in;				// Input data buffer
+	int								m_inpos;			// Position within the buffer
 
 	Object^	m_lock = gcnew Object();		// Synchronization object
 };

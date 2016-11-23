@@ -84,9 +84,6 @@ Bzip2Writer::Bzip2Writer(Stream^ stream, Compression::CompressionLevel level, bo
 	try { m_bzstream = new bz_stream; memset(m_bzstream, 0, sizeof(bz_stream)); }
 	catch(Exception^) { throw gcnew OutOfMemoryException(); }
 
-	// Allocate the managed input/output buffer for this instance
-	m_buffer = gcnew array<unsigned __int8>(BUFFER_SIZE);
-
 	// Initialize the bz_stream for compression
 	int result = BZ2_bzCompressInit(m_bzstream, (level == Compression::CompressionLevel::Optimal) ? 9 : 1, 0, 0);
 	if(result != BZ_OK) throw gcnew Bzip2Exception(result);
@@ -103,8 +100,9 @@ Bzip2Writer::~Bzip2Writer()
 
 	msclr::lock lock(m_lock);
 
-	// Pin the output buffer into memory
-	pin_ptr<unsigned __int8> pinout = &m_buffer[0];
+	// Create and pin a local compression buffer
+	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(BUFFER_SIZE);
+	pin_ptr<unsigned __int8> pinout = &out[0];
 
 	// Input is not consumed when finishing the bzip stream
 	m_bzstream->next_in = nullptr;
@@ -118,10 +116,11 @@ Bzip2Writer::~Bzip2Writer()
 
 		// Finish the next block of data in the bzip buffers and write it
 		result = BZ2_bzCompress(m_bzstream, BZ_FINISH);
-		m_stream->Write(m_buffer, 0, BUFFER_SIZE - m_bzstream->avail_out);
+		m_stream->Write(out, 0, BUFFER_SIZE - m_bzstream->avail_out);
 
 	} while (result == BZ_FINISH_OK);
 
+	delete out;								// Dispose of the local buffer
 	if(!m_leaveopen) delete m_stream;		// Optionally dispose of the base stream
 	
 	this->!Bzip2Writer();
@@ -206,8 +205,9 @@ void Bzip2Writer::Flush(void)
 
 	msclr::lock lock(m_lock);
 
-	// Pin the output buffer into memory
-	pin_ptr<unsigned __int8> pinout = &m_buffer[0];
+	// Create and pin a local compression buffer
+	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(BUFFER_SIZE);
+	pin_ptr<unsigned __int8> pinout = &out[0];
 
 	// Input is not consumed when flushing the bzip stream
 	m_bzstream->next_in = nullptr;
@@ -221,13 +221,14 @@ void Bzip2Writer::Flush(void)
 
 		// Flush the next block of data in the bzip buffers and write it
 		result = BZ2_bzCompress(m_bzstream, BZ_FLUSH);
-		m_stream->Write(m_buffer, 0, BUFFER_SIZE - m_bzstream->avail_out);
+		m_stream->Write(out, 0, BUFFER_SIZE - m_bzstream->avail_out);
 	
 	} while(result == BZ_FLUSH_OK);
 
 	// The end state of a flush operation should be BZ_RUN_OK
 	if(result != BZ_RUN_OK) throw gcnew Bzip2Exception(result);
 
+	delete out;						// Dispose of the compression buffer
 	m_stream->Flush();				// Flush the underlying base stream
 }
 
@@ -348,9 +349,13 @@ void Bzip2Writer::Write(array<unsigned __int8>^ buffer, int offset, int count)
 	if(count == 0) return;
 
 	msclr::lock lock(m_lock);
+
+	// Create a temporary local buffer to hold the compressed data
+	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(BUFFER_SIZE);
+		
 	// Pin both the input and output byte arrays in memory
 	pin_ptr<unsigned __int8> pinin = &buffer[0];
-	pin_ptr<unsigned __int8> pinout = &m_buffer[0];
+	pin_ptr<unsigned __int8> pinout = &out[0];
 
 	// Set up the input buffer pointer and available length
 	m_bzstream->next_in = reinterpret_cast<char*>(&pinin[offset]);
@@ -360,7 +365,7 @@ void Bzip2Writer::Write(array<unsigned __int8>^ buffer, int offset, int count)
 	while(m_bzstream->avail_in > 0) {
 
 		// Reset the output buffer pointer and length
-		m_bzstream->next_out = reinterpret_cast<char*>(&pinout[0]);
+		m_bzstream->next_out = reinterpret_cast<char*>(pinout);
 		m_bzstream->avail_out = BUFFER_SIZE;
 
 		// Compress the next block of input data into the output buffer
@@ -368,8 +373,10 @@ void Bzip2Writer::Write(array<unsigned __int8>^ buffer, int offset, int count)
 		if(result != BZ_RUN_OK) throw gcnew Bzip2Exception(result);
 
 		// Write the compressed data into the underlying base stream
-		m_stream->Write(m_buffer, 0, BUFFER_SIZE - m_bzstream->avail_out);
+		m_stream->Write(out, 0, BUFFER_SIZE - m_bzstream->avail_out);
 	};
+
+	delete out;
 }
 
 //---------------------------------------------------------------------------

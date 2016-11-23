@@ -48,7 +48,7 @@ Bzip2Reader::Bzip2Reader(Stream^ stream) : Bzip2Reader(stream, false)
 //	stream		- The stream the compressed or decompressed data is written to
 //	leaveopen	- Flag to leave the base stream open after disposal
 
-Bzip2Reader::Bzip2Reader(Stream^ stream, bool leaveopen) : m_disposed(false), m_stream(stream), m_leaveopen(leaveopen), m_bufferpos(0), m_finished(false)
+Bzip2Reader::Bzip2Reader(Stream^ stream, bool leaveopen) : m_disposed(false), m_stream(stream), m_leaveopen(leaveopen), m_inpos(0), m_finished(false)
 {
 	if(Object::ReferenceEquals(stream, nullptr)) throw gcnew ArgumentNullException("stream");
 
@@ -56,8 +56,8 @@ Bzip2Reader::Bzip2Reader(Stream^ stream, bool leaveopen) : m_disposed(false), m_
 	try { m_bzstream = new bz_stream; memset(m_bzstream, 0, sizeof(bz_stream)); }
 	catch(Exception^) { throw gcnew OutOfMemoryException(); }
 
-	// Allocate the managed input/output buffer for this instance
-	m_buffer = gcnew array<unsigned __int8>(BUFFER_SIZE);
+	// Allocate the managed input buffer for this instance
+	m_in = gcnew array<unsigned __int8>(BUFFER_SIZE);
 
 	// Initialize the bz_stream for decompression
 	int result = BZ2_bzDecompressInit(m_bzstream, 0, 0);
@@ -217,7 +217,7 @@ int Bzip2Reader::Read(array<unsigned __int8>^ buffer, int offset, int count)
 	if((count == 0) || (m_finished)) return 0;
 
 	// Pin both the input and output byte arrays in memory
-	pin_ptr<unsigned __int8> pinin = &m_buffer[0];
+	pin_ptr<unsigned __int8> pinin = &m_in[0];
 	pin_ptr<unsigned __int8> pinout = &buffer[0];
 
 	// Set up the output buffer pointer and available length
@@ -229,19 +229,19 @@ int Bzip2Reader::Read(array<unsigned __int8>^ buffer, int offset, int count)
 		// If the input buffer was flushed from a previous iteration, refill it
 		if(m_bzstream->avail_in == 0) {
 
-			m_bzstream->avail_in = m_stream->Read(m_buffer, 0, BUFFER_SIZE);
+			m_bzstream->avail_in = m_stream->Read(m_in, 0, BUFFER_SIZE);
 			if((m_bzstream->avail_in == 0) || (m_bzstream->avail_in > BUFFER_SIZE)) throw gcnew InvalidDataException();
 
-			m_bufferpos = 0;			// Reset stored offset to zero
+			m_inpos = 0;				// Reset stored offset to zero
 		}
 
 		// Reset the input pointer based on the current position into the buffer, the address
 		// of the buffer itself may have changed between calls to Read() due to pinning
-		m_bzstream->next_in = reinterpret_cast<char*>(&pinin[m_bufferpos]);
+		m_bzstream->next_in = reinterpret_cast<char*>(&pinin[m_inpos]);
 
 		// Attempt to decompress the next block of data and adjust the buffer offset
 		int result = BZ2_bzDecompress(m_bzstream);
-		m_bufferpos = (uintptr_t(m_bzstream->next_in) - uintptr_t(pinin));
+		m_inpos = (uintptr_t(m_bzstream->next_in) - uintptr_t(pinin));
 
 		// BZ_STREAM_END indicates that there is no more data to decompress, but bzip
 		// will not return it more than once -- set a flag to prevent more attempts
