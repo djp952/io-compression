@@ -20,9 +20,11 @@
 // SOFTWARE.
 //---------------------------------------------------------------------------
 
-#ifndef __LZMASTREAM_H_
-#define __LZMASTREAM_H_
+#ifndef __LZMAREADER_H_
+#define __LZMAREADER_H_
 #pragma once
+
+#include <LzmaDec.h>
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -32,21 +34,19 @@ using namespace System::IO;
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// Class LzmaStream
+// Class LzmaReader
 //
-// LZMA-based compression/decompression stream implementation
+// LZMA-based decompression stream implementation
 //---------------------------------------------------------------------------
 
-public ref class LzmaStream : public Stream
+public ref class LzmaReader : public Stream
 {
 public:
 
 	// Instance Constructors
 	//
-	LzmaStream(Stream^ stream, Compression::CompressionLevel level);
-	LzmaStream(Stream^ stream, Compression::CompressionLevel level, bool leaveopen);
-	LzmaStream(Stream^ stream, Compression::CompressionMode mode);
-	LzmaStream(Stream^ stream, Compression::CompressionMode mode, bool leaveopen);
+	LzmaReader(Stream^ stream);
+	LzmaReader(Stream^ stream, bool leaveopen);
 
 	//-----------------------------------------------------------------------
 	// Member Functions
@@ -78,6 +78,14 @@ public:
 
 	//-----------------------------------------------------------------------
 	// Properties
+
+	// BaseStream
+	//
+	// Exposes the underlying base stream instance
+	property Stream^ BaseStream
+	{
+		Stream^ get(void);
+	}
 
 	// CanRead (Stream)
 	//
@@ -122,14 +130,30 @@ public:
 
 private:
 
-	// Destructor
+	// BUFFER_SIZE
 	//
-	~LzmaStream();
+	// Size of the local input buffer, in bytes
+	static const int BUFFER_SIZE = 65536;
+
+	// Destructor / Finalzier
+	//
+	~LzmaReader();
+	!LzmaReader();
 
 	//-----------------------------------------------------------------------
 	// Member Variables
 
-	bool					m_disposed;				// Object disposal flag
+	bool							m_disposed;			// Object disposal flag
+	Stream^							m_stream;			// Base Stream instance
+	bool							m_finished;			// Flag if operation is finished
+	bool							m_leaveopen;		// Flag to leave base stream open
+	CLzmaDec*						m_state;			// LZMA state structure
+	bool							m_init;				// Flag if decoder is initialized
+	array<unsigned __int8>^			m_in;				// LZMA input stream buffer
+	size_t							m_inpos;			// Current position in the buffer
+	size_t							m_inavail;			// Available data in the buffer
+
+	Object^	m_lock = gcnew Object();		// Synchronization object
 };
 
 //---------------------------------------------------------------------------
@@ -138,4 +162,4 @@ private:
 
 #pragma warning(pop)
 
-#endif	// __LZMASTREAM_H_
+#endif	// __LZMAREADER_H_

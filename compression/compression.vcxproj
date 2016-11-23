@@ -200,7 +200,7 @@
     <ClInclude Include="Lz4LegacyWriter.h" />
     <ClInclude Include="Lz4Reader.h" />
     <ClInclude Include="Lz4Writer.h" />
-    <ClInclude Include="LzmaStream.h" />
+    <ClInclude Include="LzmaReader.h" />
     <ClInclude Include="LzopStream.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="XzStream.h" />
@@ -513,7 +513,7 @@
     <ClCompile Include="Lz4LegacyWriter.cpp" />
     <ClCompile Include="Lz4Reader.cpp" />
     <ClCompile Include="Lz4Writer.cpp" />
-    <ClCompile Include="LzmaStream.cpp" />
+    <ClCompile Include="LzmaReader.cpp" />
     <ClCompile Include="LzopStream.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

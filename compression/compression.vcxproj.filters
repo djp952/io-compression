@@ -70,9 +70,6 @@
     <ClInclude Include="XzStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LzmaStream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Bzip2Exception.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -117,6 +114,9 @@
     </ClInclude>
     <ClInclude Include="..\..\external-lz4\lib\xxhash.h">
       <Filter>External Libraries\lz4</Filter>
+    </ClInclude>
+    <ClInclude Include="LzmaReader.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -201,9 +201,6 @@
     <ClCompile Include="XzStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LzmaStream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Bzip2Exception.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -248,6 +245,9 @@
     </ClCompile>
     <ClCompile Include="..\..\external-lz4\lib\xxhash.c">
       <Filter>External Libraries\lz4</Filter>
+    </ClCompile>
+    <ClCompile Include="LzmaReader.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
