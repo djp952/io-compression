@@ -46,6 +46,23 @@ namespace zuki.io.compression.test
 		}
 
 		[TestMethod(), TestCategory("Bzip2")]
+		public void Bzip2_DecompressExternal()
+		{
+			// Decompress a stream created externally to this library
+			using (Bzip2Reader reader = new Bzip2Reader(Assembly.GetExecutingAssembly().GetManifestResourceStream("zuki.io.compression.test.thethreemusketeers.bz2")))
+			{
+				using (MemoryStream dest = new MemoryStream())
+				{
+					reader.CopyTo(dest);
+					dest.Flush();
+
+					// Verify that the output matches the sample data byte-for-byte
+					Assert.IsTrue(Enumerable.SequenceEqual(s_sampledata, dest.ToArray()));
+				}
+			}
+		}
+
+		[TestMethod(), TestCategory("Bzip2")]
 		public void Bzip2_CompressDecompress()
 		{
 			// Start with a MemoryStream created from the sample data

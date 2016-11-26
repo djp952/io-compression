@@ -87,6 +87,13 @@
     <Compile Include="tmp\version.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="thethreemusketeers.bz2" />
+    <EmbeddedResource Include="thethreemusketeers.gz" />
+    <EmbeddedResource Include="thethreemusketeers.lz4-legacy" />
+    <EmbeddedResource Include="thethreemusketeers.lzma" />
+    <EmbeddedResource Include="thethreemusketeers.lzo" />
+    <EmbeddedResource Include="thethreemusketeers.xz" />
+    <EmbeddedResource Include="thethreemusketeers.lz4" />
     <None Include="version.ini" />
   </ItemGroup>
   <ItemGroup>

@@ -20,7 +20,10 @@
 // SOFTWARE.
 //---------------------------------------------------------------------------
 
-using System.IO.Compression;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace zuki.io.compression.test
@@ -28,6 +31,35 @@ namespace zuki.io.compression.test
 	[TestClass()]
 	public class TestXz
 	{
+		static byte[] s_sampledata;
+
+		[ClassInitialize()]
+		public static void ClassInit(TestContext context)
+		{
+			// Load the sample data into a byte[] array to use for the unit tests
+			using (StreamReader reader = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("zuki.io.compression.test.thethreemusketeers.txt")))
+			{
+				s_sampledata = Encoding.ASCII.GetBytes(reader.ReadToEnd());
+			}
+		}
+
+		[TestMethod(), TestCategory("Xz")]
+		public void Xz_DecompressExternal()
+		{
+			// Decompress a stream created externally to this library
+			using (XzReader reader = new XzReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("zuki.io.compression.test.thethreemusketeers.xz")))
+			{
+				using (MemoryStream dest = new MemoryStream())
+				{
+					reader.CopyTo(dest);
+					dest.Flush();
+
+					// Verify that the output matches the sample data byte-for-byte
+					Assert.IsTrue(Enumerable.SequenceEqual(s_sampledata, dest.ToArray()));
+				}
+			}
+		}
+
 		[TestMethod(), TestCategory("Xz")]
 		public void Xz_Stub()
 		{

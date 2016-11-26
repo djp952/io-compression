@@ -46,6 +46,23 @@ namespace zuki.io.compression.test
 		}
 
 		[TestMethod(), TestCategory("Lz4Legacy")]
+		public void Lz4Legacy_DecompressExternal()
+		{
+			// Decompress a stream created externally to this library
+			using (Lz4LegacyReader reader = new Lz4LegacyReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("zuki.io.compression.test.thethreemusketeers.lz4-legacy")))
+			{
+				using (MemoryStream dest = new MemoryStream())
+				{
+					reader.CopyTo(dest);
+					dest.Flush();
+
+					// Verify that the output matches the sample data byte-for-byte
+					Assert.IsTrue(Enumerable.SequenceEqual(s_sampledata, dest.ToArray()));
+				}
+			}
+		}
+
+		[TestMethod(), TestCategory("Lz4Legacy")]
 		public void Lz4Legacy_CompressDecompress()
 		{
 			// Start with a MemoryStream created from the sample data
