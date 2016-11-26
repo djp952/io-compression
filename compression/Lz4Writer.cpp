@@ -88,11 +88,11 @@ Lz4Writer::Lz4Writer(Stream^ stream, Compression::CompressionLevel level, bool l
 
 	// Allocate and initialize the compression context structure
 	try { m_context = new LZ4F_compressionContext_t; memset(m_context, 0, sizeof(LZ4F_compressionContext_t)); }
-	catch(...) { throw gcnew OutOfMemoryException(); }
+	catch(Exception^) { throw gcnew OutOfMemoryException(); }
 
 	// Allocate and initialize the preferences structure
 	try { m_prefs = new LZ4F_preferences_t; memset(m_prefs, 0, sizeof(LZ4F_preferences_t)); }
-	catch(...) { throw gcnew OutOfMemoryException(); }
+	catch(Exception^) { throw gcnew OutOfMemoryException(); }
 
 	// Create the LZ4 compression context structure for this instance
 	result = LZ4F_createCompressionContext(m_context, LZ4F_VERSION);

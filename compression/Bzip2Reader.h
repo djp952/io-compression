@@ -149,7 +149,7 @@ private:
 	array<unsigned __int8>^			m_in;			// BZIP2 stream buffer
 	size_t							m_inpos;		// Current position in the buffer
 	bool							m_finished;		// Flag if operation is finished
-	bz_stream*						m_bzstream;		// BZIP2 stream safe handle
+	bz_stream*						m_bzstream;		// BZIP2 stream state information
 
 	Object^	m_lock = gcnew Object();		// Synchronization object
 };

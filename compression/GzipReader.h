@@ -149,7 +149,7 @@ private:
 	array<unsigned __int8>^			m_in;			// GZIP stream buffer
 	size_t							m_inpos;		// Current position in the buffer
 	bool							m_finished;		// Flag if operation is finished
-	z_stream*						m_zstream;		// GZIP stream safe handle
+	z_stream*						m_zstream;		// GZIP stream state information
 
 	Object^	m_lock = gcnew Object();		// Synchronization object
 };

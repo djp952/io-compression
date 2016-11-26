@@ -59,7 +59,7 @@ Lz4Reader::Lz4Reader(Stream^ stream, bool leaveopen) : m_disposed(false), m_stre
 
 	// Allocate and initialize the decompression context structure
 	try { m_context = new LZ4F_decompressionContext_t; memset(m_context, 0, sizeof(LZ4F_decompressionContext_t)); }
-	catch(...) { throw gcnew OutOfMemoryException(); }
+	catch(Exception^) { throw gcnew OutOfMemoryException(); }
 
 	// Allocate the managed input buffer for this instance
 	m_in = gcnew array<unsigned __int8>(BUFFER_SIZE);
@@ -231,10 +231,8 @@ int Lz4Reader::Read(array<unsigned __int8>^ buffer, int offset, int count)
 		// If the input buffer was flushed from a previous iteration, refill it
 		if(m_inavail == 0) {
 
-			m_inavail = m_stream->Read(m_in, 0, BUFFER_SIZE);
+			m_inpos = (m_inavail = m_stream->Read(m_in, 0, BUFFER_SIZE)) - m_inavail;
 			if((m_inavail == 0) || (m_inavail > BUFFER_SIZE)) throw gcnew InvalidDataException();
-
-			m_inpos = 0;					// Reset stored offset to zero
 		}
 
 		// Use local input/output size values, they are modified by LZ4F_decompress

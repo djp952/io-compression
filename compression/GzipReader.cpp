@@ -229,10 +229,8 @@ int GzipReader::Read(array<unsigned __int8>^ buffer, int offset, int count)
 		// If the input buffer was flushed from a previous iteration, refill it
 		if(m_zstream->avail_in == 0) {
 
-			m_zstream->avail_in = m_stream->Read(m_in, 0, BUFFER_SIZE);
+			m_inpos = (m_zstream->avail_in = m_stream->Read(m_in, 0, BUFFER_SIZE)) - m_zstream->avail_in;
 			if((m_zstream->avail_in == 0) || (m_zstream->avail_in > BUFFER_SIZE)) throw gcnew InvalidDataException();
-
-			m_inpos = 0;					// Reset stored offset to zero
 		}
 
 		// Reset the input pointer based on the current position into the buffer, the address
