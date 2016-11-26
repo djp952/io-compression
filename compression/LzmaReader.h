@@ -151,7 +151,7 @@ private:
 	bool							m_init;				// Flag if decoder is initialized
 	array<unsigned __int8>^			m_in;				// LZMA input stream buffer
 	size_t							m_inpos;			// Current position in the buffer
-	size_t							m_inavail;			// Available data in the buffer
+	size_t							m_insize;			// Size of the input buffer data
 
 	Object^	m_lock = gcnew Object();		// Synchronization object
 };

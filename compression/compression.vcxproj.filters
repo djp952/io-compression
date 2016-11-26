@@ -29,9 +29,6 @@
     <Filter Include="External Libraries\minilzo">
       <UniqueIdentifier>{66b525bf-0767-4523-988e-4b60a4aa06cb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="External Libraries\xz-embedded">
-      <UniqueIdentifier>{37a8a2d5-f11f-436c-8f4a-e1096079997f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="External Libraries\zlib">
       <UniqueIdentifier>{81f34e85-f060-4a37-9ca3-74d0c163ab52}</UniqueIdentifier>
     </Filter>
@@ -46,9 +43,6 @@
     <ClInclude Include="..\..\external-lz4\lib\lz4.h">
       <Filter>External Libraries\lz4</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\external-lzma\C\LzmaDec.h">
-      <Filter>External Libraries\lzma</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\external-minilzo\lzoconf.h">
       <Filter>External Libraries\minilzo</Filter>
     </ClInclude>
@@ -58,17 +52,11 @@
     <ClInclude Include="..\..\external-minilzo\minilzo.h">
       <Filter>External Libraries\minilzo</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\external-xz-embedded\linux\include\linux\xz.h">
-      <Filter>External Libraries\xz-embedded</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\external-zlib\zconf.h">
       <Filter>External Libraries\zlib</Filter>
     </ClInclude>
     <ClInclude Include="..\..\external-zlib\zlib.h">
       <Filter>External Libraries\zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="XzStream.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Bzip2Exception.h">
       <Filter>Header Files</Filter>
@@ -118,6 +106,30 @@
     <ClInclude Include="LzmaReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LzmaEncoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external-lzma\C\LzmaEnc.h">
+      <Filter>External Libraries\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="LzmaException.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XzReader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XzEncoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external-lzma\C\XzEnc.h">
+      <Filter>External Libraries\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external-lzma\C\7zCrc.h">
+      <Filter>External Libraries\lzma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external-lzma\C\Xz.h">
+      <Filter>External Libraries\lzma</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -162,18 +174,6 @@
     <ClCompile Include="..\..\external-minilzo\minilzo.c">
       <Filter>External Libraries\minilzo</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\external-xz-embedded\linux\lib\xz\xz_crc32.c">
-      <Filter>External Libraries\xz-embedded</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\external-xz-embedded\linux\lib\xz\xz_dec_bcj.c">
-      <Filter>External Libraries\xz-embedded</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\external-xz-embedded\linux\lib\xz\xz_dec_lzma2.c">
-      <Filter>External Libraries\xz-embedded</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\external-xz-embedded\linux\lib\xz\xz_dec_stream.c">
-      <Filter>External Libraries\xz-embedded</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\external-zlib\adler32.c">
       <Filter>External Libraries\zlib</Filter>
     </ClCompile>
@@ -197,9 +197,6 @@
     </ClCompile>
     <ClCompile Include="..\..\external-zlib\trees.c">
       <Filter>External Libraries\zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="XzStream.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Bzip2Exception.cpp">
       <Filter>Source Files</Filter>
@@ -247,6 +244,84 @@
       <Filter>External Libraries\lz4</Filter>
     </ClCompile>
     <ClCompile Include="LzmaReader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LzmaEncoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\LzFind.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\LzFindMt.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\LzmaEnc.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\Threads.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="LzmaException.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="XzReader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="XzEncoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\XzEnc.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\Lzma2Enc.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\Xz.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\MtCoder.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\Sha256.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\XzCrc64.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\7zCrc.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\XzDec.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\Lzma2Dec.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\Delta.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\7zCrcOpt.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\CpuArch.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\XzCrc64Opt.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\Alloc.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\Bra.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\Bra86.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external-lzma\C\BraIA64.c">
+      <Filter>External Libraries\lzma</Filter>
+    </ClCompile>
+    <ClCompile Include="crcinit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

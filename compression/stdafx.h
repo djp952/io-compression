@@ -44,6 +44,7 @@
 #include <windows.h>				// Include main Windows declarations
 #include <stdint.h>					// Include standard integer declarations
 #include <msclr\lock.h>				// Include msclr::lock
+#include <msclr\auto_handle.h>		// Include msclr::auto_handle<>
 
 //---------------------------------------------------------------------------
 

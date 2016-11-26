@@ -21,122 +21,134 @@
 //---------------------------------------------------------------------------
 
 #include "stdafx.h"
-#include "LzmaReader.h"
+#include "XzReader.h"
 
 #include <Alloc.h>
+#include "LzmaException.h"
+
+// crcinit
+//
+// Helper function defined in crcinit.cpp; thunks to CrcGenerateTable
+extern void crcinit(void);
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
 namespace zuki::io::compression {
 
-//---------------------------------------------------------------------------
-// LzmaReader Constructor
+//--------------------------------------------------------------------------
+// XzReader Static Constructor (private)
+
+static XzReader::XzReader()
+{
+	crcinit();							// Initialize the CRC table
+}
+
+//--------------------------------------------------------------------------
+// XzReader Constructor
 //
 // Arguments:
 //
 //	stream		- The stream the compressed data is read from
 
-LzmaReader::LzmaReader(Stream^ stream) : LzmaReader(stream, false)
+XzReader::XzReader(Stream^ stream) : XzReader(stream, false)
 {
 }
 
 //---------------------------------------------------------------------------
-// LzmaReader Constructor
+// XzReader Constructor (private)
 //
 // Arguments:
 //
-//	stream		- The stream the compressed data is read from
+//	stream		- The stream the compressed or decompressed data is written to
 //	leaveopen	- Flag to leave the base stream open after disposal
 
-LzmaReader::LzmaReader(Stream^ stream, bool leaveopen) : m_disposed(false), m_stream(stream), m_leaveopen(leaveopen), m_init(false), 
-	m_finished(false), m_inpos(0), m_insize(0)
+XzReader::XzReader(Stream^ stream, bool leaveopen) : m_disposed(false), m_stream(stream), m_leaveopen(leaveopen), m_finished(false),
+	m_inpos(0), m_insize(0)
 {
 	if(Object::ReferenceEquals(stream, nullptr)) throw gcnew ArgumentNullException("stream");
 
-	// Allocate and zero-initialize the unmanaged CLzmaDec structure
-	try { m_state = new CLzmaDec(); memset(m_state, 0, sizeof(CLzmaDec)); }
+	// Allocate and construct the CXzUnpacker instance
+	try { m_unpacker = new CXzUnpacker; XzUnpacker_Construct(m_unpacker, &g_Alloc); }
 	catch(Exception^) { throw gcnew OutOfMemoryException(); }
 
-	// Allocate the managed input buffer for this instance
+	// Allocate the local input buffer
 	m_in = gcnew array<unsigned __int8>(BUFFER_SIZE);
 
-	LzmaDec_Construct(m_state);			// Construct the LZMA state
+	// Initialize the CXzUnpacker instance
+	XzUnpacker_Init(m_unpacker);
 }
 
 //---------------------------------------------------------------------------
-// LzmaReader Destructor
+// XzReader Destructor
 
-LzmaReader::~LzmaReader()
+XzReader::~XzReader()
 {
 	if(m_disposed) return;
+
+	// Destroy the managed input buffer
+	delete m_in;
 	
 	// Optionally dispose of the base stream
 	if(!m_leaveopen) delete m_stream;
 	
-	this->!LzmaReader();
+	this->!XzReader();
 	m_disposed = true;
 }
 
 //---------------------------------------------------------------------------
-// LzmaReader Finalizer
+// XzReader Finalizer
 
-LzmaReader::!LzmaReader()
+XzReader::!XzReader()
 {
-	if(m_state == nullptr) return;
-
-	// Release the LZMA decoder resources
-	if(m_init) LzmaDec_Free(m_state, &g_Alloc);
-	delete m_state;
-
-	m_state = nullptr;
+	if(m_unpacker) { XzUnpacker_Free(m_unpacker); m_unpacker = nullptr; }
 }
 
 //---------------------------------------------------------------------------
-// LzmaReader::BaseStream::get
+// XzReader::BaseStream::get
 //
 // Accesses the underlying base stream instance
 
-Stream^ LzmaReader::BaseStream::get(void)
+Stream^ XzReader::BaseStream::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
 	return m_stream;
 }
 
 //---------------------------------------------------------------------------
-// LzmaReader::CanRead::get
+// XzReader::CanRead::get
 //
 // Gets a value indicating whether the current stream supports reading
 
-bool LzmaReader::CanRead::get(void)
+bool XzReader::CanRead::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
 	return m_stream->CanRead;
 }
 
 //---------------------------------------------------------------------------
-// LzmaReader::CanSeek::get
+// XzReader::CanSeek::get
 //
 // Gets a value indicating whether the current stream supports seeking
 
-bool LzmaReader::CanSeek::get(void)
+bool XzReader::CanSeek::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
 	return false;
 }
 
 //---------------------------------------------------------------------------
-// LzmaReader::CanWrite::get
+// XzReader::CanWrite::get
 //
 // Gets a value indicating whether the current stream supports writing
 
-bool LzmaReader::CanWrite::get(void)
+bool XzReader::CanWrite::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
 	return false;
 }
 
 //---------------------------------------------------------------------------
-// LzmaReader::Flush
+// XzReader::Flush
 //
 // Clears all buffers for this stream and causes any buffered data to be written
 //
@@ -144,42 +156,40 @@ bool LzmaReader::CanWrite::get(void)
 //
 //	NONE
 
-void LzmaReader::Flush(void)
+void XzReader::Flush(void)
 {
 	CHECK_DISPOSED(m_disposed);
 	m_stream->Flush();
 }
 
 //--------------------------------------------------------------------------
-// LzmaReader::Length::get
+// XzReader::Length::get
 //
 // Gets the length in bytes of the stream
 
-__int64 LzmaReader::Length::get(void)
+__int64 XzReader::Length::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
 	throw gcnew NotSupportedException();
 }
 
 //---------------------------------------------------------------------------
-// LzmaReader::Position::get
+// XzReader::Position::get
 //
 // Gets the current position within the stream
 
-__int64 LzmaReader::Position::get(void)
+__int64 XzReader::Position::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
-	
-	msclr::lock lock(m_lock);
-	return static_cast<__int64>(m_state->processedPos);
+	throw gcnew NotSupportedException();
 }
 
 //---------------------------------------------------------------------------
-// LzmaReader::Position::set
+// XzReader::Position::set
 //
 // Sets the current position within the stream
 
-void LzmaReader::Position::set(__int64 value)
+void XzReader::Position::set(__int64 value)
 {
 	UNREFERENCED_PARAMETER(value);
 
@@ -188,7 +198,7 @@ void LzmaReader::Position::set(__int64 value)
 }
 
 //---------------------------------------------------------------------------
-// LzmaReader::Read
+// XzReader::Read
 //
 // Reads a sequence of bytes from the current stream and advances the position within the stream
 //
@@ -198,10 +208,10 @@ void LzmaReader::Position::set(__int64 value)
 //	offset		- Offset within buffer to begin copying data
 //	count		- Maximum number of bytes to write into the destination buffer
 
-int LzmaReader::Read(array<unsigned __int8>^ buffer, int offset, int count)
+int XzReader::Read(array<unsigned __int8>^ buffer, int offset, int count)
 {
-	ELzmaStatus				status;			// Status from LZMA decode operation
-
+	ECoderStatus				encstatus;				// Encoder status flag
+		
 	CHECK_DISPOSED(m_disposed);
 
 	if(Object::ReferenceEquals(buffer, nullptr)) throw gcnew ArgumentNullException("buffer");
@@ -214,24 +224,7 @@ int LzmaReader::Read(array<unsigned __int8>^ buffer, int offset, int count)
 	// If there is no buffer to read into or the stream is already done, return zero
 	if((count == 0) || (m_finished)) return 0;
 
-	// Wait to initialize the LZMA decoder until the first call to Read()
-	if(!m_init) {
-
-		// Read the properties and stream length from the input stream
-		array<unsigned __int8>^ props = gcnew array<unsigned __int8>(LZMA_PROPS_SIZE + sizeof(uint64_t));
-		if(m_stream->Read(props, 0, LZMA_PROPS_SIZE + sizeof(uint64_t)) != LZMA_PROPS_SIZE + sizeof(uint64_t)) throw gcnew InvalidDataException();
-
-		// Allocate the LZMA decoder state
-		pin_ptr<unsigned __int8> pinprops = &props[0];
-		SRes result = LzmaDec_Allocate(m_state, pinprops, LZMA_PROPS_SIZE, &g_Alloc);
-		if(result == SZ_ERROR_MEM) throw gcnew OutOfMemoryException();
-		else if(result == SZ_ERROR_UNSUPPORTED) throw gcnew InvalidDataException();
-
-		LzmaDec_Init(m_state);				// Initialize the LZMA decoder
-		m_init = true;						// Ready to decompress the stream
-	}
-
-	// Pin the input/output buffers and the available input length
+	// Pin both the input and output byte arrays in memory
 	pin_ptr<unsigned __int8> pinin = &m_in[0];
 	pin_ptr<unsigned __int8> pinout = &buffer[0];
 
@@ -251,24 +244,28 @@ int LzmaReader::Read(array<unsigned __int8>^ buffer, int offset, int count)
 		size_t insize = m_insize - m_inpos;
 		size_t outsize = count - offset;
 
-		// Attempt to decode the next block of compressed data into the output buffer
-		SRes result = LzmaDec_DecodeToBuf(m_state, &pinout[offset], &outsize, &pinin[m_inpos], &insize, LZMA_FINISH_ANY, &status);
- 		if(result == SZ_ERROR_DATA) throw gcnew InvalidDataException();
+		// Unpack/decompress the next block of data from the input buffer
+		SRes result = XzUnpacker_Code(m_unpacker, &pinout[offset], &outsize, &pinin[m_inpos], &insize, 
+			(insize == 0) ? CODER_FINISH_END : CODER_FINISH_ANY, &encstatus);
+		if(result != SZ_OK) throw gcnew LzmaException(result);
 
 		m_inpos += insize;					// Increment the input buffer offset
 		offset += outsize;					// Increment the output buffer offset
 		availout -= outsize;				// Decrement the available output size
 
-		// LZMA_STATUS_FINISHED_WITH_MARK indicates that there is no more data
-		if(m_finished = (status == LZMA_STATUS_FINISHED_WITH_MARK)) break;
+		// If no input or output was generated, the stream is finished
+		if(m_finished = ((insize == 0) && (outsize == 0))) break;
 
 	} while(availout > 0);
+
+	// If no input or output was generated on the last call, verify that the stream is finished
+	if((m_finished) && (!XzUnpacker_IsStreamWasFinished(m_unpacker))) throw gcnew InvalidDataException();
 
 	return (count - availout);
 }
 
 //---------------------------------------------------------------------------
-// LzmaReader::Seek
+// XzReader::Seek
 //
 // Sets the position within the current stream
 //
@@ -277,7 +274,7 @@ int LzmaReader::Read(array<unsigned __int8>^ buffer, int offset, int count)
 //	offset		- Byte offset relative to origin
 //	origin		- Reference point used to obtain the new position
 
-__int64 LzmaReader::Seek(__int64 offset, SeekOrigin origin)
+__int64 XzReader::Seek(__int64 offset, SeekOrigin origin)
 {
 	UNREFERENCED_PARAMETER(offset);
 	UNREFERENCED_PARAMETER(origin);
@@ -287,7 +284,7 @@ __int64 LzmaReader::Seek(__int64 offset, SeekOrigin origin)
 }
 
 //---------------------------------------------------------------------------
-// LzmaReader::SetLength
+// XzReader::SetLength
 //
 // Sets the length of the current stream
 //
@@ -295,7 +292,7 @@ __int64 LzmaReader::Seek(__int64 offset, SeekOrigin origin)
 //
 //	value		- Desired length of the current stream in bytes
 
-void LzmaReader::SetLength(__int64 value)
+void XzReader::SetLength(__int64 value)
 {
 	UNREFERENCED_PARAMETER(value);
 
@@ -304,7 +301,7 @@ void LzmaReader::SetLength(__int64 value)
 }
 
 //---------------------------------------------------------------------------
-// LzmaReader::Write
+// XzReader::Write
 //
 // Writes a sequence of bytes to the current stream and advances the current position
 //
@@ -314,13 +311,14 @@ void LzmaReader::SetLength(__int64 value)
 //	offset		- Offset within buffer to begin copying from
 //	count		- Maximum number of bytes to read from the source buffer
 
-void LzmaReader::Write(array<unsigned __int8>^ buffer, int offset, int count)
+void XzReader::Write(array<unsigned __int8>^ buffer, int offset, int count)
 {
 	UNREFERENCED_PARAMETER(buffer);
 	UNREFERENCED_PARAMETER(offset);
 	UNREFERENCED_PARAMETER(count);
 
 	CHECK_DISPOSED(m_disposed);
+	throw gcnew NotImplementedException();
 }
 
 //---------------------------------------------------------------------------

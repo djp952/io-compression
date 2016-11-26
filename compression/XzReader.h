@@ -20,9 +20,11 @@
 // SOFTWARE.
 //---------------------------------------------------------------------------
 
-#ifndef __XZSTREAM_H_
-#define __XZSTREAM_H_
+#ifndef __XZREADER_H_
+#define __XZREADER_H_
 #pragma once
+
+#include <Xz.h>
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -32,21 +34,19 @@ using namespace System::IO;
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// Class XzStream
+// Class XzReader
 //
-// XZ-based compression/decompression stream implementation
+// XZ-based decompression stream implementation
 //---------------------------------------------------------------------------
 
-public ref class XzStream : public Stream
+public ref class XzReader : public Stream
 {
 public:
 
 	// Instance Constructors
 	//
-	XzStream(Stream^ stream, Compression::CompressionLevel level);
-	XzStream(Stream^ stream, Compression::CompressionLevel level, bool leaveopen);
-	XzStream(Stream^ stream, Compression::CompressionMode mode);
-	XzStream(Stream^ stream, Compression::CompressionMode mode, bool leaveopen);
+	XzReader(Stream^ stream);
+	XzReader(Stream^ stream, bool leaveopen);
 
 	//-----------------------------------------------------------------------
 	// Member Functions
@@ -78,6 +78,14 @@ public:
 
 	//-----------------------------------------------------------------------
 	// Properties
+
+	// BaseStream
+	//
+	// Exposes the underlying base stream instance
+	property Stream^ BaseStream
+	{
+		Stream^ get(void);
+	}
 
 	// CanRead (Stream)
 	//
@@ -122,14 +130,33 @@ public:
 
 private:
 
-	// Destructor
+	// BUFFER_SIZE
 	//
-	~XzStream();
+	// Size of the local input buffer, in bytes
+	static const int BUFFER_SIZE = 65536;
+
+	// Static Constructor
+	//
+	static XzReader();
+
+	// Destructor / Finalizer
+	//
+	~XzReader();
+	!XzReader();
 
 	//-----------------------------------------------------------------------
 	// Member Variables
 
-	bool					m_disposed;				// Object disposal flag
+	bool						m_disposed;			// Object disposal flag
+	Stream^						m_stream;			// Base Stream instance
+	bool						m_leaveopen;		// Flag to leave base stream open
+	bool						m_finished;			// Flag if stream is finished
+	array<unsigned __int8>^		m_in;				// XZ input stream buffer
+	size_t						m_inpos;			// Current position in the buffer
+	size_t						m_insize;			// Size of the input buffer data
+	CXzUnpacker*				m_unpacker;			// XZ unpacker instance
+
+	Object^	m_lock = gcnew Object();		// Synchronization object
 };
 
 //---------------------------------------------------------------------------
@@ -138,4 +165,4 @@ private:
 
 #pragma warning(pop)
 
-#endif	// __XZSTREAM_H_
+#endif	// __XZREADER_H_
