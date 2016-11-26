@@ -25,6 +25,7 @@
 #pragma once
 
 #include <XzEnc.h>
+#include "Encoder.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -43,7 +44,7 @@ namespace zuki::io::compression {
 // via properties on this class, just the basics are in here right now
 //---------------------------------------------------------------------------
 
-public ref class XzEncoder
+public ref class XzEncoder : public Encoder
 {
 public:
 
@@ -54,35 +55,35 @@ public:
 	//-----------------------------------------------------------------------
 	// Member Functions
 
-	// Encode
+	// Encode (Encoder)
 	//
 	// Compresses an input stream into an array of bytes
-	array<unsigned __int8>^ Encode(Stream^ instream);
+	virtual array<unsigned __int8>^ Encode(Stream^ instream);
 
-	// Encode
+	// Encode (Encoder)
 	//
 	// Compresses an input array of bytes
-	array<unsigned __int8>^ Encode(array<unsigned __int8>^ buffer);
+	virtual array<unsigned __int8>^ Encode(array<unsigned __int8>^ buffer);
 
-	// Encode
+	// Encode (Encoder)
 	//
 	// Compresses an input array of bytes
-	array<unsigned __int8>^ Encode(array<unsigned __int8>^ buffer, int offset, int count);
+	virtual array<unsigned __int8>^ Encode(array<unsigned __int8>^ buffer, int offset, int count);
 
-	// Encode
+	// Encode (Encoder)
 	//
 	// Compresses an input stream into an output stream
-	void Encode(Stream^ instream, Stream^ outstream);
+	virtual void Encode(Stream^ instream, Stream^ outstream);
 
-	// Encode
+	// Encode (Encoder)
 	//
 	// Compresses an input array of bytes into an output stream
-	void Encode(array<unsigned __int8>^ buffer, Stream^ outstream);
+	virtual void Encode(array<unsigned __int8>^ buffer, Stream^ outstream);
 
-	// Encode
+	// Encode (Encoder)
 	//
 	// Compresses an input array of bytes into an output stream
-	void Encode(array<unsigned __int8>^ buffer, int offset, int count, Stream^ outstream);
+	virtual void Encode(array<unsigned __int8>^ buffer, int offset, int count, Stream^ outstream);
 
 	//-----------------------------------------------------------------------
 	// Properties

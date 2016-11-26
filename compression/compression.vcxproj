@@ -194,6 +194,7 @@
     <ClInclude Include="Bzip2Exception.h" />
     <ClInclude Include="Bzip2Reader.h" />
     <ClInclude Include="Bzip2Writer.h" />
+    <ClInclude Include="Encoder.h" />
     <ClInclude Include="GzipException.h" />
     <ClInclude Include="GzipReader.h" />
     <ClInclude Include="GzipWriter.h" />
