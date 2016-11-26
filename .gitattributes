@@ -23,3 +23,12 @@
 
 *.bin binary
 
+# Compressed sample files
+*.gz binary
+*.bz2 binary
+*.lzma binary
+*.lz4 binary
+*.lz4-legacy binary
+*.xz binary
+*.lzo binary
+
