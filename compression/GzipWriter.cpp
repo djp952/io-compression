@@ -339,6 +339,23 @@ void GzipWriter::SetLength(__int64 value)
 // Arguments:
 //
 //	buffer		- Source data buffer 
+
+void GzipWriter::Write(array<unsigned __int8>^ buffer)
+{
+	if(Object::ReferenceEquals(buffer, nullptr)) throw gcnew ArgumentNullException("buffer");
+
+	CHECK_DISPOSED(m_disposed);
+	Write(buffer, 0, buffer->Length);
+}
+
+//---------------------------------------------------------------------------
+// GzipWriter::Write
+//
+// Writes a sequence of bytes to the current stream and advances the current position
+//
+// Arguments:
+//
+//	buffer		- Source data buffer 
 //	offset		- Offset within buffer to begin copying from
 //	count		- Maximum number of bytes to read from the source buffer
 

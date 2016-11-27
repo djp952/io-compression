@@ -101,6 +101,11 @@ public:
 	// Sets the length of the current stream
 	virtual void SetLength(__int64 value) override;
 
+	// Write
+	//
+	// Writes a sequence of bytes to the current stream and advances the current position
+	void Write(array<unsigned __int8>^ buffer);
+
 	// Write (Stream)
 	//
 	// Writes a sequence of bytes to the current stream and advances the current position

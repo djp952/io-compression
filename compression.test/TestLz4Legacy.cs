@@ -46,6 +46,18 @@ namespace zuki.io.compression.test
 		}
 
 		[TestMethod(), TestCategory("Lz4Legacy")]
+		public void Lz4Legacy_CompressExternal()
+		{
+			// This method generates an output file that can be tested externally; "thethreemusketeers.txt" is
+			// set to Copy Always to the output directory, it can be diffed after running the external tool
+			using (Lz4LegacyWriter writer = new Lz4LegacyWriter(File.Create(Path.Combine(Environment.CurrentDirectory, "thethreemusketeers.lz4-legacy"))))
+			{
+				writer.Write(s_sampledata);
+				writer.Flush();
+			}
+		}
+
+		[TestMethod(), TestCategory("Lz4Legacy")]
 		public void Lz4Legacy_DecompressExternal()
 		{
 			// Decompress a stream created externally to this library

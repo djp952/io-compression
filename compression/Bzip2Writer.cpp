@@ -76,7 +76,7 @@ namespace zuki::io::compression {
 //
 //	stream		- The stream the compressed data is written to
 
-Bzip2Writer::Bzip2Writer(Stream^ stream) : Bzip2Writer(stream, Compression::CompressionLevel::Optimal, false)
+Bzip2Writer::Bzip2Writer(Stream^ stream) : Bzip2Writer(stream, 9, 0, DEFAULT_BUFFER_SIZE, false)
 {
 }
 
@@ -88,7 +88,7 @@ Bzip2Writer::Bzip2Writer(Stream^ stream) : Bzip2Writer(stream, Compression::Comp
 //	stream		- The stream the compressed data is written to
 //	level		- Indicates whether to emphasize speed or compression efficiency
 
-Bzip2Writer::Bzip2Writer(Stream^ stream, Compression::CompressionLevel level) : Bzip2Writer(stream, level, false)
+Bzip2Writer::Bzip2Writer(Stream^ stream, Compression::CompressionLevel level) : Bzip2Writer(stream, ConvertCompressionLevel(level), 0, DEFAULT_BUFFER_SIZE, false)
 {
 }
 
@@ -100,7 +100,7 @@ Bzip2Writer::Bzip2Writer(Stream^ stream, Compression::CompressionLevel level) : 
 //	stream		- The stream the compressed data is written to
 //	leaveopen	- Flag to leave the base stream open after disposal
 
-Bzip2Writer::Bzip2Writer(Stream^ stream, bool leaveopen) : Bzip2Writer(stream, Compression::CompressionLevel::Optimal, leaveopen)
+Bzip2Writer::Bzip2Writer(Stream^ stream, bool leaveopen) : Bzip2Writer(stream, 9, 0, DEFAULT_BUFFER_SIZE, leaveopen)
 {
 }
 
@@ -113,19 +113,37 @@ Bzip2Writer::Bzip2Writer(Stream^ stream, bool leaveopen) : Bzip2Writer(stream, C
 //	level		- Indicates the level of compression to use
 //	leaveopen	- Flag to leave the base stream open after disposal
 
-Bzip2Writer::Bzip2Writer(Stream^ stream, Compression::CompressionLevel level, bool leaveopen) : m_disposed(false), m_stream(stream), m_leaveopen(leaveopen)
+Bzip2Writer::Bzip2Writer(Stream^ stream, Compression::CompressionLevel level, bool leaveopen) : Bzip2Writer(stream, ConvertCompressionLevel(level), 0, DEFAULT_BUFFER_SIZE, leaveopen)
+{
+}
+
+//---------------------------------------------------------------------------
+// Bzip2Writer Constructor (internal)
+//
+// Arguments:
+//
+//	stream			- The stream the compressed or decompressed data is written to
+//	level			- Indicates the level of compression to use
+//	workfactor		- Indicates the bzip2 work factor to use
+//	buffersize		- Indicates the size of the compression buffer
+//	leaveopen		- Flag to leave the base stream open after disposal
+
+Bzip2Writer::Bzip2Writer(Stream^ stream, int level, int workfactor, int buffersize, bool leaveopen) : m_disposed(false), m_stream(stream), 
+	m_leaveopen(leaveopen), m_buffersize(buffersize)
 {
 	if(Object::ReferenceEquals(stream, nullptr)) throw gcnew ArgumentNullException("stream");
 
 	// bzip does not provide a 'no compression' option
-	if(level == Compression::CompressionLevel::NoCompression) throw gcnew ArgumentOutOfRangeException("level");
+	if((level < 0) || (level > 9)) throw gcnew ArgumentOutOfRangeException("level");
+	if((workfactor < 0) || (workfactor > 250)) throw gcnew ArgumentOutOfRangeException("workfactor");
+	if(buffersize <= 0) throw gcnew ArgumentOutOfRangeException("buffersize");
 
 	// Allocate and initialize the unmanaged bz_stream structure
 	try { m_bzstream = new bz_stream; memset(m_bzstream, 0, sizeof(bz_stream)); }
 	catch(Exception^) { throw gcnew OutOfMemoryException(); }
 
 	// Initialize the bz_stream for compression
-	int result = BZ2_bzCompressInit(m_bzstream, (level == Compression::CompressionLevel::Optimal) ? 9 : 1, 0, 0);
+	int result = BZ2_bzCompressInit(m_bzstream, level, 0, workfactor);
 	if(result != BZ_OK) throw gcnew Bzip2Exception(result);
 }
 
@@ -141,7 +159,7 @@ Bzip2Writer::~Bzip2Writer()
 	msclr::lock lock(m_lock);
 
 	// Create and pin a local compression buffer
-	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(BUFFER_SIZE);
+	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(m_buffersize);
 	pin_ptr<unsigned __int8> pinout = &out[0];
 
 	// Input is not consumed when finishing the bzip stream
@@ -152,11 +170,11 @@ Bzip2Writer::~Bzip2Writer()
 
 		// Reset the output buffer to point into the managed array
 		m_bzstream->next_out = reinterpret_cast<char*>(pinout);
-		m_bzstream->avail_out = BUFFER_SIZE;
+		m_bzstream->avail_out = m_buffersize;
 
 		// Finish the next block of data in the bzip buffers and write it
 		result = BZ2_bzCompress(m_bzstream, BZ_FINISH);
-		m_stream->Write(out, 0, BUFFER_SIZE - m_bzstream->avail_out);
+		m_stream->Write(out, 0, m_buffersize - m_bzstream->avail_out);
 
 	} while (result == BZ_FINISH_OK);
 
@@ -229,6 +247,24 @@ bool Bzip2Writer::CanWrite::get(void)
 }
 
 //---------------------------------------------------------------------------
+// Bzip2Writer::ConvertCompressionLevel (private, static)
+//
+// Converts a Compression::CompressionLevel value
+//
+// Arguments:
+//
+//	level		- Compression::CompressionLevel to convert
+
+int Bzip2Writer::ConvertCompressionLevel(Compression::CompressionLevel level)
+{
+	if(level == Compression::CompressionLevel::Fastest) return 1;
+	else if(level == Compression::CompressionLevel::Optimal) return 9;
+	
+	// bzip2 does not support a NoCompression option
+	throw gcnew ArgumentOutOfRangeException("level");
+}
+
+//---------------------------------------------------------------------------
 // Bzip2Writer::Flush
 //
 // Clears all buffers for this stream and causes any buffered data to be written
@@ -246,7 +282,7 @@ void Bzip2Writer::Flush(void)
 	msclr::lock lock(m_lock);
 
 	// Create and pin a local compression buffer
-	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(BUFFER_SIZE);
+	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(m_buffersize);
 	pin_ptr<unsigned __int8> pinout = &out[0];
 
 	// Input is not consumed when flushing the bzip stream
@@ -257,11 +293,11 @@ void Bzip2Writer::Flush(void)
 
 		// Reset the output buffer to point into the managed array
 		m_bzstream->next_out = reinterpret_cast<char*>(pinout);
-		m_bzstream->avail_out = BUFFER_SIZE;
+		m_bzstream->avail_out = m_buffersize;
 
 		// Flush the next block of data in the bzip buffers and write it
 		result = BZ2_bzCompress(m_bzstream, BZ_FLUSH);
-		m_stream->Write(out, 0, BUFFER_SIZE - m_bzstream->avail_out);
+		m_stream->Write(out, 0, m_buffersize - m_bzstream->avail_out);
 	
 	} while(result == BZ_FLUSH_OK);
 
@@ -374,6 +410,23 @@ void Bzip2Writer::SetLength(__int64 value)
 // Arguments:
 //
 //	buffer		- Source data buffer 
+
+void Bzip2Writer::Write(array<unsigned __int8>^ buffer)
+{
+	if(Object::ReferenceEquals(buffer, nullptr)) throw gcnew ArgumentNullException("buffer");
+
+	CHECK_DISPOSED(m_disposed);
+	Write(buffer, 0, buffer->Length);
+}
+
+//---------------------------------------------------------------------------
+// Bzip2Writer::Write
+//
+// Writes a sequence of bytes to the current stream and advances the current position
+//
+// Arguments:
+//
+//	buffer		- Source data buffer 
 //	offset		- Offset within buffer to begin copying from
 //	count		- Maximum number of bytes to read from the source buffer
 
@@ -391,7 +444,7 @@ void Bzip2Writer::Write(array<unsigned __int8>^ buffer, int offset, int count)
 	msclr::lock lock(m_lock);
 
 	// Create a temporary local buffer to hold the compressed data
-	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(BUFFER_SIZE);
+	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(m_buffersize);
 		
 	// Pin both the input and output byte arrays in memory
 	pin_ptr<unsigned __int8> pinin = &buffer[0];
@@ -406,14 +459,14 @@ void Bzip2Writer::Write(array<unsigned __int8>^ buffer, int offset, int count)
 
 		// Reset the output buffer pointer and length
 		m_bzstream->next_out = reinterpret_cast<char*>(pinout);
-		m_bzstream->avail_out = BUFFER_SIZE;
+		m_bzstream->avail_out = m_buffersize;
 
 		// Compress the next block of input data into the output buffer
 		int result = BZ2_bzCompress(m_bzstream, BZ_RUN);
 		if(result != BZ_RUN_OK) throw gcnew Bzip2Exception(result);
 
 		// Write the compressed data into the underlying base stream
-		m_stream->Write(out, 0, BUFFER_SIZE - m_bzstream->avail_out);
+		m_stream->Write(out, 0, m_buffersize - m_bzstream->avail_out);
 	};
 
 	delete out;

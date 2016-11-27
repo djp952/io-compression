@@ -188,6 +188,7 @@
     <ClInclude Include="..\..\external-lzma\C\XzEnc.h" />
     <ClInclude Include="..\..\external-zlib\zconf.h" />
     <ClInclude Include="..\..\external-zlib\zlib.h" />
+    <ClInclude Include="Bzip2Encoder.h" />
     <ClInclude Include="Bzip2Exception.h" />
     <ClInclude Include="Bzip2Reader.h" />
     <ClInclude Include="Bzip2Writer.h" />
@@ -647,6 +648,7 @@
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="AssemblyInfo.cpp" />
+    <ClCompile Include="Bzip2Encoder.cpp" />
     <ClCompile Include="Bzip2Exception.cpp" />
     <ClCompile Include="Bzip2Reader.cpp" />
     <ClCompile Include="Bzip2Writer.cpp" />

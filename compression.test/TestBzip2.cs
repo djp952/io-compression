@@ -46,6 +46,18 @@ namespace zuki.io.compression.test
 		}
 
 		[TestMethod(), TestCategory("Bzip2")]
+		public void Bzip2_CompressExternal()
+		{
+			// This method generates an output file that can be tested externally; "thethreemusketeers.txt" is
+			// set to Copy Always to the output directory, it can be diffed after running the external tool
+			using (Bzip2Writer writer = new Bzip2Writer(File.Create(Path.Combine(Environment.CurrentDirectory, "thethreemusketeers.bz2"))))
+			{
+				writer.Write(s_sampledata);
+				writer.Flush();
+			}
+		}
+
+		[TestMethod(), TestCategory("Bzip2")]
 		public void Bzip2_DecompressExternal()
 		{
 			// Decompress a stream created externally to this library
@@ -476,6 +488,73 @@ namespace zuki.io.compression.test
 					compressor.Write(s_sampledata, 0, s_sampledata.Length);
 					compressor.Flush();
 				}
+			}
+		}
+
+		[TestMethod(), TestCategory("Bzip2")]
+		public void Bzip2_Encoder()
+		{
+			// The Bzip2Encoder is just a wrapper around Bzip2Writer that provides 
+			// more complete control over the compression/encoder parameters
+			Bzip2Encoder encoder = new Bzip2Encoder();
+
+			// Check the default values
+			Assert.AreEqual(65536, encoder.BufferSize);
+			Assert.AreEqual(9, encoder.CompressionLevel);
+			Assert.AreEqual(30, encoder.WorkFactor);
+
+			// Set some bad values and ensure they are caught by the encoder property setters
+			try { encoder.BufferSize = -1; Assert.Fail("Property should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
+
+			try { encoder.CompressionLevel = -1; Assert.Fail("Property should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
+
+			try { encoder.CompressionLevel = 0; Assert.Fail("Property should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
+
+			try { encoder.CompressionLevel = 10; Assert.Fail("Property should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
+
+			try { encoder.WorkFactor = -1; Assert.Fail("Property should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
+
+			try { encoder.WorkFactor = 251; Assert.Fail("Property should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
+
+			// Check all of the Encoder methods work and encode as expected
+			byte[] expected, actual;
+			using (MemoryStream ms = new MemoryStream())
+			{
+				using (var writer = new Bzip2Writer(ms, true)) writer.Write(s_sampledata, 0, s_sampledata.Length);
+				expected = ms.ToArray();
+			}
+
+			actual = encoder.Encode(s_sampledata);
+			Assert.IsTrue(Enumerable.SequenceEqual(expected, actual));
+
+			actual = encoder.Encode(new MemoryStream(s_sampledata));
+			Assert.IsTrue(Enumerable.SequenceEqual(expected, actual));
+
+			actual = encoder.Encode(s_sampledata, 0, s_sampledata.Length);
+			Assert.IsTrue(Enumerable.SequenceEqual(expected, actual));
+
+			using (MemoryStream dest = new MemoryStream())
+			{
+				encoder.Encode(s_sampledata, dest);
+				Assert.IsTrue(Enumerable.SequenceEqual(expected, dest.ToArray()));
+			}
+
+			using (MemoryStream dest = new MemoryStream())
+			{
+				encoder.Encode(new MemoryStream(s_sampledata), dest);
+				Assert.IsTrue(Enumerable.SequenceEqual(expected, dest.ToArray()));
+			}
+
+			using (MemoryStream dest = new MemoryStream())
+			{
+				encoder.Encode(s_sampledata, 0, s_sampledata.Length, dest);
+				Assert.IsTrue(Enumerable.SequenceEqual(expected, dest.ToArray()));
 			}
 		}
 	}

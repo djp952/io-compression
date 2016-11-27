@@ -46,6 +46,18 @@ namespace zuki.io.compression.test
 		}
 
 		[TestMethod(), TestCategory("Gzip")]
+		public void Gzip_CompressExternal()
+		{
+			// This method generates an output file that can be tested externally; "thethreemusketeers.txt" is
+			// set to Copy Always to the output directory, it can be diffed after running the external tool
+			using (GzipWriter writer = new GzipWriter(File.Create(Path.Combine(Environment.CurrentDirectory, "thethreemusketeers.gz"))))
+			{
+				writer.Write(s_sampledata);
+				writer.Flush();
+			}
+		}
+
+		[TestMethod(), TestCategory("Gzip")]
 		public void Gzip_DecompressExternal()
 		{
 			// Decompress a stream created externally to this library

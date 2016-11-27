@@ -178,59 +178,59 @@
     <comment>SZ_OK</comment>
   </data>
   <data name="lzma1" xml:space="preserve">
-    <value />
+    <value>The compressed stream is corrupt and cannot be decompressed</value>
     <comment>SZ_ERROR_DATA</comment>
   </data>
   <data name="lzma10" xml:space="preserve">
-    <value />
+    <value>The operation was aborted</value>
     <comment>SZ_ERROR_PROGRESS</comment>
   </data>
   <data name="lzma11" xml:space="preserve">
-    <value />
+    <value>An internal library error has occurred</value>
     <comment>SZ_ERROR_FAIL</comment>
   </data>
   <data name="lzma12" xml:space="preserve">
-    <value />
+    <value>An internal library error has occurred</value>
     <comment>SZ_ERROR_THREAD</comment>
   </data>
   <data name="lzma16" xml:space="preserve">
-    <value />
+    <value>The input stream archive headers are invalid or corrupt</value>
     <comment>SZ_ERROR_ARCHIVE</comment>
   </data>
   <data name="lzma17" xml:space="preserve">
-    <value />
+    <value>The input stream does not represent a valid archive</value>
     <comment>SZ_ERROR_NO_ARCHIVE</comment>
   </data>
   <data name="lzma2" xml:space="preserve">
-    <value />
+    <value>A memory allocation request failed</value>
     <comment>SZ_ERROR_MEM</comment>
   </data>
   <data name="lzma3" xml:space="preserve">
-    <value />
+    <value>A cyclic redundancy check (CRC) failed</value>
     <comment>SZ_ERROR_CRC</comment>
   </data>
   <data name="lzma4" xml:space="preserve">
-    <value />
+    <value>The stream does not support the specified properties</value>
     <comment>SZ_ERROR_UNSUPPORTED</comment>
   </data>
   <data name="lzma5" xml:space="preserve">
-    <value />
+    <value>An invalid parameter was specified</value>
     <comment>SZ_ERROR_PARAM</comment>
   </data>
   <data name="lzma6" xml:space="preserve">
-    <value />
+    <value>The end of the stream was detected during decompression</value>
     <comment>SZ_ERROR_INPUT_EOF</comment>
   </data>
   <data name="lzma7" xml:space="preserve">
-    <value />
+    <value>The output data cannot be written into the output stream</value>
     <comment>SZ_ERROR_OUTPUT_EOF</comment>
   </data>
   <data name="lzma8" xml:space="preserve">
-    <value />
+    <value>Unable to read data from the input stream</value>
     <comment>SZ_ERROR_READ</comment>
   </data>
   <data name="lzma9" xml:space="preserve">
-    <value />
+    <value>Unable to write data into the output stream</value>
     <comment>SZ_ERROR_WRITE</comment>
   </data>
   <data name="zlib-1" xml:space="preserve">

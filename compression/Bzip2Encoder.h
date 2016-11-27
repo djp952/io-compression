@@ -60,11 +60,11 @@
 // bzip2/libbzip2 version 1.0.6 of 6 September 2010
 //---------------------------------------------------------------------------
 
-#ifndef __BZIP2WRITER_H_
-#define __BZIP2WRITER_H_
+#ifndef __BZIP2ENCODER_H_
+#define __BZIP2ENCODER_H_
 #pragma once
 
-#include <bzlib.h>
+#include "Encoder.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -74,143 +74,90 @@ using namespace System::IO;
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// Class Bzip2Writer
+// Class Bzip2Encoder
 //
-// BZIP2-based compression stream implementation
+// BZIP2 compression encoder
 //---------------------------------------------------------------------------
 
-public ref class Bzip2Writer : public Stream
+public ref class Bzip2Encoder : public Encoder
 {
 public:
 
-	// Instance Constructors
+	// Instance Constructor
 	//
-	Bzip2Writer(Stream^ stream);
-	Bzip2Writer(Stream^ stream, Compression::CompressionLevel level);
-	Bzip2Writer(Stream^ stream, bool leaveopen);
-	Bzip2Writer(Stream^ stream, Compression::CompressionLevel level, bool leaveopen);
+	Bzip2Encoder();
 
 	//-----------------------------------------------------------------------
 	// Member Functions
 
-	// Flush (Stream)
+	// Encode (Encoder)
 	//
-	// Clears all buffers for this stream and causes any buffered data to be written
-	virtual void Flush(void) override;
+	// Compresses an input stream into an array of bytes
+	virtual array<unsigned __int8>^ Encode(Stream^ instream);
 
-	// Read (Stream)
+	// Encode (Encoder)
 	//
-	// Reads a sequence of bytes from the current stream and advances the position within the stream
-	virtual int Read(array<unsigned __int8>^ buffer, int offset, int count) override;
+	// Compresses an input array of bytes
+	virtual array<unsigned __int8>^ Encode(array<unsigned __int8>^ buffer);
 
-	// Seek (Stream)
+	// Encode (Encoder)
 	//
-	// Sets the position within the current stream
-	virtual __int64 Seek(__int64 offset, SeekOrigin origin) override;
+	// Compresses an input array of bytes
+	virtual array<unsigned __int8>^ Encode(array<unsigned __int8>^ buffer, int offset, int count);
 
-	// SetLength (Stream)
+	// Encode (Encoder)
 	//
-	// Sets the length of the current stream
-	virtual void SetLength(__int64 value) override;
+	// Compresses an input stream into an output stream
+	virtual void Encode(Stream^ instream, Stream^ outstream);
 
-	// Write
+	// Encode (Encoder)
 	//
-	// Writes a sequence of bytes to the current stream and advances the current position
-	void Write(array<unsigned __int8>^ buffer);
+	// Compresses an input array of bytes into an output stream
+	virtual void Encode(array<unsigned __int8>^ buffer, Stream^ outstream);
 
-	// Write (Stream)
+	// Encode (Encoder)
 	//
-	// Writes a sequence of bytes to the current stream and advances the current position
-	virtual void Write(array<unsigned __int8>^ buffer, int offset, int count) override;
+	// Compresses an input array of bytes into an output stream
+	virtual void Encode(array<unsigned __int8>^ buffer, int offset, int count, Stream^ outstream);
 
 	//-----------------------------------------------------------------------
 	// Properties
 
-	// BaseStream
+	// BufferSize
 	//
-	// Exposes the underlying base stream instance
-	property Stream^ BaseStream
+	// Gets/sets the size of the compression data buffer
+	property int BufferSize
 	{
-		Stream^ get(void);
-	}
+		int get(void);
+		void set(int value);
+	} 
 
-	// CanRead (Stream)
+	// CompressionlLevel
 	//
-	// Gets a value indicating whether the current stream supports reading
-	property bool CanRead
+	// Gets/sets the compression level to use
+	property int CompressionLevel
 	{
-		virtual bool get(void) override;
-	}
+		int get(void);
+		void set(int value);
+	} 
 
-	// CanSeek (Stream)
+	// WorkFactor
 	//
-	// Gets a value indicating whether the current stream supports seeking
-	property bool CanSeek
+	// Gets/sets the bzip2 compression work factor
+	property int WorkFactor
 	{
-		virtual bool get(void) override;
-	}
-
-	// CanWrite (Stream)
-	//
-	// Gets a value indicating whether the current stream supports writing
-	property bool CanWrite
-	{
-		virtual bool get(void) override;
-	}
-
-	// Length (Stream)
-	//
-	// Gets the length in bytes of the stream
-	property __int64 Length
-	{
-		virtual __int64 get(void) override;
-	}
-
-	// Position (Stream)
-	//
-	// Gets or sets the current position within the stream
-	property __int64 Position
-	{
-		virtual __int64 get(void) override;
-		void set(__int64 value) override;
-	}
-
-internal:
-
-	// DEFAULT_BUFFER_SIZE
-	//
-	// Default size of the compression buffer, in bytes
-	static const int DEFAULT_BUFFER_SIZE = 65536;
-
-	// Instance Constructor
-	//
-	Bzip2Writer(Stream^ stream, int level, int workfactor, int buffersize, bool leaveopen);
+		int get(void);
+		void set(int value);
+	} 
 
 private:
-
-	// Destructor / Finalizer
-	//
-	~Bzip2Writer();
-	!Bzip2Writer();
-
-	//-----------------------------------------------------------------------
-	// Private Member Functions
-
-	// ConvertCompressionLevel
-	//
-	// Converts a Compression::CompressionLevel value into an integer
-	static int ConvertCompressionLevel(Compression::CompressionLevel level);
 
 	//-----------------------------------------------------------------------
 	// Member Variables
 
-	bool							m_disposed;		// Object disposal flag
-	Stream^							m_stream;		// Base Stream instance
-	bool							m_leaveopen;	// Flag to leave base stream open
-	initonly int					m_buffersize;	// Size of the compression buffer
-	bz_stream*						m_bzstream;		// BZIP2 stream state information
-
-	Object^	m_lock = gcnew Object();		// Synchronization object
+	int					m_buffersize;			// Size of the compression buffer
+	int					m_level;				// Compression level
+	int					m_workfactor;			// Work factor
 };
 
 //---------------------------------------------------------------------------
@@ -219,4 +166,4 @@ private:
 
 #pragma warning(pop)
 
-#endif	// __BZIP2WRITER_H_
+#endif	// __BZIP2ENCODER_H_
