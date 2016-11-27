@@ -16,14 +16,14 @@ Targets:
   <PropertyGroup>
     <SolutionDir>.\</SolutionDir>
     <VSTestConsoleExe>&quot;%VS140COMNTOOLS%..\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe&quot;</VSTestConsoleExe>
-    <OpenCoverConsoleExe>&quot;$(SolutionDir)..\external-opencover\tools\OpenCover.Console.exe&quot;</OpenCoverConsoleExe>
-    <ReportGeneratorExe>&quot;$(SolutionDir)..\external-reportgenerator\tools\ReportGenerator.exe&quot;</ReportGeneratorExe>
+    <OpenCoverConsoleExe>&quot;$(SolutionDir)..\external-opencover\OpenCover.Console.exe&quot;</OpenCoverConsoleExe>
+    <ReportGeneratorExe>&quot;$(SolutionDir)..\external-reportgenerator\ReportGenerator.exe&quot;</ReportGeneratorExe>
   </PropertyGroup>
   
   <!-- Clean release targets and output directory -->
   <Target Name="Clean">
-    <MSBuild Projects="io.sln" Properties="Configuration=Release;Platform=Win32" Targets="Clean" ContinueOnError="false"/>
-    <MSBuild Projects="io.sln" Properties="Configuration=Release;Platform=x64" Targets="Clean" ContinueOnError="false"/>
+    <MSBuild Projects="io.compression.sln" Properties="Configuration=Release;Platform=Win32" Targets="Clean" ContinueOnError="false"/>
+    <MSBuild Projects="io.compression.sln" Properties="Configuration=Release;Platform=x64" Targets="Clean" ContinueOnError="false"/>
     <RemoveDir Directories="$(SolutionDir)compression\tmp"/>
     <RemoveDir Directories="$(SolutionDir)compression.test\tmp"/>
     <RemoveDir Directories="$(SolutionDir)out"/>
@@ -31,8 +31,8 @@ Targets:
 
   <!-- Build release targets -->
   <Target Name="Build" DependsOnTargets="Clean">
-    <MSBuild Projects="io.sln" Properties="Configuration=Release;Platform=Win32" Targets="Rebuild" ContinueOnError="false"/>
-    <MSBuild Projects="io.sln" Properties="Configuration=Release;Platform=x64" Targets="Rebuild" ContinueOnError="false"/>
+    <MSBuild Projects="io.compression.sln" Properties="Configuration=Release;Platform=Win32" Targets="Rebuild" ContinueOnError="false"/>
+    <MSBuild Projects="io.compression.sln" Properties="Configuration=Release;Platform=x64" Targets="Rebuild" ContinueOnError="false"/>
   </Target>
 
   <!-- Build release targets and execute unit tests -->
@@ -50,7 +50,7 @@ Targets:
 
     <MakeDir Directories="$(CodeCoverageDir)" ContinueOnError="false"/>
     
-    <MSBuild Projects="io.sln" Properties="Configuration=Debug;Platform=Win32" Targets="Rebuild" ContinueOnError="false"/>
+    <MSBuild Projects="io.compression.sln" Properties="Configuration=Debug;Platform=Win32" Targets="Rebuild" ContinueOnError="false"/>
     
     <!-- zuki.io.compression -->
     <Exec Command="$(OpenCoverConsoleExe) -register:user -target:$(VsTestConsoleExe) -targetargs:&quot;/Settings:$(SolutionDir)default.runsettings /Logger:trx /inIsolation $(SolutionDir)out\Win32\Debug\zuki.io.compression.test.dll&quot; -filter:&quot;+[zuki.io.compression]*&quot; -mergebyhash -output:&quot;$(CodeCoverageDir)\compression.xml&quot;" ContinueOnError="true"/>
