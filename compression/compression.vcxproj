@@ -107,7 +107,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\external-bzip2;$(SolutionDir)..\external-lz4\lib;$(SolutionDir)..\external-lzma\C;$(SolutionDir)..\external-minilzo;$(SolutionDir)..\external-zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\external-bzip2;$(SolutionDir)..\external-lz4\lib;$(SolutionDir)..\external-lzma\C;$(SolutionDir)..\external-zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -125,7 +125,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\external-bzip2;$(SolutionDir)..\external-lz4\lib;$(SolutionDir)..\external-lzma\C;$(SolutionDir)..\external-minilzo;$(SolutionDir)..\external-zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\external-bzip2;$(SolutionDir)..\external-lz4\lib;$(SolutionDir)..\external-lzma\C;$(SolutionDir)..\external-zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -142,7 +142,7 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\external-bzip2;$(SolutionDir)..\external-lz4\lib;$(SolutionDir)..\external-lzma\C;$(SolutionDir)..\external-minilzo;$(SolutionDir)..\external-zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\external-bzip2;$(SolutionDir)..\external-lz4\lib;$(SolutionDir)..\external-lzma\C;$(SolutionDir)..\external-zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -158,7 +158,7 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\external-bzip2;$(SolutionDir)..\external-lz4\lib;$(SolutionDir)..\external-lzma\C;$(SolutionDir)..\external-minilzo;$(SolutionDir)..\external-zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\external-bzip2;$(SolutionDir)..\external-lz4\lib;$(SolutionDir)..\external-lzma\C;$(SolutionDir)..\external-zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -186,9 +186,6 @@
     <ClInclude Include="..\..\external-lzma\C\LzmaEnc.h" />
     <ClInclude Include="..\..\external-lzma\C\Xz.h" />
     <ClInclude Include="..\..\external-lzma\C\XzEnc.h" />
-    <ClInclude Include="..\..\external-minilzo\lzoconf.h" />
-    <ClInclude Include="..\..\external-minilzo\lzodefs.h" />
-    <ClInclude Include="..\..\external-minilzo\minilzo.h" />
     <ClInclude Include="..\..\external-zlib\zconf.h" />
     <ClInclude Include="..\..\external-zlib\zlib.h" />
     <ClInclude Include="Bzip2Exception.h" />
@@ -206,7 +203,6 @@
     <ClInclude Include="LzmaEncoder.h" />
     <ClInclude Include="LzmaException.h" />
     <ClInclude Include="LzmaReader.h" />
-    <ClInclude Include="LzopStream.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="XzEncoder.h" />
     <ClInclude Include="XzReader.h" />
@@ -570,16 +566,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\external-minilzo\minilzo.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
-    </ClCompile>
     <ClCompile Include="..\..\external-zlib\adler32.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -676,7 +662,6 @@
     <ClCompile Include="LzmaEncoder.cpp" />
     <ClCompile Include="LzmaException.cpp" />
     <ClCompile Include="LzmaReader.cpp" />
-    <ClCompile Include="LzopStream.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

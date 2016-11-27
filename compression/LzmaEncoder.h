@@ -44,7 +44,7 @@ namespace zuki::io::compression {
 // via properties on this class, just the basics are in here right now
 //---------------------------------------------------------------------------
 
-	public ref class LzmaEncoder : public Encoder
+public ref class LzmaEncoder : public Encoder
 {
 public:
 

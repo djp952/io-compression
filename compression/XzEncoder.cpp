@@ -88,6 +88,7 @@ array<unsigned __int8>^ XzEncoder::Encode(Stream^ instream)
 
 	msclr::auto_handle<MemoryStream> outstream(gcnew MemoryStream());
 	Encode(instream, outstream.get());
+
 	return outstream->ToArray();
 }
 
@@ -104,11 +105,7 @@ array<unsigned __int8>^ XzEncoder::Encode(array<unsigned __int8>^ buffer)
 {
 	if(Object::ReferenceEquals(buffer, nullptr)) throw gcnew ArgumentNullException("buffer");
 
-	msclr::auto_handle<MemoryStream> instream(gcnew MemoryStream(buffer, false));
-	msclr::auto_handle<MemoryStream> outstream(gcnew MemoryStream());
-
-	Encode(instream.get(), outstream.get());
-	return outstream->ToArray();
+	return Encode(buffer, 0, buffer->Length);
 }
 
 //---------------------------------------------------------------------------
@@ -130,6 +127,7 @@ array<unsigned __int8>^ XzEncoder::Encode(array<unsigned __int8>^ buffer, int of
 	msclr::auto_handle<MemoryStream> outstream(gcnew MemoryStream());
 
 	Encode(instream.get(), outstream.get());
+
 	return outstream->ToArray();
 }
 	

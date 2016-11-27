@@ -82,7 +82,6 @@
     <Compile Include="TestLz4.cs" />
     <Compile Include="TestLz4Legacy.cs" />
     <Compile Include="TestLzma.cs" />
-    <Compile Include="TestLzop.cs" />
     <Compile Include="TestXz.cs" />
     <Compile Include="tmp\version.cs" />
   </ItemGroup>
@@ -91,7 +90,6 @@
     <EmbeddedResource Include="thethreemusketeers.gz" />
     <EmbeddedResource Include="thethreemusketeers.lz4-legacy" />
     <EmbeddedResource Include="thethreemusketeers.lzma" />
-    <EmbeddedResource Include="thethreemusketeers.lzo" />
     <EmbeddedResource Include="thethreemusketeers.xz" />
     <EmbeddedResource Include="thethreemusketeers.lz4" />
     <None Include="version.ini" />
