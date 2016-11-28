@@ -236,7 +236,7 @@ int LzmaReader::Read(array<unsigned __int8>^ buffer, int offset, int count)
 	pin_ptr<unsigned __int8> pinout = &buffer[0];
 
 	// Copy count into a local value to tally the final bytes read from the stream
-	size_t availout = count;
+	int availout = count;
 
 	do {
 
@@ -255,9 +255,9 @@ int LzmaReader::Read(array<unsigned __int8>^ buffer, int offset, int count)
 		SRes result = LzmaDec_DecodeToBuf(m_state, &pinout[offset], &outsize, &pinin[m_inpos], &insize, LZMA_FINISH_ANY, &status);
  		if(result == SZ_ERROR_DATA) throw gcnew InvalidDataException();
 
-		m_inpos += insize;					// Increment the input buffer offset
-		offset += outsize;					// Increment the output buffer offset
-		availout -= outsize;				// Decrement the available output size
+		m_inpos += insize;							// Increment the input buffer offset
+		offset += static_cast<int>(outsize);		// Increment the output buffer offset
+		availout -= static_cast<int>(outsize);		// Decrement the available output size
 
 		// LZMA_STATUS_FINISHED_WITH_MARK indicates that there is no more data
 		if(m_finished = (status == LZMA_STATUS_FINISHED_WITH_MARK)) break;

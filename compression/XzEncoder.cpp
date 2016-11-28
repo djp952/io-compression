@@ -300,14 +300,15 @@ SRes XzEncoder::ReaderWriter::OnRead(void* context, void* buffer, size_t* size)
 	CHECK_DISPOSED(m_disposed);
 
 	if(*size == 0) return SZ_OK;
+	if(*size > System::Int32::MaxValue) return SZ_ERROR_PARAM;
 	if(buffer == nullptr) return SZ_ERROR_PARAM;
 
 	// Create an intermediate buffer in which to read the data from the managed stream
-	array<unsigned __int8>^ intermediate = gcnew array<unsigned __int8>(*size);
+	array<unsigned __int8>^ intermediate = gcnew array<unsigned __int8>(static_cast<int>(*size));
 	pin_ptr<unsigned __int8> pinintermediate = &intermediate[0];
 
 	// Read the data from the managed stream and copy it into the output buffer
-	*size = m_instream->Read(intermediate, 0, *size);
+	*size = m_instream->Read(intermediate, 0, static_cast<int>(*size));
 	if(*size) memcpy(buffer, pinintermediate, *size);
 
 	return SZ_OK;

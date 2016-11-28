@@ -229,7 +229,7 @@ int XzReader::Read(array<unsigned __int8>^ buffer, int offset, int count)
 	pin_ptr<unsigned __int8> pinout = &buffer[0];
 
 	// Copy count into a local value to tally the final bytes read from the stream
-	size_t availout = count;
+	int availout = count;
 
 	do {
 
@@ -249,9 +249,9 @@ int XzReader::Read(array<unsigned __int8>^ buffer, int offset, int count)
 			(insize == 0) ? CODER_FINISH_END : CODER_FINISH_ANY, &encstatus);
 		if(result != SZ_OK) throw gcnew LzmaException(result);
 
-		m_inpos += insize;					// Increment the input buffer offset
-		offset += outsize;					// Increment the output buffer offset
-		availout -= outsize;				// Decrement the available output size
+		m_inpos += insize;							// Increment the input buffer offset
+		offset += static_cast<int>(outsize);		// Increment the output buffer offset
+		availout -= static_cast<int>(outsize);		// Decrement the available output size
 
 		// If no input or output was generated, the stream is finished
 		if(m_finished = ((insize == 0) && (outsize == 0))) break;

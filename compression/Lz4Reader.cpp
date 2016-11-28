@@ -251,7 +251,7 @@ int Lz4Reader::Read(array<unsigned __int8>^ buffer, int offset, int count)
 	pin_ptr<unsigned __int8> pinout = &buffer[0];
 
 	// Copy count into a local value to tally the final bytes read from the stream
-	size_t availout = count;
+	int availout = count;
 
 	do {
 
@@ -276,8 +276,8 @@ int Lz4Reader::Read(array<unsigned __int8>^ buffer, int offset, int count)
 		m_inpos += insize;
 
 		// Adjust the output buffer parameters
-		availout -= outsize;
-		offset += outsize;
+		availout -= static_cast<int>(outsize);
+		offset += static_cast<int>(outsize);
 
 		// Zero indicates that the end of the input stream has been reached
 		if(result == 0) { m_finished = true; break; }

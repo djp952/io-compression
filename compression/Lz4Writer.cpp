@@ -139,7 +139,10 @@ Lz4Writer::Lz4Writer(Stream^ stream, Compression::CompressionLevel level, bool l
 	// Initialize the compressed stream
 	result = LZ4F_compressBegin(*m_context, pinheader, header->Length, m_prefs);
 	if(LZ4F_isError(result)) throw gcnew Lz4Exception(result);
-	m_stream->Write(header, 0, result);
+
+	// Result cannot be larger than Int32::MaxValue
+	if(result > Int32::MaxValue) throw gcnew OverflowException();
+	m_stream->Write(header, 0, static_cast<int>(result));
 }
 
 //---------------------------------------------------------------------------
@@ -158,7 +161,10 @@ Lz4Writer::~Lz4Writer()
 	LZ4F_compressOptions_t options ={ 0 /* stableSrc */, {0, 0, 0} /* reserved */};
 	LZ4F_errorCode_t result = LZ4F_compressEnd(*m_context, pinout, out->Length, &options);
 	if(LZ4F_isError(result)) throw gcnew Lz4Exception(result);
-	if(result > 0) m_stream->Write(out, 0, result);
+
+	// Result cannot be larger than Int32::MaxValue
+	if(result > Int32::MaxValue) throw gcnew OverflowException();
+	if(result > 0) m_stream->Write(out, 0, static_cast<int>(result));
 
 	// Optionally dispose of the input stream instance
 	if(!m_leaveopen) delete m_stream;
@@ -250,8 +256,11 @@ void Lz4Writer::Flush(void)
 	LZ4F_errorCode_t result = LZ4F_flush(*m_context, pinout, out->Length, &options);
 	if(LZ4F_isError(result)) throw gcnew Lz4Exception(result);
 
+	// Result cannot be larger than Int32::MaxValue
+	if(result > Int32::MaxValue) throw gcnew OverflowException();
+
 	// Write the compressed data to the output stream and flush it
-	if(result > 0) m_stream->Write(out, 0, result);
+	if(result > 0) m_stream->Write(out, 0, static_cast<int>(result));
 	m_stream->Flush();
 }
 
@@ -389,7 +398,10 @@ void Lz4Writer::Write(array<unsigned __int8>^ buffer, int offset, int count)
 	msclr::lock lock(m_lock);
 
 	// Create a temporary local buffer to hold the compressed data
-	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(LZ4F_compressBound(count, m_prefs));
+	size_t bound = LZ4F_compressBound(count, m_prefs);
+	if(bound > Int32::MaxValue) throw gcnew OverflowException();
+
+	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(static_cast<int>(bound));
 		
 	// Pin both the input and output buffers in memory
 	pin_ptr<unsigned __int8> pinin = &buffer[0];
@@ -400,8 +412,11 @@ void Lz4Writer::Write(array<unsigned __int8>^ buffer, int offset, int count)
 	LZ4F_errorCode_t result = LZ4F_compressUpdate(*m_context, pinout, out->Length, &pinin[offset], count, &options);
 	if(LZ4F_isError(result)) throw gcnew Lz4Exception(result);
 
+	// Result cannot be larger than Int32::MaxValue
+	if(result > Int32::MaxValue) throw gcnew OverflowException();
+
 	// If any data was written into the output buffer, write it to the underlying stream
-	if(result > 0) m_stream->Write(out, 0, result);
+	if(result > 0) m_stream->Write(out, 0, static_cast<int>(result));
 
 	delete out;						// Destroy the local buffer
 }
