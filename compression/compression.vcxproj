@@ -688,6 +688,10 @@
     <ResourceCompile Include="tmp\version.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="compression.nuspec">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="compression.targets" />
     <None Include="version.ini" />
   </ItemGroup>
   <ItemGroup>

@@ -6,6 +6,7 @@
   -->
   <RunConfiguration>
     <TargetFrameworkVersion>Framework45</TargetFrameworkVersion>
+	<ResultsDirectory>.\out\unittest</ResultsDirectory>
   </RunConfiguration>
 
 </RunSettings>

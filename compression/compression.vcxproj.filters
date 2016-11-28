@@ -320,6 +320,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="version.ini" />
+    <None Include="compression.nuspec" />
+    <None Include="compression.targets" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="compression.resx">

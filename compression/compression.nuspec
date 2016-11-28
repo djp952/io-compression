@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+  <metadata minClientVersion="2.5">
+    <title>zuki.io.compression</title>
+    <id>zuki.io.compression</id>
+    <version>$version$</version>
+    <authors>Michael G. Brehm</authors>
+    <owners>Michael G. Brehm</owners>
+    <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://github.com/djp952/io-compression</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>SUMMARY HERE</summary>
+    <description>DESCRIPTION HERE. Requires Microsoft.NET version 4.5 or higher.</description>
+    <releaseNotes>RELEASE NOTES HERE</releaseNotes>
+    <copyright>Copyright (C)2016 Michael G. Brehm</copyright>
+    <tags>zuki compression gzip bzip2 lz4 lzma xz</tags>
+  </metadata>
+</package>
