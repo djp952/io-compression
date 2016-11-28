@@ -202,7 +202,12 @@
     <ClInclude Include="GzipReader.h" />
     <ClInclude Include="GzipCompressionStrategy.h" />
     <ClInclude Include="GzipWriter.h" />
+    <ClInclude Include="Lz4BlockMode.h" />
+    <ClInclude Include="Lz4BlockSize.h" />
+    <ClInclude Include="Lz4CompressionLevel.h" />
+    <ClInclude Include="Lz4ContentChecksum.h" />
     <ClInclude Include="Lz4Exception.h" />
+    <ClInclude Include="Lz4LegacyEncoder.h" />
     <ClInclude Include="Lz4LegacyReader.h" />
     <ClInclude Include="Lz4LegacyWriter.h" />
     <ClInclude Include="Lz4Reader.h" />
@@ -667,7 +672,9 @@
     <ClCompile Include="GzipMemoryUsage.cpp" />
     <ClCompile Include="GzipReader.cpp" />
     <ClCompile Include="GzipWriter.cpp" />
+    <ClCompile Include="Lz4CompressionLevel.cpp" />
     <ClCompile Include="Lz4Exception.cpp" />
+    <ClCompile Include="Lz4LegacyEncoder.cpp" />
     <ClCompile Include="Lz4LegacyReader.cpp" />
     <ClCompile Include="Lz4LegacyWriter.cpp" />
     <ClCompile Include="Lz4Reader.cpp" />

@@ -139,6 +139,21 @@
     <ClInclude Include="Bzip2WorkFactor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Lz4CompressionLevel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lz4LegacyEncoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lz4BlockSize.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lz4BlockMode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lz4ContentChecksum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -343,6 +358,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Bzip2WorkFactor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Lz4CompressionLevel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Lz4LegacyEncoder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

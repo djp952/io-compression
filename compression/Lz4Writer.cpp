@@ -67,7 +67,8 @@ namespace zuki::io::compression {
 //
 //	stream		- The stream the compressed data is written to
 
-Lz4Writer::Lz4Writer(Stream^ stream) : Lz4Writer(stream, Compression::CompressionLevel::Optimal, false)
+Lz4Writer::Lz4Writer(Stream^ stream) : 
+	Lz4Writer(stream, Lz4CompressionLevel::Default, false, Lz4BlockSize::Default, Lz4BlockMode::Default, Lz4ContentChecksum::Default, 0, false)
 {
 }
 
@@ -79,7 +80,8 @@ Lz4Writer::Lz4Writer(Stream^ stream) : Lz4Writer(stream, Compression::Compressio
 //	stream		- The stream the compressed data is written to
 //	level		- Indicates whether to emphasize speed or compression efficiency
 
-Lz4Writer::Lz4Writer(Stream^ stream, Compression::CompressionLevel level) : Lz4Writer(stream, level, false)
+Lz4Writer::Lz4Writer(Stream^ stream, Compression::CompressionLevel level) : 
+	Lz4Writer(stream, Lz4CompressionLevel(level), false, Lz4BlockSize::Default, Lz4BlockMode::Default, Lz4ContentChecksum::Default, 0, false)
 {
 }
 
@@ -91,7 +93,8 @@ Lz4Writer::Lz4Writer(Stream^ stream, Compression::CompressionLevel level) : Lz4W
 //	stream		- The stream the compressed data is written to
 //	leaveopen	- Flag to leave the base stream open after disposal
 
-Lz4Writer::Lz4Writer(Stream^ stream, bool leaveopen) : Lz4Writer(stream, Compression::CompressionLevel::Optimal, leaveopen)
+Lz4Writer::Lz4Writer(Stream^ stream, bool leaveopen) : 
+	Lz4Writer(stream, Lz4CompressionLevel::Default, false, Lz4BlockSize::Default, Lz4BlockMode::Default, Lz4ContentChecksum::Default, 0, leaveopen)
 {
 }
 
@@ -104,14 +107,32 @@ Lz4Writer::Lz4Writer(Stream^ stream, bool leaveopen) : Lz4Writer(stream, Compres
 //	level		- Indicates the level of compression to use
 //	leaveopen	- Flag to leave the base stream open after disposal
 
-Lz4Writer::Lz4Writer(Stream^ stream, Compression::CompressionLevel level, bool leaveopen) : m_disposed(false), m_stream(stream), m_leaveopen(leaveopen)
+Lz4Writer::Lz4Writer(Stream^ stream, Compression::CompressionLevel level, bool leaveopen) :
+	Lz4Writer(stream, Lz4CompressionLevel(level), false, Lz4BlockSize::Default, Lz4BlockMode::Default, Lz4ContentChecksum::Default, 0, leaveopen)
+{
+}
+
+//---------------------------------------------------------------------------
+// Lz4Writer Constructor (internal)
+//
+// Arguments:
+//
+//	stream			- The stream the compressed data is read from
+//	level			- Indicates the level of compression to use
+//	autoflush		- Flag to automatically flush the buffers or not
+//	blocksize		- Maximum block size to use during encoding
+//	blockmode		- Block mode (linked/unlinked) to use during encoding
+//	checksum		- Content checksum flag to use during encoding
+//	contentlength	- Length of the input content if known, otherwise zero
+//	leaveopen		- Flag to leave the base stream open after disposal
+
+Lz4Writer::Lz4Writer(Stream^ stream, Lz4CompressionLevel level, bool autoflush, Lz4BlockSize blocksize, Lz4BlockMode blockmode, Lz4ContentChecksum checksum, __int64 contentlength, bool leaveopen) : 
+	m_disposed(false), m_stream(stream), m_leaveopen(leaveopen)
 {
 	LZ4F_errorCode_t				result;				// Result from LZ4 function call
 
 	if(Object::ReferenceEquals(stream, nullptr)) throw gcnew ArgumentNullException("stream");
-
-	// lz4 does not provide a 'no compression' option
-	if(level == Compression::CompressionLevel::NoCompression) throw gcnew ArgumentOutOfRangeException("level");
+	if(contentlength < 0) throw gcnew ArgumentOutOfRangeException("contentlength");
 
 	// Allocate and initialize the compression context structure
 	try { m_context = new LZ4F_compressionContext_t; memset(m_context, 0, sizeof(LZ4F_compressionContext_t)); }
@@ -125,12 +146,14 @@ Lz4Writer::Lz4Writer(Stream^ stream, Compression::CompressionLevel level, bool l
 	result = LZ4F_createCompressionContext(m_context, LZ4F_VERSION);
 	if(LZ4F_isError(result)) throw gcnew Lz4Exception(result);
 
-	// Set up the compression preferences for this instance
-	m_prefs->autoFlush = 0;
-	m_prefs->compressionLevel = (level == Compression::CompressionLevel::Fastest) ? 1 : 9;
-	m_prefs->frameInfo.blockMode = LZ4F_blockIndependent;
-	m_prefs->frameInfo.blockSizeID = LZ4F_max4MB;
-	m_prefs->frameInfo.contentChecksumFlag = LZ4F_contentChecksumEnabled;
+	// Set up the compression preferences for this instance (frame type is always LZ4F_frame)
+	m_prefs->autoFlush = (autoflush) ? 1 : 0;
+	m_prefs->compressionLevel = level;
+	m_prefs->frameInfo.blockMode = static_cast<LZ4F_blockMode_t>(blockmode);
+	m_prefs->frameInfo.blockSizeID = static_cast<LZ4F_blockSizeID_t>(blocksize);
+	m_prefs->frameInfo.contentChecksumFlag = static_cast<LZ4F_contentChecksum_t>(checksum);
+	m_prefs->frameInfo.frameType = LZ4F_frameType_t::LZ4F_frame;
+	m_prefs->frameInfo.contentSize = static_cast<unsigned __int64>(contentlength);
 
 	// Create a temporary buffer to hold the stream header information (max 15 bytes)
 	array<unsigned __int8>^ header = gcnew array<unsigned __int8>(15);

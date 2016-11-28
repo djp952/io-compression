@@ -47,15 +47,12 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //---------------------------------------------------------------------------
 
-#ifndef __LZ4WRITER_H_
-#define __LZ4WRITER_H_
+#ifndef __LZ4COMPRESSIONLEVEL_H_
+#define __LZ4COMPRESSIONLEVEL_H_
 #pragma once
 
 #include <lz4frame.h>
-#include "Lz4BlockMode.h"
-#include "Lz4BlockSize.h"
-#include "Lz4CompressionLevel.h"
-#include "Lz4ContentChecksum.h"
+#include <lz4hc.h>
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -65,131 +62,77 @@ using namespace System::IO;
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// Class Lz4Writer
+// Class Lz4CompressionLevel
 //
-// LZ4 stream compressor
+// Indicates the compression level to use with the LZ4 encoder
 //---------------------------------------------------------------------------
 
-public ref class Lz4Writer : public Stream
+public value class Lz4CompressionLevel
 {
 public:
 
 	// Instance Constructors
 	//
-	Lz4Writer(Stream^ stream);
-	Lz4Writer(Stream^ stream, Compression::CompressionLevel level);
-	Lz4Writer(Stream^ stream, bool leaveopen);
-	Lz4Writer(Stream^ stream, Compression::CompressionLevel level, bool leaveopen);
+	Lz4CompressionLevel(int level);
+	Lz4CompressionLevel(Compression::CompressionLevel level);
+
+	//-----------------------------------------------------------------------
+	// Overloaded Operators
+
+	// operator== (static)
+	//
+	static bool operator==(Lz4CompressionLevel lhs, Lz4CompressionLevel rhs);
+
+	// operator!= (static)
+	//
+	static bool operator!=(Lz4CompressionLevel lhs, Lz4CompressionLevel rhs);
 
 	//-----------------------------------------------------------------------
 	// Member Functions
 
-	// Flush (Stream)
+	// Equals
 	//
-	// Clears all buffers for this stream and causes any buffered data to be written
-	virtual void Flush(void) override;
+	// Overrides Object::Equals()
+	virtual bool Equals(Object^ rhs) override;
 
-	// Read (Stream)
+	// Equals
 	//
-	// Reads a sequence of bytes from the current stream and advances the position within the stream
-	virtual int Read(array<unsigned __int8>^ buffer, int offset, int count) override;
+	// Compares this Lz4CompressionLevel to another Lz4CompressionLevel
+	bool Equals(Lz4CompressionLevel rhs);
 
-	// Seek (Stream)
+	// GetHashCode
 	//
-	// Sets the position within the current stream
-	virtual __int64 Seek(__int64 offset, SeekOrigin origin) override;
+	// Overrides Object::GetHashCode()
+	virtual int GetHashCode(void) override;
 
-	// SetLength (Stream)
+	// ToString
 	//
-	// Sets the length of the current stream
-	virtual void SetLength(__int64 value) override;
-
-	// Write
-	//
-	// Writes a sequence of bytes to the current stream and advances the current position
-	void Write(array<unsigned __int8>^ buffer);
-
-	// Write (Stream)
-	//
-	// Writes a sequence of bytes to the current stream and advances the current position
-	virtual void Write(array<unsigned __int8>^ buffer, int offset, int count) override;
+	// Overrides Object::ToString()
+	virtual String^ ToString(void) override;
 
 	//-----------------------------------------------------------------------
-	// Properties
+	// Fields
 
-	// BaseStream
-	//
-	// Exposes the underlying base stream instance
-	property Stream^ BaseStream
-	{
-		Stream^ get(void);
-	}
-
-	// CanRead (Stream)
-	//
-	// Gets a value indicating whether the current stream supports reading
-	property bool CanRead
-	{
-		virtual bool get(void) override;
-	}
-
-	// CanSeek (Stream)
-	//
-	// Gets a value indicating whether the current stream supports seeking
-	property bool CanSeek
-	{
-		virtual bool get(void) override;
-	}
-
-	// CanWrite (Stream)
-	//
-	// Gets a value indicating whether the current stream supports writing
-	property bool CanWrite
-	{
-		virtual bool get(void) override;
-	}
-
-	// Length (Stream)
-	//
-	// Gets the length in bytes of the stream
-	property __int64 Length
-	{
-		virtual __int64 get(void) override;
-	}
-
-	// Position (Stream)
-	//
-	// Gets or sets the current position within the stream
-	property __int64 Position
-	{
-		virtual __int64 get(void) override;
-		void set(__int64 value) override;
-	}
+	static initonly Lz4CompressionLevel Default	= Lz4CompressionLevel(0);
+	static initonly Lz4CompressionLevel Fastest	= Lz4CompressionLevel(1);
+	static initonly Lz4CompressionLevel Optimal	= Lz4CompressionLevel(LZ4HC_DEFAULT_CLEVEL);
 
 internal:
 
-	// Instance Constructor
+	//-----------------------------------------------------------------------
+	// Internal Operators
+
+	// operator int
 	//
-	Lz4Writer(Stream^ stream, Lz4CompressionLevel level, bool autoflush, Lz4BlockSize blocksize, Lz4BlockMode blockmode, 
-		Lz4ContentChecksum checksum, __int64 contentlength, bool leaveopen);
+	// Exposes the value as an integer
+	static operator int(Lz4CompressionLevel rhs);
 
 private:
-
-	// Destructor / Finalizer
-	//
-	~Lz4Writer();
-	!Lz4Writer();
 
 	//-----------------------------------------------------------------------
 	// Member Variables
 
-	bool							m_disposed;			// Object disposal flag
-	Stream^							m_stream;			// Base Stream instance
-	bool							m_leaveopen;		// Flag to leave base stream open
-	LZ4F_compressionContext_t*		m_context;			// LZ4 compression context
-	LZ4F_preferences_t*				m_prefs;			// LZ4 compression preferences
-
-	Object^	m_lock = gcnew Object();		// Synchronization object
+	int							m_level;		// Underlying compression level
 };
 
 //---------------------------------------------------------------------------
@@ -198,4 +141,4 @@ private:
 
 #pragma warning(pop)
 
-#endif	// __LZ4WRITER_H_
+#endif	// __LZ4COMPRESSIONLEVEL_H_

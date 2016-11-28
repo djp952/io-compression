@@ -74,12 +74,11 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //---------------------------------------------------------------------------
 
-#ifndef __LZ4LEGACYWRITER_H_
-#define __LZ4LEGACYWRITER_H_
+#ifndef __LZ4LEGACYENCODER_H_
+#define __LZ4LEGACYENCODER_H_
 #pragma once
 
-#include <lz4.h>
-#include <lz4hc.h>
+#include "Encoder.h"
 #include "Lz4CompressionLevel.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
@@ -90,160 +89,70 @@ using namespace System::IO;
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// Class Lz4LegacyWriter
+// Class Lz4LegacyEncoder
 //
-// LZ4 legacy format compressor compatible with "lz4 -l" input streams
+// LZ4 Legacy compression encoder
 //---------------------------------------------------------------------------
 
-public ref class Lz4LegacyWriter : public Stream
+public ref class Lz4LegacyEncoder : public Encoder
 {
 public:
 
-	// Instance Constructors
+	// Instance Constructor
 	//
-	Lz4LegacyWriter(Stream^ stream);
-	Lz4LegacyWriter(Stream^ stream, Compression::CompressionLevel level);
-	Lz4LegacyWriter(Stream^ stream, bool leaveopen);
-	Lz4LegacyWriter(Stream^ stream, Compression::CompressionLevel level, bool leaveopen);
+	Lz4LegacyEncoder();
 
 	//-----------------------------------------------------------------------
 	// Member Functions
 
-	// Flush (Stream)
+	// Encode (Encoder)
 	//
-	// Clears all buffers for this stream and causes any buffered data to be written
-	virtual void Flush(void) override;
+	// Compresses an input stream into an array of bytes
+	virtual array<unsigned __int8>^ Encode(Stream^ instream);
 
-	// Read (Stream)
+	// Encode (Encoder)
 	//
-	// Reads a sequence of bytes from the current stream and advances the position within the stream
-	virtual int Read(array<unsigned __int8>^ buffer, int offset, int count) override;
+	// Compresses an input array of bytes
+	virtual array<unsigned __int8>^ Encode(array<unsigned __int8>^ buffer);
 
-	// Seek (Stream)
+	// Encode (Encoder)
 	//
-	// Sets the position within the current stream
-	virtual __int64 Seek(__int64 offset, SeekOrigin origin) override;
+	// Compresses an input array of bytes
+	virtual array<unsigned __int8>^ Encode(array<unsigned __int8>^ buffer, int offset, int count);
 
-	// SetLength (Stream)
+	// Encode (Encoder)
 	//
-	// Sets the length of the current stream
-	virtual void SetLength(__int64 value) override;
+	// Compresses an input stream into an output stream
+	virtual void Encode(Stream^ instream, Stream^ outstream);
 
-	// Write
+	// Encode (Encoder)
 	//
-	// Writes a sequence of bytes to the current stream and advances the current position
-	void Write(array<unsigned __int8>^ buffer);
+	// Compresses an input array of bytes into an output stream
+	virtual void Encode(array<unsigned __int8>^ buffer, Stream^ outstream);
 
-	// Write (Stream)
+	// Encode (Encoder)
 	//
-	// Writes a sequence of bytes to the current stream and advances the current position
-	virtual void Write(array<unsigned __int8>^ buffer, int offset, int count) override;
+	// Compresses an input array of bytes into an output stream
+	virtual void Encode(array<unsigned __int8>^ buffer, int offset, int count, Stream^ outstream);
 
 	//-----------------------------------------------------------------------
 	// Properties
 
-	// BaseStream
+	// CompressionlLevel
 	//
-	// Exposes the underlying base stream instance
-	property Stream^ BaseStream
+	// Gets/sets the compression level to use
+	property Lz4CompressionLevel CompressionLevel
 	{
-		Stream^ get(void);
+		Lz4CompressionLevel get(void);
+		void set(Lz4CompressionLevel value);
 	}
-
-	// CanRead (Stream)
-	//
-	// Gets a value indicating whether the current stream supports reading
-	property bool CanRead
-	{
-		virtual bool get(void) override;
-	}
-
-	// CanSeek (Stream)
-	//
-	// Gets a value indicating whether the current stream supports seeking
-	property bool CanSeek
-	{
-		virtual bool get(void) override;
-	}
-
-	// CanWrite (Stream)
-	//
-	// Gets a value indicating whether the current stream supports writing
-	property bool CanWrite
-	{
-		virtual bool get(void) override;
-	}
-
-	// Length (Stream)
-	//
-	// Gets the length in bytes of the stream
-	property __int64 Length
-	{
-		virtual __int64 get(void) override;
-	}
-
-	// Position (Stream)
-	//
-	// Gets or sets the current position within the stream
-	property __int64 Position
-	{
-		virtual __int64 get(void) override;
-		void set(__int64 value) override;
-	}
-
-internal:
-
-	// Instance Constructor
-	//
-	Lz4LegacyWriter(Stream^ stream, Lz4CompressionLevel level, bool leaveopen);
 
 private:
-
-	// LEGACY_MAGICNUMBER
-	//
-	// Legacy lz4 magic number
-	static const unsigned int LEGACY_MAGICNUMBER = 0x184C2102;
-
-	// LEGACY_BLOCKSIZE
-	//
-	// Legacy lz4 block size
-	static const int LEGACY_BLOCKSIZE = (8 << 20);
-
-	// CompressFunc
-	//
-	// Function pointer to an LZ4 compressor implementation
-	using CompressFunc = int (*)(char const* src, char* dst, int srcSize, int dstSize, int cLevel);
-
-	// Destructor
-	//
-	~Lz4LegacyWriter();
-
-	//-----------------------------------------------------------------------
-	// Private Member Functions
-
-	// WriteLE32 (static)
-	//
-	// Reads a little endian 32-bit number into a stream
-	static void WriteLE32(Stream^ stream, unsigned int value);
-
-	// WriteNextBlock
-	//
-	// Writes the next block of data into the output stream
-	int WriteNextBlock(void);
 
 	//-----------------------------------------------------------------------
 	// Member Variables
 
-	bool							m_disposed;			// Object disposal flag
-	Stream^							m_stream;			// Base Stream instance
-	bool							m_leaveopen;		// Flag to leave base stream open
-	CompressFunc					m_compressor;		// Pointer to the compression func
-	int								m_level;			// Compression level
-	bool							m_hasmagic;			// Flag if magic number was written
-	array<unsigned __int8>^			m_in;				// Input data buffer
-	int								m_inpos;			// Position within the buffer
-
-	Object^	m_lock = gcnew Object();		// Synchronization object
+	Lz4CompressionLevel			m_level;			// Compression level
 };
 
 //---------------------------------------------------------------------------
@@ -252,4 +161,4 @@ private:
 
 #pragma warning(pop)
 
-#endif	// __LZ4LEGACYWRITER_H_
+#endif	// __LZ4LEGACYENCODER_H_

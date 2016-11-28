@@ -73,7 +73,8 @@ static int LZ4IO_LZ4_compress(char const* source, char* destination, int sourcel
 //
 //	stream		- The stream the compressed data is written to
 
-Lz4LegacyWriter::Lz4LegacyWriter(Stream^ stream) : Lz4LegacyWriter(stream, Compression::CompressionLevel::Optimal, false)
+Lz4LegacyWriter::Lz4LegacyWriter(Stream^ stream) : 
+	Lz4LegacyWriter(stream, Lz4CompressionLevel::Default, false)
 {
 }
 
@@ -85,7 +86,8 @@ Lz4LegacyWriter::Lz4LegacyWriter(Stream^ stream) : Lz4LegacyWriter(stream, Compr
 //	stream		- The stream the compressed data is written to
 //	level		- Indicates whether to emphasize speed or compression efficiency
 
-Lz4LegacyWriter::Lz4LegacyWriter(Stream^ stream, Compression::CompressionLevel level) : Lz4LegacyWriter(stream, level, false)
+Lz4LegacyWriter::Lz4LegacyWriter(Stream^ stream, Compression::CompressionLevel level) : 
+	Lz4LegacyWriter(stream, Lz4CompressionLevel(level), false)
 {
 }
 
@@ -97,7 +99,8 @@ Lz4LegacyWriter::Lz4LegacyWriter(Stream^ stream, Compression::CompressionLevel l
 //	stream		- The stream the compressed data is written to
 //	leaveopen	- Flag to leave the base stream open after disposal
 
-Lz4LegacyWriter::Lz4LegacyWriter(Stream^ stream, bool leaveopen) : Lz4LegacyWriter(stream, Compression::CompressionLevel::Optimal, leaveopen)
+Lz4LegacyWriter::Lz4LegacyWriter(Stream^ stream, bool leaveopen) : 
+	Lz4LegacyWriter(stream, Lz4CompressionLevel::Default, leaveopen)
 {
 }
 
@@ -110,15 +113,24 @@ Lz4LegacyWriter::Lz4LegacyWriter(Stream^ stream, bool leaveopen) : Lz4LegacyWrit
 //	level		- Indicates the level of compression to use
 //	leaveopen	- Flag to leave the base stream open after disposal
 
-Lz4LegacyWriter::Lz4LegacyWriter(Stream^ stream, Compression::CompressionLevel level, bool leaveopen) : m_disposed(false), 
-	m_stream(stream), m_leaveopen(leaveopen), m_hasmagic(false), m_inpos(0)
+Lz4LegacyWriter::Lz4LegacyWriter(Stream^ stream, Compression::CompressionLevel level, bool leaveopen) :
+	Lz4LegacyWriter(stream, Lz4CompressionLevel(level), leaveopen)
+{
+}
+
+//---------------------------------------------------------------------------
+// Lz4LegacyWriter Constructor
+//
+// Arguments:
+//
+//	stream		- The stream the compressed data is read from
+//	level		- Indicates the level of compression to use
+//	leaveopen	- Flag to leave the base stream open after disposal
+
+Lz4LegacyWriter::Lz4LegacyWriter(Stream^ stream, Lz4CompressionLevel level, bool leaveopen) : m_disposed(false), 
+	m_stream(stream), m_level(level), m_leaveopen(leaveopen), m_hasmagic(false), m_inpos(0)
 {
 	if(Object::ReferenceEquals(stream, nullptr)) throw gcnew ArgumentNullException("stream");
-
-	// Convert the level into an integer value that can be passed into LZ4
-	if(level == Compression::CompressionLevel::Fastest) m_level = 1;
-	else if(level == Compression::CompressionLevel::Optimal) m_level = 9;
-	else throw gcnew ArgumentOutOfRangeException("level");
 
 	// Select a compression function based on the requested compression level
 	m_compressor = (m_level < 3) ? LZ4IO_LZ4_compress : LZ4_compress_HC;
