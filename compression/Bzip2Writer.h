@@ -65,6 +65,8 @@
 #pragma once
 
 #include <bzlib.h>
+#include "Bzip2CompressionLevel.h"
+#include "Bzip2WorkFactor.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -184,7 +186,7 @@ internal:
 
 	// Instance Constructor
 	//
-	Bzip2Writer(Stream^ stream, int level, int workfactor, int buffersize, bool leaveopen);
+	Bzip2Writer(Stream^ stream, Bzip2CompressionLevel level, Bzip2WorkFactor workfactor, int buffersize, bool leaveopen);
 
 private:
 
@@ -192,14 +194,6 @@ private:
 	//
 	~Bzip2Writer();
 	!Bzip2Writer();
-
-	//-----------------------------------------------------------------------
-	// Private Member Functions
-
-	// ConvertCompressionLevel
-	//
-	// Converts a Compression::CompressionLevel value into an integer
-	static int ConvertCompressionLevel(Compression::CompressionLevel level);
 
 	//-----------------------------------------------------------------------
 	// Member Variables

@@ -66,6 +66,8 @@
 
 #include <bzlib.h>
 #include "Encoder.h"
+#include "Bzip2CompressionLevel.h"
+#include "Bzip2WorkFactor.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -136,19 +138,19 @@ public:
 	// CompressionlLevel
 	//
 	// Gets/sets the compression level to use
-	property int CompressionLevel
+	property Bzip2CompressionLevel CompressionLevel
 	{
-		int get(void);
-		void set(int value);
+		Bzip2CompressionLevel get(void);
+		void set(Bzip2CompressionLevel value);
 	} 
 
 	// WorkFactor
 	//
 	// Gets/sets the bzip2 compression work factor
-	property int WorkFactor
+	property Bzip2WorkFactor WorkFactor
 	{
-		int get(void);
-		void set(int value);
+		Bzip2WorkFactor get(void);
+		void set(Bzip2WorkFactor value);
 	} 
 
 private:
@@ -156,9 +158,9 @@ private:
 	//-----------------------------------------------------------------------
 	// Member Variables
 
-	int					m_buffersize;			// Size of the compression buffer
-	int					m_level;				// Compression level
-	int					m_workfactor;			// Work factor
+	int							m_buffersize;			// Size of the compression buffer
+	Bzip2CompressionLevel		m_level;				// Compression level
+	Bzip2WorkFactor				m_workfactor;			// Work factor
 };
 
 //---------------------------------------------------------------------------

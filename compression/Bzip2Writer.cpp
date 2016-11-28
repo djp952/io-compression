@@ -76,7 +76,8 @@ namespace zuki::io::compression {
 //
 //	stream		- The stream the compressed data is written to
 
-Bzip2Writer::Bzip2Writer(Stream^ stream) : Bzip2Writer(stream, 9, 0, DEFAULT_BUFFER_SIZE, false)
+Bzip2Writer::Bzip2Writer(Stream^ stream) : 
+	Bzip2Writer(stream, Bzip2CompressionLevel::Default, Bzip2WorkFactor::Default, DEFAULT_BUFFER_SIZE, false)
 {
 }
 
@@ -88,7 +89,8 @@ Bzip2Writer::Bzip2Writer(Stream^ stream) : Bzip2Writer(stream, 9, 0, DEFAULT_BUF
 //	stream		- The stream the compressed data is written to
 //	level		- Indicates whether to emphasize speed or compression efficiency
 
-Bzip2Writer::Bzip2Writer(Stream^ stream, Compression::CompressionLevel level) : Bzip2Writer(stream, ConvertCompressionLevel(level), 0, DEFAULT_BUFFER_SIZE, false)
+Bzip2Writer::Bzip2Writer(Stream^ stream, Compression::CompressionLevel level) : 
+	Bzip2Writer(stream, Bzip2CompressionLevel(level), Bzip2WorkFactor::Default, DEFAULT_BUFFER_SIZE, false)
 {
 }
 
@@ -100,7 +102,8 @@ Bzip2Writer::Bzip2Writer(Stream^ stream, Compression::CompressionLevel level) : 
 //	stream		- The stream the compressed data is written to
 //	leaveopen	- Flag to leave the base stream open after disposal
 
-Bzip2Writer::Bzip2Writer(Stream^ stream, bool leaveopen) : Bzip2Writer(stream, 9, 0, DEFAULT_BUFFER_SIZE, leaveopen)
+Bzip2Writer::Bzip2Writer(Stream^ stream, bool leaveopen) : 
+	Bzip2Writer(stream, Bzip2CompressionLevel::Default, Bzip2WorkFactor::Default, DEFAULT_BUFFER_SIZE, leaveopen)
 {
 }
 
@@ -113,7 +116,8 @@ Bzip2Writer::Bzip2Writer(Stream^ stream, bool leaveopen) : Bzip2Writer(stream, 9
 //	level		- Indicates the level of compression to use
 //	leaveopen	- Flag to leave the base stream open after disposal
 
-Bzip2Writer::Bzip2Writer(Stream^ stream, Compression::CompressionLevel level, bool leaveopen) : Bzip2Writer(stream, ConvertCompressionLevel(level), 0, DEFAULT_BUFFER_SIZE, leaveopen)
+Bzip2Writer::Bzip2Writer(Stream^ stream, Compression::CompressionLevel level, bool leaveopen) : 
+	Bzip2Writer(stream, Bzip2CompressionLevel(level), Bzip2WorkFactor::Default, DEFAULT_BUFFER_SIZE, leaveopen)
 {
 }
 
@@ -128,14 +132,10 @@ Bzip2Writer::Bzip2Writer(Stream^ stream, Compression::CompressionLevel level, bo
 //	buffersize		- Indicates the size of the compression buffer
 //	leaveopen		- Flag to leave the base stream open after disposal
 
-Bzip2Writer::Bzip2Writer(Stream^ stream, int level, int workfactor, int buffersize, bool leaveopen) : m_disposed(false), m_stream(stream), 
-	m_leaveopen(leaveopen), m_buffersize(buffersize)
+Bzip2Writer::Bzip2Writer(Stream^ stream, Bzip2CompressionLevel level, Bzip2WorkFactor workfactor, int buffersize, bool leaveopen) : 
+	m_disposed(false), m_stream(stream), m_leaveopen(leaveopen), m_buffersize(buffersize)
 {
 	if(Object::ReferenceEquals(stream, nullptr)) throw gcnew ArgumentNullException("stream");
-
-	// bzip does not provide a 'no compression' option
-	if((level < 1) || (level > 9)) throw gcnew ArgumentOutOfRangeException("level");
-	if((workfactor < 0) || (workfactor > 250)) throw gcnew ArgumentOutOfRangeException("workfactor");
 	if(buffersize <= 0) throw gcnew ArgumentOutOfRangeException("buffersize");
 
 	// Allocate and initialize the unmanaged bz_stream structure
@@ -244,24 +244,6 @@ bool Bzip2Writer::CanWrite::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
 	return m_stream->CanWrite;
-}
-
-//---------------------------------------------------------------------------
-// Bzip2Writer::ConvertCompressionLevel (private, static)
-//
-// Converts a Compression::CompressionLevel value
-//
-// Arguments:
-//
-//	level		- Compression::CompressionLevel to convert
-
-int Bzip2Writer::ConvertCompressionLevel(Compression::CompressionLevel level)
-{
-	if(level == Compression::CompressionLevel::Fastest) return 1;
-	else if(level == Compression::CompressionLevel::Optimal) return 9;
-	
-	// bzip2 does not support a NoCompression option
-	throw gcnew ArgumentOutOfRangeException("level");
 }
 
 //---------------------------------------------------------------------------

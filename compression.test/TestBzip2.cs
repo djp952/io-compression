@@ -500,26 +500,26 @@ namespace zuki.io.compression.test
 
 			// Check the default values
 			Assert.AreEqual(65536, encoder.BufferSize);
-			Assert.AreEqual(9, encoder.CompressionLevel);
-			Assert.AreEqual(30, encoder.WorkFactor);
+			Assert.AreEqual(Bzip2CompressionLevel.Default, encoder.CompressionLevel);
+			Assert.AreEqual(Bzip2WorkFactor.Default, encoder.WorkFactor);
 
 			// Set some bad values and ensure they are caught by the encoder property setters
 			try { encoder.BufferSize = -1; Assert.Fail("Property should have thrown an exception"); }
 			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
 
-			try { encoder.CompressionLevel = -1; Assert.Fail("Property should have thrown an exception"); }
+			try { encoder.CompressionLevel = new Bzip2CompressionLevel(-1); Assert.Fail("Property should have thrown an exception"); }
 			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
 
-			try { encoder.CompressionLevel = 0; Assert.Fail("Property should have thrown an exception"); }
+			try { encoder.CompressionLevel = new Bzip2CompressionLevel(0); Assert.Fail("Property should have thrown an exception"); }
 			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
 
-			try { encoder.CompressionLevel = 10; Assert.Fail("Property should have thrown an exception"); }
+			try { encoder.CompressionLevel = new Bzip2CompressionLevel(10); Assert.Fail("Property should have thrown an exception"); }
 			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
 
-			try { encoder.WorkFactor = -1; Assert.Fail("Property should have thrown an exception"); }
+			try { encoder.WorkFactor = new Bzip2WorkFactor(-1); Assert.Fail("Property should have thrown an exception"); }
 			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
 
-			try { encoder.WorkFactor = 251; Assert.Fail("Property should have thrown an exception"); }
+			try { encoder.WorkFactor = new Bzip2WorkFactor(251); Assert.Fail("Property should have thrown an exception"); }
 			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
 
 			// Check all of the Encoder methods work and encode as expected

@@ -76,7 +76,8 @@ namespace zuki::io::compression {
 //
 //	NONE
 
-Bzip2Encoder::Bzip2Encoder() : m_buffersize(Bzip2Writer::DEFAULT_BUFFER_SIZE), m_level(9), m_workfactor(30)
+Bzip2Encoder::Bzip2Encoder() : m_buffersize(Bzip2Writer::DEFAULT_BUFFER_SIZE), m_level(Bzip2CompressionLevel::Default), 
+	m_workfactor(Bzip2WorkFactor::Default)
 {
 }
 
@@ -106,7 +107,7 @@ void Bzip2Encoder::BufferSize::set(int value)
 //
 // Gets the encoder compression level value
 
-int Bzip2Encoder::CompressionLevel::get(void)
+Bzip2CompressionLevel Bzip2Encoder::CompressionLevel::get(void)
 {
 	return m_level;
 }
@@ -116,9 +117,8 @@ int Bzip2Encoder::CompressionLevel::get(void)
 //
 // Sets the encoder compression level value
 
-void Bzip2Encoder::CompressionLevel::set(int value)
+void Bzip2Encoder::CompressionLevel::set(Bzip2CompressionLevel value)
 {
-	if((value < 1) || (value > 9)) throw gcnew ArgumentOutOfRangeException("value");
 	m_level = value;
 }
 
@@ -244,7 +244,7 @@ void Bzip2Encoder::Encode(array<unsigned __int8>^ buffer, int offset, int count,
 //
 // Gets the encoder work factor value
 
-int Bzip2Encoder::WorkFactor::get(void)
+Bzip2WorkFactor Bzip2Encoder::WorkFactor::get(void)
 {
 	return m_workfactor;
 }
@@ -254,9 +254,8 @@ int Bzip2Encoder::WorkFactor::get(void)
 //
 // Sets the encoder work factor value
 
-void Bzip2Encoder::WorkFactor::set(int value)
+void Bzip2Encoder::WorkFactor::set(Bzip2WorkFactor value)
 {
-	if((value < 0) || (value > 250)) throw gcnew ArgumentOutOfRangeException("value");
 	m_workfactor = value;
 }
 

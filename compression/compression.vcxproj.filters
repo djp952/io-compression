@@ -133,6 +133,12 @@
     <ClInclude Include="GzipMemoryUsage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Bzip2CompressionLevel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Bzip2WorkFactor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -331,6 +337,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GzipMemoryUsage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Bzip2CompressionLevel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Bzip2WorkFactor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
