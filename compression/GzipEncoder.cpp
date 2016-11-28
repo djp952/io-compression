@@ -36,7 +36,8 @@ namespace zuki::io::compression {
 //
 //	NONE
 
-GzipEncoder::GzipEncoder() : m_buffersize(GzipWriter::DEFAULT_BUFFER_SIZE), m_level(9)
+GzipEncoder::GzipEncoder() : m_buffersize(GzipWriter::DEFAULT_BUFFER_SIZE), m_level(GzipCompressionLevel::Default),
+	m_strategy(GzipCompressionStrategy::Default), m_maxmem(GzipMemoryUsage::Default)
 {
 }
 
@@ -66,7 +67,7 @@ void GzipEncoder::BufferSize::set(int value)
 //
 // Gets the encoder compression level value
 
-int GzipEncoder::CompressionLevel::get(void)
+GzipCompressionLevel GzipEncoder::CompressionLevel::get(void)
 {
 	return m_level;
 }
@@ -76,10 +77,29 @@ int GzipEncoder::CompressionLevel::get(void)
 //
 // Sets the encoder compression level value
 
-void GzipEncoder::CompressionLevel::set(int value)
+void GzipEncoder::CompressionLevel::set(GzipCompressionLevel value)
 {
-	if((value < 0) || (value > 9)) throw gcnew ArgumentOutOfRangeException("value");
 	m_level = value;
+}
+
+//---------------------------------------------------------------------------
+// GzipEncoder::CompressionStrategy::get
+//
+// Gets the encoder compression strategy
+
+GzipCompressionStrategy GzipEncoder::CompressionStrategy::get(void)
+{
+	return m_strategy;
+}
+
+//---------------------------------------------------------------------------
+// GzipEncoder::CompressionStrategy::set
+//
+// Sets the encoder compression strategy
+
+void GzipEncoder::CompressionStrategy::set(GzipCompressionStrategy value)
+{
+	m_strategy = value;
 }
 
 //---------------------------------------------------------------------------
@@ -155,7 +175,7 @@ void GzipEncoder::Encode(Stream^ instream, Stream^ outstream)
 	if(Object::ReferenceEquals(instream, nullptr)) throw gcnew ArgumentNullException("instream");
 	if(Object::ReferenceEquals(outstream, nullptr)) throw gcnew ArgumentNullException("outstream");
 
-	msclr::auto_handle<GzipWriter> writer(gcnew GzipWriter(outstream, m_level, m_buffersize, true));
+	msclr::auto_handle<GzipWriter> writer(gcnew GzipWriter(outstream, m_level, m_strategy, m_maxmem, m_buffersize, true));
 	instream->CopyTo(writer.get());
 }
 
@@ -174,7 +194,7 @@ void GzipEncoder::Encode(array<unsigned __int8>^ buffer, Stream^ outstream)
 	if(Object::ReferenceEquals(buffer, nullptr)) throw gcnew ArgumentNullException("buffer");
 	if(Object::ReferenceEquals(outstream, nullptr)) throw gcnew ArgumentNullException("outstream");
 
-	msclr::auto_handle<GzipWriter> writer(gcnew GzipWriter(outstream, m_level, m_buffersize, true));
+	msclr::auto_handle<GzipWriter> writer(gcnew GzipWriter(outstream, m_level, m_strategy, m_maxmem, m_buffersize, true));
 	writer->Write(buffer, 0, buffer->Length);
 }
 
@@ -195,8 +215,28 @@ void GzipEncoder::Encode(array<unsigned __int8>^ buffer, int offset, int count, 
 	if(Object::ReferenceEquals(buffer, nullptr)) throw gcnew ArgumentNullException("buffer");
 	if(Object::ReferenceEquals(outstream, nullptr)) throw gcnew ArgumentNullException("outstream");
 
-	msclr::auto_handle<GzipWriter> writer(gcnew GzipWriter(outstream, m_level, m_buffersize, true));
+	msclr::auto_handle<GzipWriter> writer(gcnew GzipWriter(outstream, m_level, m_strategy, m_maxmem, m_buffersize, true));
 	writer->Write(buffer, offset, count);
+}
+
+//---------------------------------------------------------------------------
+// GzipEncoder::MemoryUsage::get
+//
+// Gets the encoder compression strategy
+
+GzipMemoryUsage GzipEncoder::MemoryUsage::get(void)
+{
+	return m_maxmem;
+}
+
+//---------------------------------------------------------------------------
+// GzipEncoder::MemoryUsage::set
+//
+// Sets the encoder compression strategy
+
+void GzipEncoder::MemoryUsage::set(GzipMemoryUsage value)
+{
+	m_maxmem = value;
 }
 
 //---------------------------------------------------------------------------

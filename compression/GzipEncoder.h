@@ -26,6 +26,9 @@
 
 #include <zlib.h>
 #include "Encoder.h"
+#include "GzipCompressionLevel.h"
+#include "GzipCompressionStrategy.h"
+#include "GzipMemoryUsage.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -38,9 +41,6 @@ namespace zuki::io::compression {
 // Class GzipEncoder
 //
 // GZIP compression encoder
-//
-// TODO: There are more aspects of the GZIP encoder that can be controlled
-// via properties on this class, just the basics are in here right now
 //---------------------------------------------------------------------------
 
 public ref class GzipEncoder : public Encoder
@@ -99,19 +99,39 @@ public:
 	// CompressionlLevel
 	//
 	// Gets/sets the compression level to use
-	property int CompressionLevel
+	property GzipCompressionLevel CompressionLevel
 	{
-		int get(void);
-		void set(int value);
-	} 
+		GzipCompressionLevel get(void);
+		void set(GzipCompressionLevel value);
+	}
+
+	// CompressionStrategy
+	//
+	// Gets/sets the compression strategy to use
+	property GzipCompressionStrategy CompressionStrategy
+	{
+		GzipCompressionStrategy get(void);
+		void set(GzipCompressionStrategy value);
+	}
+
+	// MemoryUsage
+	//
+	// Gets/sets the maximum amount of memory to use
+	property GzipMemoryUsage MemoryUsage
+	{
+		GzipMemoryUsage get(void);
+		void set(GzipMemoryUsage value);
+	}
 
 private:
 
 	//-----------------------------------------------------------------------
 	// Member Variables
 
-	int					m_buffersize;			// Size of the compression buffer
-	int					m_level;				// Compression level
+	int							m_buffersize;		// Size of the compression buffer
+	GzipCompressionLevel		m_level;			// Compression level
+	GzipCompressionStrategy		m_strategy;			// Compression strategy
+	GzipMemoryUsage				m_maxmem;			// Memory usage level
 };
 
 //---------------------------------------------------------------------------

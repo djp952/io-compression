@@ -514,16 +514,16 @@ namespace zuki.io.compression.test
 
 			// Check the default values
 			Assert.AreEqual(65536, encoder.BufferSize);
-			Assert.AreEqual(9, encoder.CompressionLevel);
+			Assert.AreEqual(GzipCompressionLevel.Default, encoder.CompressionLevel);
 
 			// Set some bad values and ensure they are caught by the encoder property setters
 			try { encoder.BufferSize = -1; Assert.Fail("Property should have thrown an exception"); }
 			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
 
-			try { encoder.CompressionLevel = -1; Assert.Fail("Property should have thrown an exception"); }
+			try { encoder.CompressionLevel = new GzipCompressionLevel(-2); Assert.Fail("Property should have thrown an exception"); }
 			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
 
-			try { encoder.CompressionLevel = 10; Assert.Fail("Property should have thrown an exception"); }
+			try { encoder.CompressionLevel = new GzipCompressionLevel(10); Assert.Fail("Property should have thrown an exception"); }
 			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
 
 			// Check all of the Encoder methods work and encode as expected

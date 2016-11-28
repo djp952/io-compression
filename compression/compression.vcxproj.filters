@@ -124,6 +124,15 @@
     <ClInclude Include="GzipEncoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GzipCompressionStrategy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GzipCompressionLevel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GzipMemoryUsage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -316,6 +325,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GzipEncoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GzipCompressionLevel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GzipMemoryUsage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

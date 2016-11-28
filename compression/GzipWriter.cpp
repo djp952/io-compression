@@ -36,7 +36,8 @@ namespace zuki::io::compression {
 //
 //	stream		- The stream the compressed data is written to
 
-GzipWriter::GzipWriter(Stream^ stream) : GzipWriter(stream, 9, DEFAULT_BUFFER_SIZE, false)
+GzipWriter::GzipWriter(Stream^ stream) : 
+	GzipWriter(stream, GzipCompressionLevel::Default, GzipCompressionStrategy::Default, GzipMemoryUsage::Default, DEFAULT_BUFFER_SIZE, false)
 {
 }
 
@@ -48,7 +49,8 @@ GzipWriter::GzipWriter(Stream^ stream) : GzipWriter(stream, 9, DEFAULT_BUFFER_SI
 //	stream		- The stream the compressed data is written to
 //	level		- Indicates whether to emphasize speed or compression efficiency
 
-GzipWriter::GzipWriter(Stream^ stream, Compression::CompressionLevel level) : GzipWriter(stream, ConvertCompressionLevel(level), DEFAULT_BUFFER_SIZE, false)
+GzipWriter::GzipWriter(Stream^ stream, Compression::CompressionLevel level) : 
+	GzipWriter(stream, GzipCompressionLevel(level), GzipCompressionStrategy::Default, GzipMemoryUsage::Default, DEFAULT_BUFFER_SIZE, false)
 {
 }
 
@@ -60,7 +62,8 @@ GzipWriter::GzipWriter(Stream^ stream, Compression::CompressionLevel level) : Gz
 //	stream		- The stream the compressed data is written to
 //	leaveopen	- Flag to leave the base stream open after disposal
 
-GzipWriter::GzipWriter(Stream^ stream, bool leaveopen) : GzipWriter(stream, 9, DEFAULT_BUFFER_SIZE, leaveopen)
+GzipWriter::GzipWriter(Stream^ stream, bool leaveopen) : 
+	GzipWriter(stream, GzipCompressionLevel::Default, GzipCompressionStrategy::Default, GzipMemoryUsage::Default, DEFAULT_BUFFER_SIZE, leaveopen)
 {
 }
 
@@ -73,7 +76,8 @@ GzipWriter::GzipWriter(Stream^ stream, bool leaveopen) : GzipWriter(stream, 9, D
 //	level		- Indicates the level of compression to use
 //	leaveopen	- Flag to leave the base stream open after disposal
 
-GzipWriter::GzipWriter(Stream^ stream, Compression::CompressionLevel level, bool leaveopen) : GzipWriter(stream, ConvertCompressionLevel(level), DEFAULT_BUFFER_SIZE, leaveopen)
+GzipWriter::GzipWriter(Stream^ stream, Compression::CompressionLevel level, bool leaveopen) : 
+	GzipWriter(stream, GzipCompressionLevel(level), GzipCompressionStrategy::Default, GzipMemoryUsage::Default, DEFAULT_BUFFER_SIZE, leaveopen)
 {
 }
 
@@ -84,15 +88,15 @@ GzipWriter::GzipWriter(Stream^ stream, Compression::CompressionLevel level, bool
 //
 //	stream			- The stream the compressed or decompressed data is written to
 //	level			- Indicates the level of compression to use
+//	strategy		- Indicates the compression strategy to use
+//	maxmem			- Indicates the maximum memory to use during encoding
 //	buffersize		- Indicates the size of the compression buffer
 //	leaveopen		- Flag to leave the base stream open after disposal
 
-GzipWriter::GzipWriter(Stream^ stream, int level, int buffersize, bool leaveopen) : m_disposed(false), m_stream(stream), 
-	m_leaveopen(leaveopen), m_buffersize(buffersize)
+GzipWriter::GzipWriter(Stream^ stream, GzipCompressionLevel level, GzipCompressionStrategy strategy, GzipMemoryUsage maxmem, int buffersize, bool leaveopen) : 
+	m_disposed(false), m_stream(stream), m_leaveopen(leaveopen), m_buffersize(buffersize)
 {
 	if(Object::ReferenceEquals(stream, nullptr)) throw gcnew ArgumentNullException("stream");
-
-	if((level < 0) || (level > 9)) throw gcnew ArgumentOutOfRangeException("level");
 	if(buffersize <= 0) throw gcnew ArgumentOutOfRangeException("buffersize");
 
 	// Allocate and initialize the unmanaged z_stream structure
@@ -100,7 +104,7 @@ GzipWriter::GzipWriter(Stream^ stream, int level, int buffersize, bool leaveopen
 	catch(Exception^) { throw gcnew OutOfMemoryException(); }
 
 	// Initialize the z_stream for compression
-	int result = deflateInit2(m_zstream, level, Z_DEFLATED, 16 + MAX_WBITS, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
+	int result = deflateInit2(m_zstream, level, Z_DEFLATED, 16 + MAX_WBITS, maxmem, static_cast<int>(strategy));
 	if(result != Z_OK) throw gcnew GzipException(result);
 }
 
@@ -204,24 +208,6 @@ bool GzipWriter::CanWrite::get(void)
 {
 	CHECK_DISPOSED(m_disposed);
 	return m_stream->CanWrite;
-}
-
-//---------------------------------------------------------------------------
-// GzipWriter::ConvertCompressionLevel (private, static)
-//
-// Converts a Compression::CompressionLevel value
-//
-// Arguments:
-//
-//	level		- Compression::CompressionLevel to convert
-
-int GzipWriter::ConvertCompressionLevel(Compression::CompressionLevel level)
-{
-	if(level == Compression::CompressionLevel::NoCompression) return 0;
-	else if(level == Compression::CompressionLevel::Fastest) return 1;
-	else if(level == Compression::CompressionLevel::Optimal) return 9;
-	
-	throw gcnew ArgumentOutOfRangeException("level");
 }
 
 //---------------------------------------------------------------------------

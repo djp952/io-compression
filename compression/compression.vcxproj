@@ -193,9 +193,12 @@
     <ClInclude Include="Bzip2Reader.h" />
     <ClInclude Include="Bzip2Writer.h" />
     <ClInclude Include="Encoder.h" />
+    <ClInclude Include="GzipCompressionLevel.h" />
     <ClInclude Include="GzipEncoder.h" />
     <ClInclude Include="GzipException.h" />
+    <ClInclude Include="GzipMemoryUsage.h" />
     <ClInclude Include="GzipReader.h" />
+    <ClInclude Include="GzipCompressionStrategy.h" />
     <ClInclude Include="GzipWriter.h" />
     <ClInclude Include="Lz4Exception.h" />
     <ClInclude Include="Lz4LegacyReader.h" />
@@ -654,8 +657,10 @@
     <ClCompile Include="Bzip2Reader.cpp" />
     <ClCompile Include="Bzip2Writer.cpp" />
     <ClCompile Include="bz_internal_error.cpp" />
+    <ClCompile Include="GzipCompressionLevel.cpp" />
     <ClCompile Include="GzipEncoder.cpp" />
     <ClCompile Include="GzipException.cpp" />
+    <ClCompile Include="GzipMemoryUsage.cpp" />
     <ClCompile Include="GzipReader.cpp" />
     <ClCompile Include="GzipWriter.cpp" />
     <ClCompile Include="Lz4Exception.cpp" />

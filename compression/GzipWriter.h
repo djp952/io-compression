@@ -25,6 +25,9 @@
 #pragma once
 
 #include <zlib.h>
+#include "GzipCompressionLevel.h"
+#include "GzipCompressionStrategy.h"
+#include "GzipMemoryUsage.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -144,7 +147,7 @@ internal:
 
 	// Instance Constructor
 	//
-	GzipWriter(Stream^ stream, int level, int buffersize, bool leaveopen);
+	GzipWriter(Stream^ stream, GzipCompressionLevel level, GzipCompressionStrategy strategy, GzipMemoryUsage maxmem, int buffersize, bool leaveopen);
 
 private:
 
@@ -152,14 +155,6 @@ private:
 	//
 	~GzipWriter();
 	!GzipWriter();
-
-	//-----------------------------------------------------------------------
-	// Private Member Functions
-
-	// ConvertCompressionLevel
-	//
-	// Converts a Compression::CompressionLevel value into an integer
-	static int ConvertCompressionLevel(Compression::CompressionLevel level);
 
 	//-----------------------------------------------------------------------
 	// Member Variables
