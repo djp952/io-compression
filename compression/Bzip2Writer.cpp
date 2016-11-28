@@ -134,7 +134,7 @@ Bzip2Writer::Bzip2Writer(Stream^ stream, int level, int workfactor, int buffersi
 	if(Object::ReferenceEquals(stream, nullptr)) throw gcnew ArgumentNullException("stream");
 
 	// bzip does not provide a 'no compression' option
-	if((level < 0) || (level > 9)) throw gcnew ArgumentOutOfRangeException("level");
+	if((level < 1) || (level > 9)) throw gcnew ArgumentOutOfRangeException("level");
 	if((workfactor < 0) || (workfactor > 250)) throw gcnew ArgumentOutOfRangeException("workfactor");
 	if(buffersize <= 0) throw gcnew ArgumentOutOfRangeException("buffersize");
 

@@ -36,7 +36,7 @@ namespace zuki::io::compression {
 //
 //	stream		- The stream the compressed data is written to
 
-GzipWriter::GzipWriter(Stream^ stream) : GzipWriter(stream, Compression::CompressionLevel::Optimal, false)
+GzipWriter::GzipWriter(Stream^ stream) : GzipWriter(stream, 9, DEFAULT_BUFFER_SIZE, false)
 {
 }
 
@@ -48,7 +48,7 @@ GzipWriter::GzipWriter(Stream^ stream) : GzipWriter(stream, Compression::Compres
 //	stream		- The stream the compressed data is written to
 //	level		- Indicates whether to emphasize speed or compression efficiency
 
-GzipWriter::GzipWriter(Stream^ stream, Compression::CompressionLevel level) : GzipWriter(stream, level, false)
+GzipWriter::GzipWriter(Stream^ stream, Compression::CompressionLevel level) : GzipWriter(stream, ConvertCompressionLevel(level), DEFAULT_BUFFER_SIZE, false)
 {
 }
 
@@ -60,7 +60,7 @@ GzipWriter::GzipWriter(Stream^ stream, Compression::CompressionLevel level) : Gz
 //	stream		- The stream the compressed data is written to
 //	leaveopen	- Flag to leave the base stream open after disposal
 
-GzipWriter::GzipWriter(Stream^ stream, bool leaveopen) : GzipWriter(stream, Compression::CompressionLevel::Optimal, leaveopen)
+GzipWriter::GzipWriter(Stream^ stream, bool leaveopen) : GzipWriter(stream, 9, DEFAULT_BUFFER_SIZE, leaveopen)
 {
 }
 
@@ -73,22 +73,34 @@ GzipWriter::GzipWriter(Stream^ stream, bool leaveopen) : GzipWriter(stream, Comp
 //	level		- Indicates the level of compression to use
 //	leaveopen	- Flag to leave the base stream open after disposal
 
-GzipWriter::GzipWriter(Stream^ stream, Compression::CompressionLevel level, bool leaveopen) : m_disposed(false), m_stream(stream), m_leaveopen(leaveopen)
+GzipWriter::GzipWriter(Stream^ stream, Compression::CompressionLevel level, bool leaveopen) : GzipWriter(stream, ConvertCompressionLevel(level), DEFAULT_BUFFER_SIZE, leaveopen)
+{
+}
+
+//---------------------------------------------------------------------------
+// GzipWriter Constructor (internal)
+//
+// Arguments:
+//
+//	stream			- The stream the compressed or decompressed data is written to
+//	level			- Indicates the level of compression to use
+//	buffersize		- Indicates the size of the compression buffer
+//	leaveopen		- Flag to leave the base stream open after disposal
+
+GzipWriter::GzipWriter(Stream^ stream, int level, int buffersize, bool leaveopen) : m_disposed(false), m_stream(stream), 
+	m_leaveopen(leaveopen), m_buffersize(buffersize)
 {
 	if(Object::ReferenceEquals(stream, nullptr)) throw gcnew ArgumentNullException("stream");
+
+	if((level < 0) || (level > 9)) throw gcnew ArgumentOutOfRangeException("level");
+	if(buffersize <= 0) throw gcnew ArgumentOutOfRangeException("buffersize");
 
 	// Allocate and initialize the unmanaged z_stream structure
 	try { m_zstream = new z_stream; memset(m_zstream, 0, sizeof(z_stream)); }
 	catch(Exception^) { throw gcnew OutOfMemoryException(); }
 
-	// Choose a zlib compression level
-	int compresslevel = Z_DEFAULT_COMPRESSION;
-	if(level == Compression::CompressionLevel::NoCompression) compresslevel = 0;
-	else if(level == Compression::CompressionLevel::Fastest) compresslevel = 1;
-	else if(level == Compression::CompressionLevel::Optimal) compresslevel = 9;
-
 	// Initialize the z_stream for compression
-	int result = deflateInit2(m_zstream, compresslevel, Z_DEFLATED, 16 + MAX_WBITS, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
+	int result = deflateInit2(m_zstream, level, Z_DEFLATED, 16 + MAX_WBITS, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
 	if(result != Z_OK) throw gcnew GzipException(result);
 }
 
@@ -104,7 +116,7 @@ GzipWriter::~GzipWriter()
 	msclr::lock lock(m_lock);
 
 	// Create and pin a local compression buffer
-	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(BUFFER_SIZE);
+	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(m_buffersize);
 	pin_ptr<unsigned __int8> pinout = &out[0];
 
 	// Input is not consumed when finishing the zlib stream
@@ -115,11 +127,11 @@ GzipWriter::~GzipWriter()
 
 		// Reset the output buffer to point into the managed array
 		m_zstream->next_out = reinterpret_cast<Bytef*>(pinout);
-		m_zstream->avail_out = BUFFER_SIZE;
+		m_zstream->avail_out = m_buffersize;
 
 		// Finish the next block of data in the zlib buffers and write it
 		result = deflate(m_zstream, Z_FINISH);
-		m_stream->Write(out, 0, BUFFER_SIZE - m_zstream->avail_out);
+		m_stream->Write(out, 0, m_buffersize - m_zstream->avail_out);
 
 	} while (result == Z_OK);
 
@@ -195,6 +207,24 @@ bool GzipWriter::CanWrite::get(void)
 }
 
 //---------------------------------------------------------------------------
+// GzipWriter::ConvertCompressionLevel (private, static)
+//
+// Converts a Compression::CompressionLevel value
+//
+// Arguments:
+//
+//	level		- Compression::CompressionLevel to convert
+
+int GzipWriter::ConvertCompressionLevel(Compression::CompressionLevel level)
+{
+	if(level == Compression::CompressionLevel::NoCompression) return 0;
+	else if(level == Compression::CompressionLevel::Fastest) return 1;
+	else if(level == Compression::CompressionLevel::Optimal) return 9;
+	
+	throw gcnew ArgumentOutOfRangeException("level");
+}
+
+//---------------------------------------------------------------------------
 // GzipWriter::Flush
 //
 // Clears all buffers for this stream and causes any buffered data to be written
@@ -212,7 +242,7 @@ void GzipWriter::Flush(void)
 	msclr::lock lock(m_lock);
 
 	// Create and pin a local compression buffer
-	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(BUFFER_SIZE);
+	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(m_buffersize);
 	pin_ptr<unsigned __int8> pinout = &out[0];
 
 	// Input is not consumed when flushing the zlib stream
@@ -223,11 +253,11 @@ void GzipWriter::Flush(void)
 
 		// Reset the output buffer to point into the managed array
 		m_zstream->next_out = reinterpret_cast<Bytef*>(pinout);
-		m_zstream->avail_out = BUFFER_SIZE;
+		m_zstream->avail_out = m_buffersize;
 
 		// Flush the next block of data in the zlib buffers and write it
 		result = deflate(m_zstream, Z_SYNC_FLUSH);
-		m_stream->Write(out, 0, BUFFER_SIZE - m_zstream->avail_out);
+		m_stream->Write(out, 0, m_buffersize - m_zstream->avail_out);
 	
 	} while(result == Z_OK);
 
@@ -373,7 +403,7 @@ void GzipWriter::Write(array<unsigned __int8>^ buffer, int offset, int count)
 	msclr::lock lock(m_lock);
 
 	// Create a temporary local buffer to hold the compressed data
-	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(BUFFER_SIZE);
+	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(m_buffersize);
 		
 	// Pin both the input and output byte arrays in memory
 	pin_ptr<unsigned __int8> pinin = &buffer[0];
@@ -388,14 +418,14 @@ void GzipWriter::Write(array<unsigned __int8>^ buffer, int offset, int count)
 
 		// Reset the output buffer pointer and length
 		m_zstream->next_out = reinterpret_cast<Bytef*>(pinout);
-		m_zstream->avail_out = BUFFER_SIZE;
+		m_zstream->avail_out = m_buffersize;
 
 		// Compress the next block of input data into the output buffer
 		int result = deflate(m_zstream, Z_NO_FLUSH);
 		if(result != Z_OK) throw gcnew GzipException(result);
 
 		// Write the compressed data into the underlying base stream
-		m_stream->Write(out, 0, BUFFER_SIZE - m_zstream->avail_out);
+		m_stream->Write(out, 0, m_buffersize - m_zstream->avail_out);
 	};
 }
 

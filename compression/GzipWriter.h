@@ -50,7 +50,6 @@ public:
 	GzipWriter(Stream^ stream, bool leaveopen);
 	GzipWriter(Stream^ stream, Compression::CompressionLevel level, bool leaveopen);
 
-
 	//-----------------------------------------------------------------------
 	// Member Functions
 
@@ -136,12 +135,18 @@ public:
 		void set(__int64 value) override;
 	}
 
-private:
+internal:
 
-	// BUFFER_SIZE
+	// DEFAULT_BUFFER_SIZE
 	//
-	// Size of the local input/output buffer, in bytes
-	static const int BUFFER_SIZE = 65536;
+	// Default size of the compression buffer, in bytes
+	static const int DEFAULT_BUFFER_SIZE = 65536;
+
+	// Instance Constructor
+	//
+	GzipWriter(Stream^ stream, int level, int buffersize, bool leaveopen);
+
+private:
 
 	// Destructor / Finalizer
 	//
@@ -149,11 +154,20 @@ private:
 	!GzipWriter();
 
 	//-----------------------------------------------------------------------
+	// Private Member Functions
+
+	// ConvertCompressionLevel
+	//
+	// Converts a Compression::CompressionLevel value into an integer
+	static int ConvertCompressionLevel(Compression::CompressionLevel level);
+
+	//-----------------------------------------------------------------------
 	// Member Variables
 
 	bool							m_disposed;		// Object disposal flag
 	Stream^							m_stream;		// Base Stream instance
 	bool							m_leaveopen;	// Flag to leave base stream open
+	initonly int					m_buffersize;	// Size of the compression buffer
 	z_stream*						m_zstream;		// GZIP stream state information
 
 	Object^	m_lock = gcnew Object();		// Synchronization object

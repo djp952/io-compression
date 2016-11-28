@@ -504,5 +504,62 @@ namespace zuki.io.compression.test
 				}
 			}
 		}
+
+		[TestMethod(), TestCategory("Gzip")]
+		public void Gzip_Encoder()
+		{
+			// The GzipEncoder is just a wrapper around GzipWriter that provides 
+			// more complete control over the compression/encoder parameters
+			GzipEncoder encoder = new GzipEncoder();
+
+			// Check the default values
+			Assert.AreEqual(65536, encoder.BufferSize);
+			Assert.AreEqual(9, encoder.CompressionLevel);
+
+			// Set some bad values and ensure they are caught by the encoder property setters
+			try { encoder.BufferSize = -1; Assert.Fail("Property should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
+
+			try { encoder.CompressionLevel = -1; Assert.Fail("Property should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
+
+			try { encoder.CompressionLevel = 10; Assert.Fail("Property should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
+
+			// Check all of the Encoder methods work and encode as expected
+			byte[] expected, actual;
+			using (MemoryStream ms = new MemoryStream())
+			{
+				using (var writer = new GzipWriter(ms, true)) writer.Write(s_sampledata, 0, s_sampledata.Length);
+				expected = ms.ToArray();
+			}
+
+			actual = encoder.Encode(s_sampledata);
+			Assert.IsTrue(Enumerable.SequenceEqual(expected, actual));
+
+			actual = encoder.Encode(new MemoryStream(s_sampledata));
+			Assert.IsTrue(Enumerable.SequenceEqual(expected, actual));
+
+			actual = encoder.Encode(s_sampledata, 0, s_sampledata.Length);
+			Assert.IsTrue(Enumerable.SequenceEqual(expected, actual));
+
+			using (MemoryStream dest = new MemoryStream())
+			{
+				encoder.Encode(s_sampledata, dest);
+				Assert.IsTrue(Enumerable.SequenceEqual(expected, dest.ToArray()));
+			}
+
+			using (MemoryStream dest = new MemoryStream())
+			{
+				encoder.Encode(new MemoryStream(s_sampledata), dest);
+				Assert.IsTrue(Enumerable.SequenceEqual(expected, dest.ToArray()));
+			}
+
+			using (MemoryStream dest = new MemoryStream())
+			{
+				encoder.Encode(s_sampledata, 0, s_sampledata.Length, dest);
+				Assert.IsTrue(Enumerable.SequenceEqual(expected, dest.ToArray()));
+			}
+		}
 	}
 }

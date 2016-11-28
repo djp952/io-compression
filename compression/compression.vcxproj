@@ -193,6 +193,7 @@
     <ClInclude Include="Bzip2Reader.h" />
     <ClInclude Include="Bzip2Writer.h" />
     <ClInclude Include="Encoder.h" />
+    <ClInclude Include="GzipEncoder.h" />
     <ClInclude Include="GzipException.h" />
     <ClInclude Include="GzipReader.h" />
     <ClInclude Include="GzipWriter.h" />
@@ -653,6 +654,7 @@
     <ClCompile Include="Bzip2Reader.cpp" />
     <ClCompile Include="Bzip2Writer.cpp" />
     <ClCompile Include="bz_internal_error.cpp" />
+    <ClCompile Include="GzipEncoder.cpp" />
     <ClCompile Include="GzipException.cpp" />
     <ClCompile Include="GzipReader.cpp" />
     <ClCompile Include="GzipWriter.cpp" />

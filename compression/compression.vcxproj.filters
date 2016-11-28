@@ -121,6 +121,9 @@
     <ClInclude Include="Bzip2Encoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GzipEncoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -310,6 +313,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Bzip2Encoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GzipEncoder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

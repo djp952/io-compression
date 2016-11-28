@@ -20,51 +20,11 @@
 // SOFTWARE.
 //---------------------------------------------------------------------------
 
-//---------------------------------------------------------------------------
-// This program, "bzip2", the associated library "libbzip2", and all
-// documentation, are copyright (C) 1996-2010 Julian R Seward.  All
-// rights reserved.
-// 
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions
-// are met:
-// 
-// 1. Redistributions of source code must retain the above copyright
-//    notice, this list of conditions and the following disclaimer.
-// 
-// 2. The origin of this software must not be misrepresented; you must 
-//    not claim that you wrote the original software.  If you use this 
-//    software in a product, an acknowledgment in the product 
-//    documentation would be appreciated but is not required.
-// 
-// 3. Altered source versions must be plainly marked as such, and must
-//    not be misrepresented as being the original software.
-// 
-// 4. The name of the author may not be used to endorse or promote 
-//    products derived from this software without specific prior written 
-//    permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
-// OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
-// GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-// WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-// 
-// Julian Seward, jseward@bzip.org
-// bzip2/libbzip2 version 1.0.6 of 6 September 2010
-//---------------------------------------------------------------------------
-
-#ifndef __BZIP2ENCODER_H_
-#define __BZIP2ENCODER_H_
+#ifndef __GZIPENCODER_H_
+#define __GZIPENCODER_H_
 #pragma once
 
-#include <bzlib.h>
+#include <zlib.h>
 #include "Encoder.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
@@ -75,18 +35,21 @@ using namespace System::IO;
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// Class Bzip2Encoder
+// Class GzipEncoder
 //
-// BZIP2 compression encoder
+// GZIP compression encoder
+//
+// TODO: There are more aspects of the GZIP encoder that can be controlled
+// via properties on this class, just the basics are in here right now
 //---------------------------------------------------------------------------
 
-public ref class Bzip2Encoder : public Encoder
+public ref class GzipEncoder : public Encoder
 {
 public:
 
 	// Instance Constructor
 	//
-	Bzip2Encoder();
+	GzipEncoder();
 
 	//-----------------------------------------------------------------------
 	// Member Functions
@@ -142,15 +105,6 @@ public:
 		void set(int value);
 	} 
 
-	// WorkFactor
-	//
-	// Gets/sets the bzip2 compression work factor
-	property int WorkFactor
-	{
-		int get(void);
-		void set(int value);
-	} 
-
 private:
 
 	//-----------------------------------------------------------------------
@@ -158,7 +112,6 @@ private:
 
 	int					m_buffersize;			// Size of the compression buffer
 	int					m_level;				// Compression level
-	int					m_workfactor;			// Work factor
 };
 
 //---------------------------------------------------------------------------
@@ -167,4 +120,4 @@ private:
 
 #pragma warning(pop)
 
-#endif	// __BZIP2ENCODER_H_
+#endif	// __GZIPENCODER_H_
