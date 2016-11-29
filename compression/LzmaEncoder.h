@@ -26,6 +26,16 @@
 
 #include <LzmaEnc.h>
 #include "Encoder.h"
+#include "LzmaCompressionLevel.h"
+#include "LzmaCompressionMode.h"
+#include "LzmaDictionarySize.h"
+#include "LzmaFastBytes.h"
+#include "LzmaHashBytes.h"
+#include "LzmaLiteralContextBits.h"
+#include "LzmaLiteralPositionBits.h"
+#include "LzmaMatchFindMode.h"
+#include "LzmaMatchFindPasses.h"
+#include "LzmaPositionBits.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -39,9 +49,6 @@ namespace zuki::io::compression {
 // Class LzmaEncoder
 //
 // LZMA compression encoder
-//
-// TODO: There are many more aspects of the LZMA encoder that can be controlled
-// via properties on this class, just the basics are in here right now
 //---------------------------------------------------------------------------
 
 public ref class LzmaEncoder : public Encoder
@@ -91,10 +98,100 @@ public:
 	// CompressionlLevel
 	//
 	// Gets/sets the compression level to use
-	property Compression::CompressionLevel CompressionLevel
+	property LzmaCompressionLevel CompressionLevel
 	{
-		Compression::CompressionLevel get(void);
-		void set(Compression::CompressionLevel value);
+		LzmaCompressionLevel get(void);
+		void set(LzmaCompressionLevel value);
+	} 
+
+	// CompressionMode
+	//
+	// Gets/sets the encoder compression mode
+	property LzmaCompressionMode CompressionMode
+	{
+		LzmaCompressionMode get(void);
+		void set(LzmaCompressionMode value);
+	} 
+
+	// DictionarySize
+	//
+	// Gets/sets the encoder dictionary size
+	property LzmaDictionarySize DictionarySize
+	{
+		LzmaDictionarySize get(void);
+		void set(LzmaDictionarySize value);
+	} 
+
+	// FastBytes
+	//
+	// Gets/sets the number of fast bytes to use
+	property LzmaFastBytes FastBytes
+	{
+		LzmaFastBytes get(void);
+		void set(LzmaFastBytes value);
+	} 
+
+	// HashBytes
+	//
+	// Gets/sets the number of hash bytes to use
+	property LzmaHashBytes HashBytes
+	{
+		LzmaHashBytes get(void);
+		void set(LzmaHashBytes value);
+	} 
+
+	// LiteralContextBits
+	//
+	// Gets/sets the encoder literal context bits setting
+	property LzmaLiteralContextBits LiteralContextBits
+	{
+		LzmaLiteralContextBits get(void);
+		void set(LzmaLiteralContextBits value);
+	} 
+
+	// LiteralPositionBits
+	//
+	// Gets/sets the encoder literal position bits setting
+	property LzmaLiteralPositionBits LiteralPositionBits
+	{
+		LzmaLiteralPositionBits get(void);
+		void set(LzmaLiteralPositionBits value);
+	} 
+
+	// MatchFindMode
+	//
+	// Gets/sets the encoder match find mode
+	property LzmaMatchFindMode MatchFindMode
+	{
+		LzmaMatchFindMode get(void);
+		void set(LzmaMatchFindMode value);
+	} 
+
+	// MatchFindPasses
+	//
+	// Gets/sets the number of match find passes
+	property LzmaMatchFindPasses MatchFindPasses
+	{
+		LzmaMatchFindPasses get(void);
+		void set(LzmaMatchFindPasses value);
+	} 
+
+	// PositionBits
+	//
+	// Gets/sets the encoder position bits setting
+	property LzmaPositionBits PositionBits
+	{
+		LzmaPositionBits get(void);
+		void set(LzmaPositionBits value);
+	} 
+
+	// UseMultipleThreads
+	//
+	// Gets/sets the flag to use multiple threads
+	property bool UseMultipleThreads
+	{
+		bool get(void);
+		void set(bool value);
 	} 
 
 	// WriteEndMark
@@ -180,10 +277,28 @@ private:
 	};
 
 	//-----------------------------------------------------------------------
+	// Private Member Functions
+
+	// Encode
+	//
+	// Compresses an input stream into an output stream
+	void Encode(Stream^ instream, unsigned __int64 insize, Stream^ outstream);
+
+	//-----------------------------------------------------------------------
 	// Member Variables
 
-	Compression::CompressionLevel	m_level;			// Compression level
-	bool							m_writeendmark;		// Flag to write end mark
+	LzmaCompressionLevel		m_level;			// Compression level
+	LzmaDictionarySize			m_dictsize;			// Dictionary size
+	LzmaLiteralContextBits		m_litcontextbits;	// Literal context bits
+	LzmaLiteralPositionBits		m_litposbits;		// Literal position bits
+	LzmaPositionBits			m_posbits;			// Position bits
+	LzmaCompressionMode			m_compmode;			// Compression mode
+	LzmaFastBytes				m_fastbytes;		// Number of fast bytes
+	LzmaMatchFindMode			m_matchfindmode;	// Match find mode
+	LzmaHashBytes				m_hashbytes;		// Number of hash bytes
+	LzmaMatchFindPasses			m_matchfindpasses;	// Number of match find passes
+	bool						m_writeendmark;		// Flag to write end mark
+	bool						m_multithreaded;	// Use multiple threads
 };
 
 //---------------------------------------------------------------------------

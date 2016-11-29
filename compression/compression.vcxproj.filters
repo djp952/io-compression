@@ -157,6 +157,36 @@
     <ClInclude Include="Lz4Encoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LzmaCompressionLevel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LzmaDictionarySize.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LzmaMatchFindMode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LzmaCompressionMode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LzmaLiteralContextBits.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LzmaLiteralPositionBits.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LzmaPositionBits.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LzmaFastBytes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LzmaHashBytes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LzmaMatchFindPasses.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -370,6 +400,30 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Lz4Encoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LzmaCompressionLevel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LzmaDictionarySize.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LzmaLiteralContextBits.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LzmaLiteralPositionBits.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LzmaPositionBits.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LzmaFastBytes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LzmaHashBytes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LzmaMatchFindPasses.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

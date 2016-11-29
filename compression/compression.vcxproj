@@ -213,8 +213,18 @@
     <ClInclude Include="Lz4LegacyWriter.h" />
     <ClInclude Include="Lz4Reader.h" />
     <ClInclude Include="Lz4Writer.h" />
+    <ClInclude Include="LzmaCompressionLevel.h" />
+    <ClInclude Include="LzmaCompressionMode.h" />
+    <ClInclude Include="LzmaDictionarySize.h" />
     <ClInclude Include="LzmaEncoder.h" />
     <ClInclude Include="LzmaException.h" />
+    <ClInclude Include="LzmaFastBytes.h" />
+    <ClInclude Include="LzmaHashBytes.h" />
+    <ClInclude Include="LzmaLiteralContextBits.h" />
+    <ClInclude Include="LzmaLiteralPositionBits.h" />
+    <ClInclude Include="LzmaMatchFindMode.h" />
+    <ClInclude Include="LzmaMatchFindPasses.h" />
+    <ClInclude Include="LzmaPositionBits.h" />
     <ClInclude Include="LzmaReader.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="XzEncoder.h" />
@@ -681,8 +691,16 @@
     <ClCompile Include="Lz4LegacyWriter.cpp" />
     <ClCompile Include="Lz4Reader.cpp" />
     <ClCompile Include="Lz4Writer.cpp" />
+    <ClCompile Include="LzmaCompressionLevel.cpp" />
+    <ClCompile Include="LzmaDictionarySize.cpp" />
     <ClCompile Include="LzmaEncoder.cpp" />
     <ClCompile Include="LzmaException.cpp" />
+    <ClCompile Include="LzmaFastBytes.cpp" />
+    <ClCompile Include="LzmaHashBytes.cpp" />
+    <ClCompile Include="LzmaLiteralContextBits.cpp" />
+    <ClCompile Include="LzmaLiteralPositionBits.cpp" />
+    <ClCompile Include="LzmaMatchFindPasses.cpp" />
+    <ClCompile Include="LzmaPositionBits.cpp" />
     <ClCompile Include="LzmaReader.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

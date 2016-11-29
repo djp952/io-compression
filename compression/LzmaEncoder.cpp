@@ -37,7 +37,10 @@ namespace zuki::io::compression {
 //
 //	NONE
 
-LzmaEncoder::LzmaEncoder() : m_level(Compression::CompressionLevel::Optimal), m_writeendmark(true)
+LzmaEncoder::LzmaEncoder() : m_dictsize(LzmaDictionarySize::Default), m_level(LzmaCompressionLevel::Default),
+	m_litcontextbits(LzmaLiteralContextBits::Default), m_litposbits(LzmaLiteralPositionBits::Default), m_posbits(LzmaPositionBits::Default),
+	m_compmode(LzmaCompressionMode::Default), m_fastbytes(LzmaFastBytes::Default), m_matchfindmode(LzmaMatchFindMode::Default), 
+	m_hashbytes(LzmaHashBytes::Default), m_matchfindpasses(LzmaMatchFindPasses::Default), m_writeendmark(true), m_multithreaded(true)
 {
 }
 
@@ -46,7 +49,7 @@ LzmaEncoder::LzmaEncoder() : m_level(Compression::CompressionLevel::Optimal), m_
 //
 // Gets the encoder compression level value
 
-Compression::CompressionLevel LzmaEncoder::CompressionLevel::get(void)
+LzmaCompressionLevel LzmaEncoder::CompressionLevel::get(void)
 {
 	return m_level;
 }
@@ -56,9 +59,49 @@ Compression::CompressionLevel LzmaEncoder::CompressionLevel::get(void)
 //
 // Sets the encoder compression level value
 
-void LzmaEncoder::CompressionLevel::set(Compression::CompressionLevel value)
+void LzmaEncoder::CompressionLevel::set(LzmaCompressionLevel value)
 {
 	m_level = value;
+}
+
+//---------------------------------------------------------------------------
+// LzmaEncoder::CompressionMode::get
+//
+// Gets the encoder compression mode
+
+LzmaCompressionMode LzmaEncoder::CompressionMode::get(void)
+{
+	return m_compmode;
+}
+
+//---------------------------------------------------------------------------
+// LzmaEncoder::CompressionMode::set
+//
+// Sets the encoder compression mode
+
+void LzmaEncoder::CompressionMode::set(LzmaCompressionMode value)
+{
+	m_compmode = value;
+}
+
+//---------------------------------------------------------------------------
+// LzmaEncoder::DictionarySize::get
+//
+// Gets the encoder compression level value
+
+LzmaDictionarySize LzmaEncoder::DictionarySize::get(void)
+{
+	return m_dictsize;
+}
+
+//---------------------------------------------------------------------------
+// LzmaEncoder::DictionarySize::set
+//
+// Sets the encoder compression level value
+
+void LzmaEncoder::DictionarySize::set(LzmaDictionarySize value)
+{
+	m_dictsize = value;
 }
 
 //---------------------------------------------------------------------------
@@ -75,7 +118,7 @@ array<unsigned __int8>^ LzmaEncoder::Encode(Stream^ instream)
 	if(Object::ReferenceEquals(instream, nullptr)) throw gcnew ArgumentNullException("instream");
 
 	msclr::auto_handle<MemoryStream> outstream(gcnew MemoryStream());
-	Encode(instream, outstream.get());
+	Encode(instream, System::UInt64::MaxValue, outstream.get());
 
 	return outstream->ToArray();
 }
@@ -114,7 +157,7 @@ array<unsigned __int8>^ LzmaEncoder::Encode(array<unsigned __int8>^ buffer, int 
 	msclr::auto_handle<MemoryStream> instream(gcnew MemoryStream(buffer, offset, count, false));
 	msclr::auto_handle<MemoryStream> outstream(gcnew MemoryStream());
 
-	Encode(instream.get(), outstream.get());
+	Encode(instream.get(), count, outstream.get());
 
 	return outstream->ToArray();
 }
@@ -131,27 +174,49 @@ array<unsigned __int8>^ LzmaEncoder::Encode(array<unsigned __int8>^ buffer, int 
 
 void LzmaEncoder::Encode(Stream^ instream, Stream^ outstream)
 {
+	if(Object::ReferenceEquals(instream, nullptr)) throw gcnew ArgumentNullException("instream");
+	if(Object::ReferenceEquals(outstream, nullptr)) throw gcnew ArgumentNullException("outstream");
+
+	// The length of the input stream is not immutable, use 0xFFFFFFFF'FFFFFFFF
+	Encode(instream, System::UInt64::MaxValue, outstream);
+}
+
+//---------------------------------------------------------------------------
+// LzmaEncoder::Encode (private)
+//
+// Compresses an input stream into an output stream
+//
+// Arguments:
+//
+//	instream		- Input stream to be compressed
+//	insize			- Input stream length, if known and constant
+//	outstream		- Output stream to received compressed data
+
+void LzmaEncoder::Encode(Stream^ instream, unsigned __int64 insize, Stream^ outstream)
+{
 	CLzmaEncProps				props;			// Encoder properties
 	SRes						result;			// LZMA function call result
-	unsigned __int64			insize;			// Input stream length
 
 	if(Object::ReferenceEquals(instream, nullptr)) throw gcnew ArgumentNullException("instream");
 	if(Object::ReferenceEquals(outstream, nullptr)) throw gcnew ArgumentNullException("outstream");
 
-	// Get the length of the input data, set to 0xFFFFFFFF'FFFFFFFF if unknown
-	try { insize = (instream->Length - instream->Position); }
-	catch(Exception^) { insize = System::UInt64::MaxValue; }
-
 	// Initialize the encoder properties
 	LzmaEncProps_Init(&props);
 
-	// Set the compression level property
-	if(m_level == Compression::CompressionLevel::NoCompression) props.level = 0;
-	else if(m_level == Compression::CompressionLevel::Fastest) props.level = 1;
-	else props.level = 9;
-
-	// Set the write end mark property
+	// Set the encoder properties for this instance
+	props.level = m_level;
+	props.dictSize = m_dictsize;
+	props.reduceSize = insize;
+	props.lc = m_litcontextbits;
+	props.lp = m_litposbits;
+	props.pb = m_posbits;
+	props.algo = static_cast<int>(m_compmode);
+	props.fb = m_fastbytes;
+	props.btMode = static_cast<int>(m_matchfindmode);
+	props.numHashBytes = m_hashbytes;
+	props.mc = m_matchfindpasses;
 	props.writeEndMark = (m_writeendmark) ? 1 : 0;
+	props.numThreads = (m_multithreaded) ? 2 : 1;
 
 	// Normalize the properties to ensure nothing is out of range
 	LzmaEncProps_Normalize(&props);
@@ -209,7 +274,7 @@ void LzmaEncoder::Encode(array<unsigned __int8>^ buffer, Stream^ outstream)
 	if(Object::ReferenceEquals(outstream, nullptr)) throw gcnew ArgumentNullException("outstream");
 
 	msclr::auto_handle<MemoryStream> instream(gcnew MemoryStream(buffer, false));
-	Encode(instream.get(), outstream);
+	Encode(instream.get(), buffer->Length, outstream);
 }
 
 //---------------------------------------------------------------------------
@@ -230,9 +295,169 @@ void LzmaEncoder::Encode(array<unsigned __int8>^ buffer, int offset, int count, 
 	if(Object::ReferenceEquals(outstream, nullptr)) throw gcnew ArgumentNullException("outstream");
 
 	msclr::auto_handle<MemoryStream> instream(gcnew MemoryStream(buffer, offset, count, false));
-	Encode(instream.get(), outstream);
+	Encode(instream.get(), count, outstream);
 }
 
+//---------------------------------------------------------------------------
+// LzmaEncoder::FastBytes::get
+//
+// Gets the number of fast bytes to use
+
+LzmaFastBytes LzmaEncoder::FastBytes::get(void)
+{
+	return m_fastbytes;
+}
+
+//---------------------------------------------------------------------------
+// LzmaEncoder::FastBytes::set
+//
+// Sets the number of fast bytes to use
+
+void LzmaEncoder::FastBytes::set(LzmaFastBytes value)
+{
+	m_fastbytes = value;
+}
+
+//---------------------------------------------------------------------------
+// LzmaEncoder::HashBytes::get
+//
+// Gets the number of hash bytes to use
+
+LzmaHashBytes LzmaEncoder::HashBytes::get(void)
+{
+	return m_hashbytes;
+}
+
+//---------------------------------------------------------------------------
+// LzmaEncoder::HashBytes::set
+//
+// Sets the number of hash bytes to use
+
+void LzmaEncoder::HashBytes::set(LzmaHashBytes value)
+{
+	m_hashbytes = value;
+}
+
+//---------------------------------------------------------------------------
+// LzmaEncoder::LiteralContextBits::get
+//
+// Gets the encoder literal context bits setting
+
+LzmaLiteralContextBits LzmaEncoder::LiteralContextBits::get(void)
+{
+	return m_litcontextbits;
+}
+
+//---------------------------------------------------------------------------
+// LzmaEncoder::LiteralContextBits::set
+//
+// Sets the encoder literal context bits setting
+
+void LzmaEncoder::LiteralContextBits::set(LzmaLiteralContextBits value)
+{
+	m_litcontextbits = value;
+}
+
+//---------------------------------------------------------------------------
+// LzmaEncoder::LiteralPositionBits::get
+//
+// Gets the encoder literal position bits setting
+
+LzmaLiteralPositionBits LzmaEncoder::LiteralPositionBits::get(void)
+{
+	return m_litposbits;
+}
+
+//---------------------------------------------------------------------------
+// LzmaEncoder::LiteralPositionBits::set
+//
+// Sets the encoder literal position bits setting
+
+void LzmaEncoder::LiteralPositionBits::set(LzmaLiteralPositionBits value)
+{
+	m_litposbits = value;
+}
+
+//---------------------------------------------------------------------------
+// LzmaEncoder::MatchFindMode::get
+//
+// Gets the encoder match find mode
+
+LzmaMatchFindMode LzmaEncoder::MatchFindMode::get(void)
+{
+	return m_matchfindmode;
+}
+
+//---------------------------------------------------------------------------
+// LzmaEncoder::MatchFindMode::set
+//
+// Sets the encoder match find mode
+
+void LzmaEncoder::MatchFindMode::set(LzmaMatchFindMode value)
+{
+	m_matchfindmode = value;
+}
+
+//---------------------------------------------------------------------------
+// LzmaEncoder::MatchFindPasses::get
+//
+// Gets the number of encoder match find passes
+
+LzmaMatchFindPasses LzmaEncoder::MatchFindPasses::get(void)
+{
+	return m_matchfindpasses;
+}
+
+//---------------------------------------------------------------------------
+// LzmaEncoder::MatchFindPasses::set
+//
+// Sets the number of encoder match find passes
+
+void LzmaEncoder::MatchFindPasses::set(LzmaMatchFindPasses value)
+{
+	m_matchfindpasses = value;
+}
+
+//---------------------------------------------------------------------------
+// LzmaEncoder::PositionBits::get
+//
+// Gets the encoder position bits setting
+
+LzmaPositionBits LzmaEncoder::PositionBits::get(void)
+{
+	return m_posbits;
+}
+
+//---------------------------------------------------------------------------
+// LzmaEncoder::PositionBits::set
+//
+// Sets the encoder position bits setting
+
+void LzmaEncoder::PositionBits::set(LzmaPositionBits value)
+{
+	m_posbits = value;
+}
+
+//---------------------------------------------------------------------------
+// LzmaEncoder::UseMultipleThreads::get
+//
+// Gets the flag to encode using multiple threads
+
+bool LzmaEncoder::UseMultipleThreads::get(void)
+{
+	return m_multithreaded;
+}
+
+//---------------------------------------------------------------------------
+// LzmaEncoder::UseMultipleThreads::set
+//
+// Sets the flag to encode using multiple threads
+
+void LzmaEncoder::UseMultipleThreads::set(bool value)
+{
+	m_multithreaded = value;
+}
+	
 //---------------------------------------------------------------------------
 // LzmaEncoder::WriteEndMark::get
 //
