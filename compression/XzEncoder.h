@@ -26,6 +26,7 @@
 
 #include <XzEnc.h>
 #include "Encoder.h"
+#include "LzmaEncoder.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -39,12 +40,9 @@ namespace zuki::io::compression {
 // Class XzEncoder
 //
 // XZ compression encoder
-//
-// TODO: There are many more aspects of the XZ encoder that can be controlled
-// via properties on this class, just the basics are in here right now
 //---------------------------------------------------------------------------
 
-public ref class XzEncoder : public Encoder
+public ref class XzEncoder : public LzmaEncoder
 {
 public:
 
@@ -58,44 +56,62 @@ public:
 	// Encode (Encoder)
 	//
 	// Compresses an input stream into an array of bytes
-	virtual array<unsigned __int8>^ Encode(Stream^ instream);
+	virtual array<unsigned __int8>^ Encode(Stream^ instream) override;
 
 	// Encode (Encoder)
 	//
 	// Compresses an input array of bytes
-	virtual array<unsigned __int8>^ Encode(array<unsigned __int8>^ buffer);
+	virtual array<unsigned __int8>^ Encode(array<unsigned __int8>^ buffer) override;
 
 	// Encode (Encoder)
 	//
 	// Compresses an input array of bytes
-	virtual array<unsigned __int8>^ Encode(array<unsigned __int8>^ buffer, int offset, int count);
+	virtual array<unsigned __int8>^ Encode(array<unsigned __int8>^ buffer, int offset, int count) override;
 
 	// Encode (Encoder)
 	//
 	// Compresses an input stream into an output stream
-	virtual void Encode(Stream^ instream, Stream^ outstream);
+	virtual void Encode(Stream^ instream, Stream^ outstream) override;
 
 	// Encode (Encoder)
 	//
 	// Compresses an input array of bytes into an output stream
-	virtual void Encode(array<unsigned __int8>^ buffer, Stream^ outstream);
+	virtual void Encode(array<unsigned __int8>^ buffer, Stream^ outstream) override;
 
 	// Encode (Encoder)
 	//
 	// Compresses an input array of bytes into an output stream
-	virtual void Encode(array<unsigned __int8>^ buffer, int offset, int count, Stream^ outstream);
+	virtual void Encode(array<unsigned __int8>^ buffer, int offset, int count, Stream^ outstream) override;
 
 	//-----------------------------------------------------------------------
 	// Properties
 
-	// CompressionlLevel
+	// BlockSize
 	//
-	// Gets/sets the compression level to use
-	property Compression::CompressionLevel CompressionLevel
+	// Indicates the LZMA2 block size (0 = disabled)
+	property __int64 BlockSize
 	{
-		Compression::CompressionLevel get(void);
-		void set(Compression::CompressionLevel value);
-	} 
+		__int64 get(void);
+		void set(__int64 value);
+	}
+
+	// MaximumThreads
+	//
+	// Indicates the maximum number of LZMA2 threads
+	property int MaximumThreads
+	{
+		int get(void);
+		void set(int value);
+	}
+
+	// ThreadsPerBlock
+	//
+	// Indicates the LZMA2 threads per block
+	property int ThreadsPerBlock
+	{
+		int get(void);
+		void set(int value);
+	}
 
 private:
 
@@ -175,9 +191,19 @@ private:
 	};
 	
 	//-----------------------------------------------------------------------
+	// Private Member Functions
+
+	// Encode
+	//
+	// Compresses an input stream into an output stream
+	void Encode(Stream^ instream, unsigned __int64 insize, Stream^ outstream);
+
+	//-----------------------------------------------------------------------
 	// Member Variables
 
-	Compression::CompressionLevel	m_level;			// Compression level
+	__int64					m_blocksize;			// LZMA2 block size
+	int						m_blockthreads;			// Threads per block
+	int						m_totalthreads;			// Total LZMA2 threads
 };
 
 //---------------------------------------------------------------------------

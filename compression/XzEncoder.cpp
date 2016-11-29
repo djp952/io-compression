@@ -49,28 +49,32 @@ static XzEncoder::XzEncoder()
 //
 //	NONE
 
-XzEncoder::XzEncoder() : m_level(Compression::CompressionLevel::Optimal)
+XzEncoder::XzEncoder() : m_blocksize(0), m_blockthreads(0), m_totalthreads(0)
 {
 }
 
 //---------------------------------------------------------------------------
-// XzEncoder::CompressionLevel::get
+// XzEncoder::BlockSize::get
 //
-// Gets the encoder compression level value
+// Indicates the LZMA2 block size (0 = disabled)
 
-Compression::CompressionLevel XzEncoder::CompressionLevel::get(void)
+__int64 XzEncoder::BlockSize::get(void)
 {
-	return m_level;
+	return m_blocksize;
 }
 
 //---------------------------------------------------------------------------
-// XzEncoder::CompressionLevel::set
+// XzEncoder::BlockSize::set
 //
-// Sets the encoder compression level value
+// Indicates the LZMA2 block size (0 = disabled)
 
-void XzEncoder::CompressionLevel::set(Compression::CompressionLevel value)
+void XzEncoder::BlockSize::set(__int64 value)
 {
-	m_level = value;
+#ifndef _M_X64
+	if((value < 0) || (value > System::UInt32::MaxValue)) throw gcnew ArgumentOutOfRangeException("value");
+#else
+	if(value < 0) throw gcnew ArgumentOutOfRangeException("value");
+#endif
 }
 
 //---------------------------------------------------------------------------
@@ -87,7 +91,7 @@ array<unsigned __int8>^ XzEncoder::Encode(Stream^ instream)
 	if(Object::ReferenceEquals(instream, nullptr)) throw gcnew ArgumentNullException("instream");
 
 	msclr::auto_handle<MemoryStream> outstream(gcnew MemoryStream());
-	Encode(instream, outstream.get());
+	Encode(instream, System::UInt64::MaxValue, outstream.get());
 
 	return outstream->ToArray();
 }
@@ -126,7 +130,7 @@ array<unsigned __int8>^ XzEncoder::Encode(array<unsigned __int8>^ buffer, int of
 	msclr::auto_handle<MemoryStream> instream(gcnew MemoryStream(buffer, offset, count, false));
 	msclr::auto_handle<MemoryStream> outstream(gcnew MemoryStream());
 
-	Encode(instream.get(), outstream.get());
+	Encode(instream.get(), count, outstream.get());
 
 	return outstream->ToArray();
 }
@@ -143,6 +147,26 @@ array<unsigned __int8>^ XzEncoder::Encode(array<unsigned __int8>^ buffer, int of
 
 void XzEncoder::Encode(Stream^ instream, Stream^ outstream)
 {
+	if(Object::ReferenceEquals(instream, nullptr)) throw gcnew ArgumentNullException("instream");
+	if(Object::ReferenceEquals(instream, nullptr)) throw gcnew ArgumentNullException("outstream");
+
+	// The length of the input stream is not necessarily fixed, do not specify a length
+	Encode(instream, System::UInt64::MaxValue, outstream);
+}
+
+//---------------------------------------------------------------------------
+// XzEncoder::Encode
+//
+// Compresses an input stream into an output stream
+//
+// Arguments:
+//
+//	instream		- Input stream to be compressed
+//	insize			- Input stream length, if known and constant
+//	outstream		- Output stream to received compressed data
+
+void XzEncoder::Encode(Stream^ instream, unsigned __int64 insize, Stream^ outstream)
+{
 	CLzma2EncProps				lzma2props;		// LZMA2 encoder properties
 	CXzProps					xzprops;		// Encoder properties
 	SRes						result;			// LZMA function call result
@@ -153,19 +177,32 @@ void XzEncoder::Encode(Stream^ instream, Stream^ outstream)
 	// Initialize the LZMA2 encoder properties
 	Lzma2EncProps_Init(&lzma2props);
 	
-	// Set the desired compression level for the output stream
-	if(m_level == Compression::CompressionLevel::NoCompression) lzma2props.lzmaProps.level = 0;
-	else if(m_level == Compression::CompressionLevel::Fastest) lzma2props.lzmaProps.level = 1;
-	else lzma2props.lzmaProps.level = 9;
+	// Set the LZMA encoder properties for this instance
+	lzma2props.lzmaProps.level = m_level;
+	lzma2props.lzmaProps.dictSize = m_dictsize;
+	lzma2props.lzmaProps.reduceSize = insize;
+	lzma2props.lzmaProps.lc = m_litcontextbits;
+	lzma2props.lzmaProps.lp = m_litposbits;
+	lzma2props.lzmaProps.pb = m_posbits;
+	lzma2props.lzmaProps.algo = static_cast<int>(m_compmode);
+	lzma2props.lzmaProps.fb = m_fastbytes;
+	lzma2props.lzmaProps.btMode = static_cast<int>(m_matchfindmode);
+	lzma2props.lzmaProps.numHashBytes = m_hashbytes;
+	lzma2props.lzmaProps.mc = m_matchfindpasses;
+	lzma2props.lzmaProps.writeEndMark = (m_writeendmark) ? 1 : 0;
+	lzma2props.lzmaProps.numThreads = (m_multithreaded) ? 2 : 1;
 
+	// Set the LZMA2 encoder properties for this instance
+	lzma2props.blockSize = static_cast<size_t>(m_blocksize);
+	lzma2props.numBlockThreads = m_blockthreads;
+	lzma2props.numTotalThreads = m_totalthreads;
+  
 	// Normalize the LZMA2 encoder properties
 	Lzma2EncProps_Normalize(&lzma2props);
 
 	// Initialize the XZ encoder properties
 	XzProps_Init(&xzprops);
 	xzprops.lzma2Props = &lzma2props;
-
-	// Seems that this is always set to XZ_CHECK_CRC64 by 7-zip, do the same thing
 	xzprops.checkId = XZ_CHECK_CRC64;
 
 	// Create a ReaderWriter instance around the input and output streams
@@ -192,7 +229,7 @@ void XzEncoder::Encode(array<unsigned __int8>^ buffer, Stream^ outstream)
 	if(Object::ReferenceEquals(outstream, nullptr)) throw gcnew ArgumentNullException("outstream");
 
 	msclr::auto_handle<MemoryStream> instream(gcnew MemoryStream(buffer, false));
-	Encode(instream.get(), outstream);
+	Encode(instream.get(), buffer->Length, outstream);
 }
 
 //---------------------------------------------------------------------------
@@ -213,7 +250,49 @@ void XzEncoder::Encode(array<unsigned __int8>^ buffer, int offset, int count, St
 	if(Object::ReferenceEquals(outstream, nullptr)) throw gcnew ArgumentNullException("outstream");
 
 	msclr::auto_handle<MemoryStream> instream(gcnew MemoryStream(buffer, offset, count, false));
-	Encode(instream.get(), outstream);
+	Encode(instream.get(), count, outstream);
+}
+
+//---------------------------------------------------------------------------
+// XzEncoder::MaximumThreads::get
+//
+// Indicates the maximum number of LZMA2 threads
+
+int XzEncoder::MaximumThreads::get(void)
+{
+	return m_totalthreads;
+}
+
+//---------------------------------------------------------------------------
+// XzEncoder::MaximumThreads::set
+//
+// Indicates the maximum number of LZMA2 threads
+
+void XzEncoder::MaximumThreads::set(int value)
+{
+	if(value < 0) throw gcnew ArgumentOutOfRangeException("value");
+	m_totalthreads = value;
+}
+
+//---------------------------------------------------------------------------
+// XzEncoder::ThreadsPerBlock::get
+//
+// Indicates the LZMA2 threads per block
+
+int XzEncoder::ThreadsPerBlock::get(void)
+{
+	return m_blockthreads;
+}
+
+//---------------------------------------------------------------------------
+// XzEncoder::ThreadsPerBlock::set
+//
+// Indicates the LZMA2 threads per block
+
+void XzEncoder::ThreadsPerBlock::set(int value)
+{
+	if(value < 0) throw gcnew ArgumentOutOfRangeException("value");
+	m_blockthreads = value;
 }
 
 //

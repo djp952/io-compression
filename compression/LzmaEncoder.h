@@ -201,7 +201,25 @@ public:
 	{
 		bool get(void);
 		void set(bool value);
-	} 
+	}
+
+protected:
+
+	//-----------------------------------------------------------------------
+	// Protected Member Variables
+
+	LzmaCompressionLevel		m_level;			// Compression level
+	LzmaDictionarySize			m_dictsize;			// Dictionary size
+	LzmaLiteralContextBits		m_litcontextbits;	// Literal context bits
+	LzmaLiteralPositionBits		m_litposbits;		// Literal position bits
+	LzmaPositionBits			m_posbits;			// Position bits
+	LzmaCompressionMode			m_compmode;			// Compression mode
+	LzmaFastBytes				m_fastbytes;		// Number of fast bytes
+	LzmaMatchFindMode			m_matchfindmode;	// Match find mode
+	LzmaHashBytes				m_hashbytes;		// Number of hash bytes
+	LzmaMatchFindPasses			m_matchfindpasses;	// Number of match find passes
+	bool						m_writeendmark;		// Flag to write end mark
+	bool						m_multithreaded;	// Use multiple threads
 
 private:
 
@@ -283,22 +301,6 @@ private:
 	//
 	// Compresses an input stream into an output stream
 	void Encode(Stream^ instream, unsigned __int64 insize, Stream^ outstream);
-
-	//-----------------------------------------------------------------------
-	// Member Variables
-
-	LzmaCompressionLevel		m_level;			// Compression level
-	LzmaDictionarySize			m_dictsize;			// Dictionary size
-	LzmaLiteralContextBits		m_litcontextbits;	// Literal context bits
-	LzmaLiteralPositionBits		m_litposbits;		// Literal position bits
-	LzmaPositionBits			m_posbits;			// Position bits
-	LzmaCompressionMode			m_compmode;			// Compression mode
-	LzmaFastBytes				m_fastbytes;		// Number of fast bytes
-	LzmaMatchFindMode			m_matchfindmode;	// Match find mode
-	LzmaHashBytes				m_hashbytes;		// Number of hash bytes
-	LzmaMatchFindPasses			m_matchfindpasses;	// Number of match find passes
-	bool						m_writeendmark;		// Flag to write end mark
-	bool						m_multithreaded;	// Use multiple threads
 };
 
 //---------------------------------------------------------------------------
