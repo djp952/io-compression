@@ -103,7 +103,7 @@ GzipWriter::GzipWriter(Stream^ stream, GzipCompressionLevel level, GzipCompressi
 	try { m_zstream = new z_stream; memset(m_zstream, 0, sizeof(z_stream)); }
 	catch(Exception^) { throw gcnew OutOfMemoryException(); }
 
-	// Initialize the z_stream for compression
+	// Initialize the z_stream for compression (window size is fixed for GZIP compatibility)
 	int result = deflateInit2(m_zstream, level, Z_DEFLATED, 16 + MAX_WBITS, maxmem, static_cast<int>(strategy));
 	if(result != Z_OK) throw gcnew GzipException(result);
 }

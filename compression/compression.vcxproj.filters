@@ -154,6 +154,9 @@
     <ClInclude Include="Lz4ContentChecksum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Lz4Encoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -364,6 +367,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Lz4LegacyEncoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Lz4Encoder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

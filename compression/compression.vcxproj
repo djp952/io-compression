@@ -206,6 +206,7 @@
     <ClInclude Include="Lz4BlockSize.h" />
     <ClInclude Include="Lz4CompressionLevel.h" />
     <ClInclude Include="Lz4ContentChecksum.h" />
+    <ClInclude Include="Lz4Encoder.h" />
     <ClInclude Include="Lz4Exception.h" />
     <ClInclude Include="Lz4LegacyEncoder.h" />
     <ClInclude Include="Lz4LegacyReader.h" />
@@ -673,6 +674,7 @@
     <ClCompile Include="GzipReader.cpp" />
     <ClCompile Include="GzipWriter.cpp" />
     <ClCompile Include="Lz4CompressionLevel.cpp" />
+    <ClCompile Include="Lz4Encoder.cpp" />
     <ClCompile Include="Lz4Exception.cpp" />
     <ClCompile Include="Lz4LegacyEncoder.cpp" />
     <ClCompile Include="Lz4LegacyReader.cpp" />
