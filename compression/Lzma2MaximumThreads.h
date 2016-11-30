@@ -20,8 +20,8 @@
 // SOFTWARE.
 //---------------------------------------------------------------------------
 
-#ifndef __LZMADICTIONARYSIZE_H_
-#define __LZMADICTIONARYSIZE_H_
+#ifndef __LZMA2MAXIMUMTHREADS_H_
+#define __LZMA2MAXIMUMTHREADS_H_
 #pragma once
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
@@ -32,33 +32,33 @@ using namespace System::IO;
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// Class LzmaDictionarySize
+// Class Lzma2MaximumThreads
 //
-// Indicates the dictionary size to use with the LZMA encoder
+// Indicates the maximum number of threads to use with the XZ (LZMA2) encoder
 //---------------------------------------------------------------------------
 
-public value class LzmaDictionarySize
+public value class Lzma2MaximumThreads
 {
 public:
 
 	// Instance Constructors
 	//
-	LzmaDictionarySize(int size);
+	Lzma2MaximumThreads(int threads);
 
 	//-----------------------------------------------------------------------
 	// Overloaded Operators
 
 	// operator== (static)
 	//
-	static bool operator==(LzmaDictionarySize lhs, LzmaDictionarySize rhs);
+	static bool operator==(Lzma2MaximumThreads lhs, Lzma2MaximumThreads rhs);
 
 	// operator!= (static)
 	//
-	static bool operator!=(LzmaDictionarySize lhs, LzmaDictionarySize rhs);
+	static bool operator!=(Lzma2MaximumThreads lhs, Lzma2MaximumThreads rhs);
 
-	// operator LzmaDictionarySize (static)
+	// operator Lzma2MaximumThreads (static)
 	//
-	static operator LzmaDictionarySize(int size);
+	static operator Lzma2MaximumThreads(int threads);
 
 	//-----------------------------------------------------------------------
 	// Member Functions
@@ -70,8 +70,8 @@ public:
 
 	// Equals
 	//
-	// Compares this LzmaDictionarySize to another LzmaDictionarySize
-	bool Equals(LzmaDictionarySize rhs);
+	// Compares this Lzma2MaximumThreads to another Lzma2MaximumThreads
+	bool Equals(Lzma2MaximumThreads rhs);
 
 	// GetHashCode
 	//
@@ -86,13 +86,7 @@ public:
 	//-----------------------------------------------------------------------
 	// Fields
 
-	static initonly LzmaDictionarySize Default		= LzmaDictionarySize(1 << 24);
-	static initonly LzmaDictionarySize Minimum		= LzmaDictionarySize(1 << 12);
-#ifndef _M_X64
-	static initonly LzmaDictionarySize Maximum		= LzmaDictionarySize(1 << 27);
-#else
-	static initonly LzmaDictionarySize Maximum		= LzmaDictionarySize(1 << 30);
-#endif
+	static initonly Lzma2MaximumThreads Default		= Lzma2MaximumThreads(0);
 
 internal:
 
@@ -102,14 +96,14 @@ internal:
 	// operator int
 	//
 	// Exposes the value as an integer
-	static operator int(LzmaDictionarySize rhs);
+	static operator int(Lzma2MaximumThreads rhs);
 
 private:
 
 	//-----------------------------------------------------------------------
 	// Member Variables
 
-	int							m_size;		// Underlying dictionary size
+	int							m_threads;			// Underlying value
 };
 
 //---------------------------------------------------------------------------
@@ -118,4 +112,4 @@ private:
 
 #pragma warning(pop)
 
-#endif	// __LZMADICTIONARYSIZE_H_
+#endif	// __LZMA2MAXIMUMTHREADS_H_

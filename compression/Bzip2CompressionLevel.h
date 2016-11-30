@@ -99,6 +99,10 @@ public:
 	//
 	static bool operator!=(Bzip2CompressionLevel lhs, Bzip2CompressionLevel rhs);
 
+	// operator Bzip2CompressionLevel (static)
+	//
+	static operator Bzip2CompressionLevel(int level);
+
 	//-----------------------------------------------------------------------
 	// Member Functions
 
@@ -134,7 +138,7 @@ internal:
 	//-----------------------------------------------------------------------
 	// Internal Operators
 
-	// operator int
+	// operator int (static)
 	//
 	// Exposes the value as an integer
 	static operator int(Bzip2CompressionLevel rhs);

@@ -37,7 +37,7 @@ namespace zuki::io::compression {
 //	NONE
 
 GzipEncoder::GzipEncoder() : m_buffersize(GzipWriter::DEFAULT_BUFFER_SIZE), m_level(GzipCompressionLevel::Default),
-	m_strategy(GzipCompressionStrategy::Default), m_maxmem(GzipMemoryUsage::Default)
+	m_strategy(GzipCompressionStrategy::Default), m_maxmem(GzipMemoryUsageLevel::Default)
 {
 }
 
@@ -224,7 +224,7 @@ void GzipEncoder::Encode(array<unsigned __int8>^ buffer, int offset, int count, 
 //
 // Gets the encoder compression strategy
 
-GzipMemoryUsage GzipEncoder::MemoryUsage::get(void)
+GzipMemoryUsageLevel GzipEncoder::MemoryUsage::get(void)
 {
 	return m_maxmem;
 }
@@ -234,7 +234,7 @@ GzipMemoryUsage GzipEncoder::MemoryUsage::get(void)
 //
 // Sets the encoder compression strategy
 
-void GzipEncoder::MemoryUsage::set(GzipMemoryUsage value)
+void GzipEncoder::MemoryUsage::set(GzipMemoryUsageLevel value)
 {
 	m_maxmem = value;
 }

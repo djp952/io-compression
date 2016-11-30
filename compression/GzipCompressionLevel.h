@@ -59,6 +59,10 @@ public:
 	//
 	static bool operator!=(GzipCompressionLevel lhs, GzipCompressionLevel rhs);
 
+	// operator GzipCompressionLevel (static)
+	//
+	static operator GzipCompressionLevel(int level);
+
 	//-----------------------------------------------------------------------
 	// Member Functions
 

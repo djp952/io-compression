@@ -56,6 +56,14 @@ bool LzmaLiteralContextBits::operator!=(LzmaLiteralContextBits lhs, LzmaLiteralC
 }
 
 //---------------------------------------------------------------------------
+// LzmaLiteralContextBits::operator LzmaLiteralContextBits (static)
+
+LzmaLiteralContextBits::operator LzmaLiteralContextBits(int bits)
+{
+	return LzmaLiteralContextBits(bits);
+}
+
+//---------------------------------------------------------------------------
 // LzmaLiteralContextBits::operator int (static)
 
 LzmaLiteralContextBits::operator int(LzmaLiteralContextBits rhs)

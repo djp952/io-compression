@@ -21,72 +21,72 @@
 //---------------------------------------------------------------------------
 
 #include "stdafx.h"
-#include "LzmaHashBytes.h"
+#include "Lzma2MaximumThreads.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes Constructor
+// Lzma2MaximumThreads Constructor
 //
 // Arguments:
 //
-//	bytes		- Number of Hash bytes to use during encoding
+//	threads		- Maximum number of threads to use
 
-LzmaHashBytes::LzmaHashBytes(int bytes) : m_bytes(bytes)
+Lzma2MaximumThreads::Lzma2MaximumThreads(int threads) : m_threads(threads)
 {
-	if((bytes < 2) || (bytes > 4)) throw gcnew ArgumentOutOfRangeException("bytes");
+	if(threads < 0) throw gcnew ArgumentOutOfRangeException("threads");
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::operator == (static)
+// Lzma2MaximumThreads::operator == (static)
 
-bool LzmaHashBytes::operator==(LzmaHashBytes lhs, LzmaHashBytes rhs)
+bool Lzma2MaximumThreads::operator==(Lzma2MaximumThreads lhs, Lzma2MaximumThreads rhs)
 {
-	return lhs.m_bytes == rhs.m_bytes;
+	return lhs.m_threads == rhs.m_threads;
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::operator != (static)
+// Lzma2MaximumThreads::operator != (static)
 
-bool LzmaHashBytes::operator!=(LzmaHashBytes lhs, LzmaHashBytes rhs)
+bool Lzma2MaximumThreads::operator!=(Lzma2MaximumThreads lhs, Lzma2MaximumThreads rhs)
 {
-	return lhs.m_bytes != rhs.m_bytes;
+	return lhs.m_threads != rhs.m_threads;
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::operator LzmaHashBytes (static)
+// Lzma2MaximumThreads::operator Lzma2MaximumThreads (static)
 
-LzmaHashBytes::operator LzmaHashBytes(int bytes)
+Lzma2MaximumThreads::operator Lzma2MaximumThreads(int size)
 {
-	return LzmaHashBytes(bytes);
+	return Lzma2MaximumThreads(size);
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::operator int (static)
+// Lzma2MaximumThreads::operator int (static)
 
-LzmaHashBytes::operator int(LzmaHashBytes rhs)
+Lzma2MaximumThreads::operator int(Lzma2MaximumThreads rhs)
 {
-	return rhs.m_bytes;
+	return rhs.m_threads;
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::Equals
+// Lzma2MaximumThreads::Equals
 //
-// Compares this LzmaHashBytes to another LzmaHashBytes
+// Compares this Lzma2MaximumThreads to another Lzma2MaximumThreads
 //
 // Arguments:
 //
-//	rhs		- Right-hand LzmaHashBytes to compare against
+//	rhs		- Right-hand Lzma2MaximumThreads to compare against
 
-bool LzmaHashBytes::Equals(LzmaHashBytes rhs)
+bool Lzma2MaximumThreads::Equals(Lzma2MaximumThreads rhs)
 {
 	return (*this == rhs);
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::Equals
+// Lzma2MaximumThreads::Equals
 //
 // Overrides Object::Equals()
 //
@@ -94,19 +94,19 @@ bool LzmaHashBytes::Equals(LzmaHashBytes rhs)
 //
 //	rhs		- Right-hand object instance to compare against
 
-bool LzmaHashBytes::Equals(Object^ rhs)
+bool Lzma2MaximumThreads::Equals(Object^ rhs)
 {
 	if(Object::ReferenceEquals(rhs, nullptr)) return false;
 
-	// Convert the provided object into a LzmaHashBytes instance
-	LzmaHashBytes^ rhsref = dynamic_cast<LzmaHashBytes^>(rhs);
+	// Convert the provided object into a Lzma2MaximumThreads instance
+	Lzma2MaximumThreads^ rhsref = dynamic_cast<Lzma2MaximumThreads^>(rhs);
 	if(rhsref == nullptr) return false;
 
 	return (*this == *rhsref);
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::GetHashCode
+// Lzma2MaximumThreads::GetHashCode
 //
 // Overrides Object::GetHashCode()
 //
@@ -114,13 +114,13 @@ bool LzmaHashBytes::Equals(Object^ rhs)
 //
 //	NONE
 
-int LzmaHashBytes::GetHashCode(void)
+int Lzma2MaximumThreads::GetHashCode(void)
 {
-	return m_bytes.GetHashCode();
+	return m_threads.GetHashCode();
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::ToString
+// Lzma2MaximumThreads::ToString
 //
 // Overrides Object::ToString()
 //
@@ -128,9 +128,9 @@ int LzmaHashBytes::GetHashCode(void)
 //
 //	NONE
 
-String^ LzmaHashBytes::ToString(void)
+String^ Lzma2MaximumThreads::ToString(void)
 {
-	return m_bytes.ToString();
+	return m_threads.ToString();
 }
 
 //---------------------------------------------------------------------------

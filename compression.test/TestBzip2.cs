@@ -507,13 +507,13 @@ namespace zuki.io.compression.test
 			try { encoder.BufferSize = -1; Assert.Fail("Property should have thrown an exception"); }
 			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
 
-			try { encoder.CompressionLevel = new Bzip2CompressionLevel(-1); Assert.Fail("Property should have thrown an exception"); }
+			try { encoder.CompressionLevel = -1; Assert.Fail("Property should have thrown an exception"); }
 			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
 
-			try { encoder.CompressionLevel = new Bzip2CompressionLevel(0); Assert.Fail("Property should have thrown an exception"); }
+			try { encoder.CompressionLevel = 0; Assert.Fail("Property should have thrown an exception"); }
 			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
 
-			try { encoder.CompressionLevel = new Bzip2CompressionLevel(10); Assert.Fail("Property should have thrown an exception"); }
+			try { encoder.CompressionLevel = 10; Assert.Fail("Property should have thrown an exception"); }
 			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
 
 			try { encoder.WorkFactor = new Bzip2WorkFactor(-1); Assert.Fail("Property should have thrown an exception"); }

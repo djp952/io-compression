@@ -20,11 +20,9 @@
 // SOFTWARE.
 //---------------------------------------------------------------------------
 
-#ifndef __GZIPMEMORYUSAGE_H_
-#define __GZIPMEMORYUSAGE_H_
+#ifndef __LZMA2THREADSPERBLOCK_H_
+#define __LZMA2THREADSPERBLOCK_H_
 #pragma once
-
-#include <zlib.h>
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -34,29 +32,33 @@ using namespace System::IO;
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// Class GzipMemoryUsage
+// Class Lzma2ThreadsPerBlock
 //
-// Indicates the compression level to use with the GZIP encoder
+// Indicates the number of threads per block for te XZ (LZMA2) encoder
 //---------------------------------------------------------------------------
 
-public value class GzipMemoryUsage
+public value class Lzma2ThreadsPerBlock
 {
 public:
 
 	// Instance Constructors
 	//
-	GzipMemoryUsage(int level);
+	Lzma2ThreadsPerBlock(int threads);
 
 	//-----------------------------------------------------------------------
 	// Overloaded Operators
 
 	// operator== (static)
 	//
-	static bool operator==(GzipMemoryUsage lhs, GzipMemoryUsage rhs);
+	static bool operator==(Lzma2ThreadsPerBlock lhs, Lzma2ThreadsPerBlock rhs);
 
 	// operator!= (static)
 	//
-	static bool operator!=(GzipMemoryUsage lhs, GzipMemoryUsage rhs);
+	static bool operator!=(Lzma2ThreadsPerBlock lhs, Lzma2ThreadsPerBlock rhs);
+
+	// operator Lzma2ThreadsPerBlock (static)
+	//
+	static operator Lzma2ThreadsPerBlock(int threads);
 
 	//-----------------------------------------------------------------------
 	// Member Functions
@@ -68,8 +70,8 @@ public:
 
 	// Equals
 	//
-	// Compares this GzipMemoryUsage to another GzipMemoryUsage
-	bool Equals(GzipMemoryUsage rhs);
+	// Compares this Lzma2ThreadsPerBlock to another Lzma2ThreadsPerBlock
+	bool Equals(Lzma2ThreadsPerBlock rhs);
 
 	// GetHashCode
 	//
@@ -84,9 +86,7 @@ public:
 	//-----------------------------------------------------------------------
 	// Fields
 
-	static initonly GzipMemoryUsage Default		= GzipMemoryUsage(8);
-	static initonly GzipMemoryUsage Minimum		= GzipMemoryUsage(1);
-	static initonly GzipMemoryUsage Optimal		= GzipMemoryUsage(MAX_MEM_LEVEL);
+	static initonly Lzma2ThreadsPerBlock Default		= Lzma2ThreadsPerBlock(0);
 
 internal:
 
@@ -96,14 +96,14 @@ internal:
 	// operator int
 	//
 	// Exposes the value as an integer
-	static operator int(GzipMemoryUsage rhs);
+	static operator int(Lzma2ThreadsPerBlock rhs);
 
 private:
 
 	//-----------------------------------------------------------------------
 	// Member Variables
 
-	int						m_level;		// Underlying memory usage level
+	int							m_threads;		// Underlying value
 };
 
 //---------------------------------------------------------------------------
@@ -112,4 +112,4 @@ private:
 
 #pragma warning(pop)
 
-#endif	// __GZIPMEMORYUSAGE_H_
+#endif	// __LZMA2THREADSPERBLOCK_H_

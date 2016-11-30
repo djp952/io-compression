@@ -37,7 +37,7 @@ namespace zuki::io::compression {
 //	stream		- The stream the compressed data is written to
 
 GzipWriter::GzipWriter(Stream^ stream) : 
-	GzipWriter(stream, GzipCompressionLevel::Default, GzipCompressionStrategy::Default, GzipMemoryUsage::Default, DEFAULT_BUFFER_SIZE, false)
+	GzipWriter(stream, GzipCompressionLevel::Default, GzipCompressionStrategy::Default, GzipMemoryUsageLevel::Default, DEFAULT_BUFFER_SIZE, false)
 {
 }
 
@@ -50,7 +50,7 @@ GzipWriter::GzipWriter(Stream^ stream) :
 //	level		- Indicates whether to emphasize speed or compression efficiency
 
 GzipWriter::GzipWriter(Stream^ stream, Compression::CompressionLevel level) : 
-	GzipWriter(stream, GzipCompressionLevel(level), GzipCompressionStrategy::Default, GzipMemoryUsage::Default, DEFAULT_BUFFER_SIZE, false)
+	GzipWriter(stream, GzipCompressionLevel(level), GzipCompressionStrategy::Default, GzipMemoryUsageLevel::Default, DEFAULT_BUFFER_SIZE, false)
 {
 }
 
@@ -63,7 +63,7 @@ GzipWriter::GzipWriter(Stream^ stream, Compression::CompressionLevel level) :
 //	leaveopen	- Flag to leave the base stream open after disposal
 
 GzipWriter::GzipWriter(Stream^ stream, bool leaveopen) : 
-	GzipWriter(stream, GzipCompressionLevel::Default, GzipCompressionStrategy::Default, GzipMemoryUsage::Default, DEFAULT_BUFFER_SIZE, leaveopen)
+	GzipWriter(stream, GzipCompressionLevel::Default, GzipCompressionStrategy::Default, GzipMemoryUsageLevel::Default, DEFAULT_BUFFER_SIZE, leaveopen)
 {
 }
 
@@ -77,7 +77,7 @@ GzipWriter::GzipWriter(Stream^ stream, bool leaveopen) :
 //	leaveopen	- Flag to leave the base stream open after disposal
 
 GzipWriter::GzipWriter(Stream^ stream, Compression::CompressionLevel level, bool leaveopen) : 
-	GzipWriter(stream, GzipCompressionLevel(level), GzipCompressionStrategy::Default, GzipMemoryUsage::Default, DEFAULT_BUFFER_SIZE, leaveopen)
+	GzipWriter(stream, GzipCompressionLevel(level), GzipCompressionStrategy::Default, GzipMemoryUsageLevel::Default, DEFAULT_BUFFER_SIZE, leaveopen)
 {
 }
 
@@ -93,7 +93,7 @@ GzipWriter::GzipWriter(Stream^ stream, Compression::CompressionLevel level, bool
 //	buffersize		- Indicates the size of the compression buffer
 //	leaveopen		- Flag to leave the base stream open after disposal
 
-GzipWriter::GzipWriter(Stream^ stream, GzipCompressionLevel level, GzipCompressionStrategy strategy, GzipMemoryUsage maxmem, int buffersize, bool leaveopen) : 
+GzipWriter::GzipWriter(Stream^ stream, GzipCompressionLevel level, GzipCompressionStrategy strategy, GzipMemoryUsageLevel maxmem, int buffersize, bool leaveopen) : 
 	m_disposed(false), m_stream(stream), m_leaveopen(leaveopen), m_buffersize(buffersize)
 {
 	if(Object::ReferenceEquals(stream, nullptr)) throw gcnew ArgumentNullException("stream");

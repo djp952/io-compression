@@ -21,72 +21,72 @@
 //---------------------------------------------------------------------------
 
 #include "stdafx.h"
-#include "LzmaHashBytes.h"
+#include "Lzma2ThreadsPerBlock.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes Constructor
+// Lzma2ThreadsPerBlock Constructor
 //
 // Arguments:
 //
-//	bytes		- Number of Hash bytes to use during encoding
+//	threads		- Number of threads to use per block
 
-LzmaHashBytes::LzmaHashBytes(int bytes) : m_bytes(bytes)
+Lzma2ThreadsPerBlock::Lzma2ThreadsPerBlock(int threads) : m_threads(threads)
 {
-	if((bytes < 2) || (bytes > 4)) throw gcnew ArgumentOutOfRangeException("bytes");
+	if(threads < 0) throw gcnew ArgumentOutOfRangeException("threads");
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::operator == (static)
+// Lzma2ThreadsPerBlock::operator == (static)
 
-bool LzmaHashBytes::operator==(LzmaHashBytes lhs, LzmaHashBytes rhs)
+bool Lzma2ThreadsPerBlock::operator==(Lzma2ThreadsPerBlock lhs, Lzma2ThreadsPerBlock rhs)
 {
-	return lhs.m_bytes == rhs.m_bytes;
+	return lhs.m_threads == rhs.m_threads;
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::operator != (static)
+// Lzma2ThreadsPerBlock::operator != (static)
 
-bool LzmaHashBytes::operator!=(LzmaHashBytes lhs, LzmaHashBytes rhs)
+bool Lzma2ThreadsPerBlock::operator!=(Lzma2ThreadsPerBlock lhs, Lzma2ThreadsPerBlock rhs)
 {
-	return lhs.m_bytes != rhs.m_bytes;
+	return lhs.m_threads != rhs.m_threads;
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::operator LzmaHashBytes (static)
+// Lzma2ThreadsPerBlock::operator Lzma2ThreadsPerBlock (static)
 
-LzmaHashBytes::operator LzmaHashBytes(int bytes)
+Lzma2ThreadsPerBlock::operator Lzma2ThreadsPerBlock(int threads)
 {
-	return LzmaHashBytes(bytes);
+	return Lzma2ThreadsPerBlock(threads);
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::operator int (static)
+// Lzma2ThreadsPerBlock::operator int (static)
 
-LzmaHashBytes::operator int(LzmaHashBytes rhs)
+Lzma2ThreadsPerBlock::operator int(Lzma2ThreadsPerBlock rhs)
 {
-	return rhs.m_bytes;
+	return rhs.m_threads;
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::Equals
+// Lzma2ThreadsPerBlock::Equals
 //
-// Compares this LzmaHashBytes to another LzmaHashBytes
+// Compares this Lzma2ThreadsPerBlock to another Lzma2ThreadsPerBlock
 //
 // Arguments:
 //
-//	rhs		- Right-hand LzmaHashBytes to compare against
+//	rhs		- Right-hand Lzma2ThreadsPerBlock to compare against
 
-bool LzmaHashBytes::Equals(LzmaHashBytes rhs)
+bool Lzma2ThreadsPerBlock::Equals(Lzma2ThreadsPerBlock rhs)
 {
 	return (*this == rhs);
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::Equals
+// Lzma2ThreadsPerBlock::Equals
 //
 // Overrides Object::Equals()
 //
@@ -94,19 +94,19 @@ bool LzmaHashBytes::Equals(LzmaHashBytes rhs)
 //
 //	rhs		- Right-hand object instance to compare against
 
-bool LzmaHashBytes::Equals(Object^ rhs)
+bool Lzma2ThreadsPerBlock::Equals(Object^ rhs)
 {
 	if(Object::ReferenceEquals(rhs, nullptr)) return false;
 
-	// Convert the provided object into a LzmaHashBytes instance
-	LzmaHashBytes^ rhsref = dynamic_cast<LzmaHashBytes^>(rhs);
+	// Convert the provided object into a Lzma2ThreadsPerBlock instance
+	Lzma2ThreadsPerBlock^ rhsref = dynamic_cast<Lzma2ThreadsPerBlock^>(rhs);
 	if(rhsref == nullptr) return false;
 
 	return (*this == *rhsref);
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::GetHashCode
+// Lzma2ThreadsPerBlock::GetHashCode
 //
 // Overrides Object::GetHashCode()
 //
@@ -114,13 +114,13 @@ bool LzmaHashBytes::Equals(Object^ rhs)
 //
 //	NONE
 
-int LzmaHashBytes::GetHashCode(void)
+int Lzma2ThreadsPerBlock::GetHashCode(void)
 {
-	return m_bytes.GetHashCode();
+	return m_threads.GetHashCode();
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::ToString
+// Lzma2ThreadsPerBlock::ToString
 //
 // Overrides Object::ToString()
 //
@@ -128,9 +128,9 @@ int LzmaHashBytes::GetHashCode(void)
 //
 //	NONE
 
-String^ LzmaHashBytes::ToString(void)
+String^ Lzma2ThreadsPerBlock::ToString(void)
 {
-	return m_bytes.ToString();
+	return m_threads.ToString();
 }
 
 //---------------------------------------------------------------------------

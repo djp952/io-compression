@@ -72,11 +72,11 @@ namespace zuki::io::compression {
 //
 // Arguments:
 //
-//	level		- Work factor level to use as an integer
+//	factor		- Work factor as an integer
 
-Bzip2WorkFactor::Bzip2WorkFactor(int level) : m_level(level)
+Bzip2WorkFactor::Bzip2WorkFactor(int factor) : m_factor(factor)
 {
-	if((level < 0) || (level > 250)) throw gcnew ArgumentOutOfRangeException("level");
+	if((factor < 0) || (factor > 250)) throw gcnew ArgumentOutOfRangeException("factor");
 }
 
 //---------------------------------------------------------------------------
@@ -84,7 +84,7 @@ Bzip2WorkFactor::Bzip2WorkFactor(int level) : m_level(level)
 
 bool Bzip2WorkFactor::operator==(Bzip2WorkFactor lhs, Bzip2WorkFactor rhs)
 {
-	return lhs.m_level == rhs.m_level;
+	return lhs.m_factor == rhs.m_factor;
 }
 
 //---------------------------------------------------------------------------
@@ -92,7 +92,15 @@ bool Bzip2WorkFactor::operator==(Bzip2WorkFactor lhs, Bzip2WorkFactor rhs)
 
 bool Bzip2WorkFactor::operator!=(Bzip2WorkFactor lhs, Bzip2WorkFactor rhs)
 {
-	return lhs.m_level != rhs.m_level;
+	return lhs.m_factor != rhs.m_factor;
+}
+
+//---------------------------------------------------------------------------
+// Bzip2WorkFactor::operator Bzip2WorkFactor (static)
+
+Bzip2WorkFactor::operator Bzip2WorkFactor(int factor)
+{
+	return Bzip2WorkFactor(factor);
 }
 
 //---------------------------------------------------------------------------
@@ -100,7 +108,7 @@ bool Bzip2WorkFactor::operator!=(Bzip2WorkFactor lhs, Bzip2WorkFactor rhs)
 
 Bzip2WorkFactor::operator int(Bzip2WorkFactor rhs)
 {
-	return rhs.m_level;
+	return rhs.m_factor;
 }
 
 //---------------------------------------------------------------------------
@@ -148,7 +156,7 @@ bool Bzip2WorkFactor::Equals(Object^ rhs)
 
 int Bzip2WorkFactor::GetHashCode(void)
 {
-	return m_level.GetHashCode();
+	return m_factor.GetHashCode();
 }
 
 //---------------------------------------------------------------------------
@@ -162,7 +170,7 @@ int Bzip2WorkFactor::GetHashCode(void)
 
 String^ Bzip2WorkFactor::ToString(void)
 {
-	return m_level.ToString();
+	return m_factor.ToString();
 }
 
 //---------------------------------------------------------------------------

@@ -97,6 +97,14 @@ bool Lz4CompressionLevel::operator!=(Lz4CompressionLevel lhs, Lz4CompressionLeve
 }
 
 //---------------------------------------------------------------------------
+// Lz4CompressionLevel::operator Lz4CompressionLevel (static)
+
+Lz4CompressionLevel::operator Lz4CompressionLevel(int level)
+{
+	return Lz4CompressionLevel(level);
+}
+
+//---------------------------------------------------------------------------
 // Lz4CompressionLevel::operator int (static)
 
 Lz4CompressionLevel::operator int(Lz4CompressionLevel rhs)

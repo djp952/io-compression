@@ -71,6 +71,14 @@ bool GzipCompressionLevel::operator!=(GzipCompressionLevel lhs, GzipCompressionL
 }
 
 //---------------------------------------------------------------------------
+// GzipCompressionLevel::operator GzipCompressionLevel (static)
+
+GzipCompressionLevel::operator GzipCompressionLevel(int level)
+{
+	return GzipCompressionLevel(level);
+}
+
+//---------------------------------------------------------------------------
 // GzipCompressionLevel::operator int (static)
 
 GzipCompressionLevel::operator int(GzipCompressionLevel rhs)

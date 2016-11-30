@@ -87,6 +87,10 @@ public:
 	//
 	static bool operator!=(Lz4CompressionLevel lhs, Lz4CompressionLevel rhs);
 
+	// operator Lz4CompressionLevel (static)
+	//
+	static operator Lz4CompressionLevel(int level);
+
 	//-----------------------------------------------------------------------
 	// Member Functions
 

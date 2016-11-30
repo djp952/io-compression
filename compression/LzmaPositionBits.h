@@ -56,6 +56,10 @@ public:
 	//
 	static bool operator!=(LzmaPositionBits lhs, LzmaPositionBits rhs);
 
+	// operator LzmaPositionBits (static)
+	//
+	static operator LzmaPositionBits(int bits);
+
 	//-----------------------------------------------------------------------
 	// Member Functions
 

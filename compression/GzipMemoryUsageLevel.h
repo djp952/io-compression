@@ -20,9 +20,11 @@
 // SOFTWARE.
 //---------------------------------------------------------------------------
 
-#ifndef __LZMADICTIONARYSIZE_H_
-#define __LZMADICTIONARYSIZE_H_
+#ifndef __GzipMemoryUsageLevelLEVEL_H_
+#define __GzipMemoryUsageLevelLEVEL_H_
 #pragma once
+
+#include <zlib.h>
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -32,33 +34,33 @@ using namespace System::IO;
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// Class LzmaDictionarySize
+// Class GzipMemoryUsageLevel
 //
-// Indicates the dictionary size to use with the LZMA encoder
+// Indicates the compression level to use with the GZIP encoder
 //---------------------------------------------------------------------------
 
-public value class LzmaDictionarySize
+public value class GzipMemoryUsageLevel
 {
 public:
 
 	// Instance Constructors
 	//
-	LzmaDictionarySize(int size);
+	GzipMemoryUsageLevel(int level);
 
 	//-----------------------------------------------------------------------
 	// Overloaded Operators
 
 	// operator== (static)
 	//
-	static bool operator==(LzmaDictionarySize lhs, LzmaDictionarySize rhs);
+	static bool operator==(GzipMemoryUsageLevel lhs, GzipMemoryUsageLevel rhs);
 
 	// operator!= (static)
 	//
-	static bool operator!=(LzmaDictionarySize lhs, LzmaDictionarySize rhs);
+	static bool operator!=(GzipMemoryUsageLevel lhs, GzipMemoryUsageLevel rhs);
 
-	// operator LzmaDictionarySize (static)
+	// operator GzipMemoryUsageLevel (static)
 	//
-	static operator LzmaDictionarySize(int size);
+	static operator GzipMemoryUsageLevel(int level);
 
 	//-----------------------------------------------------------------------
 	// Member Functions
@@ -70,8 +72,8 @@ public:
 
 	// Equals
 	//
-	// Compares this LzmaDictionarySize to another LzmaDictionarySize
-	bool Equals(LzmaDictionarySize rhs);
+	// Compares this GzipMemoryUsageLevel to another GzipMemoryUsageLevel
+	bool Equals(GzipMemoryUsageLevel rhs);
 
 	// GetHashCode
 	//
@@ -86,13 +88,9 @@ public:
 	//-----------------------------------------------------------------------
 	// Fields
 
-	static initonly LzmaDictionarySize Default		= LzmaDictionarySize(1 << 24);
-	static initonly LzmaDictionarySize Minimum		= LzmaDictionarySize(1 << 12);
-#ifndef _M_X64
-	static initonly LzmaDictionarySize Maximum		= LzmaDictionarySize(1 << 27);
-#else
-	static initonly LzmaDictionarySize Maximum		= LzmaDictionarySize(1 << 30);
-#endif
+	static initonly GzipMemoryUsageLevel Default		= GzipMemoryUsageLevel(8);
+	static initonly GzipMemoryUsageLevel Minimum		= GzipMemoryUsageLevel(1);
+	static initonly GzipMemoryUsageLevel Optimal		= GzipMemoryUsageLevel(MAX_MEM_LEVEL);
 
 internal:
 
@@ -102,14 +100,14 @@ internal:
 	// operator int
 	//
 	// Exposes the value as an integer
-	static operator int(LzmaDictionarySize rhs);
+	static operator int(GzipMemoryUsageLevel rhs);
 
 private:
 
 	//-----------------------------------------------------------------------
 	// Member Variables
 
-	int							m_size;		// Underlying dictionary size
+	int						m_level;		// Underlying memory usage level
 };
 
 //---------------------------------------------------------------------------
@@ -118,4 +116,4 @@ private:
 
 #pragma warning(pop)
 
-#endif	// __LZMADICTIONARYSIZE_H_
+#endif	// __GzipMemoryUsageLevelLEVEL_H_

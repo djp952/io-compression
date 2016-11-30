@@ -198,7 +198,7 @@
     <ClInclude Include="GzipCompressionLevel.h" />
     <ClInclude Include="GzipEncoder.h" />
     <ClInclude Include="GzipException.h" />
-    <ClInclude Include="GzipMemoryUsage.h" />
+    <ClInclude Include="GzipMemoryUsageLevel.h" />
     <ClInclude Include="GzipReader.h" />
     <ClInclude Include="GzipCompressionStrategy.h" />
     <ClInclude Include="GzipWriter.h" />
@@ -213,6 +213,9 @@
     <ClInclude Include="Lz4LegacyWriter.h" />
     <ClInclude Include="Lz4Reader.h" />
     <ClInclude Include="Lz4Writer.h" />
+    <ClInclude Include="Lzma2BlockSize.h" />
+    <ClInclude Include="Lzma2MaximumThreads.h" />
+    <ClInclude Include="Lzma2ThreadsPerBlock.h" />
     <ClInclude Include="LzmaCompressionLevel.h" />
     <ClInclude Include="LzmaCompressionMode.h" />
     <ClInclude Include="LzmaDictionarySize.h" />
@@ -680,7 +683,7 @@
     <ClCompile Include="GzipCompressionLevel.cpp" />
     <ClCompile Include="GzipEncoder.cpp" />
     <ClCompile Include="GzipException.cpp" />
-    <ClCompile Include="GzipMemoryUsage.cpp" />
+    <ClCompile Include="GzipMemoryUsageLevel.cpp" />
     <ClCompile Include="GzipReader.cpp" />
     <ClCompile Include="GzipWriter.cpp" />
     <ClCompile Include="Lz4CompressionLevel.cpp" />
@@ -691,6 +694,9 @@
     <ClCompile Include="Lz4LegacyWriter.cpp" />
     <ClCompile Include="Lz4Reader.cpp" />
     <ClCompile Include="Lz4Writer.cpp" />
+    <ClCompile Include="Lzma2BlockSize.cpp" />
+    <ClCompile Include="Lzma2MaximumThreads.cpp" />
+    <ClCompile Include="Lzma2ThreadsPerBlock.cpp" />
     <ClCompile Include="LzmaCompressionLevel.cpp" />
     <ClCompile Include="LzmaDictionarySize.cpp" />
     <ClCompile Include="LzmaEncoder.cpp" />

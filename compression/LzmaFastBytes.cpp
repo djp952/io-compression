@@ -56,6 +56,14 @@ bool LzmaFastBytes::operator!=(LzmaFastBytes lhs, LzmaFastBytes rhs)
 }
 
 //---------------------------------------------------------------------------
+// LzmaFastBytes::operator LzmaFastBytes (static)
+
+LzmaFastBytes::operator LzmaFastBytes(int bytes)
+{
+	return LzmaFastBytes(bytes);
+}
+
+//---------------------------------------------------------------------------
 // LzmaFastBytes::operator int (static)
 
 LzmaFastBytes::operator int(LzmaFastBytes rhs)

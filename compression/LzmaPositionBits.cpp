@@ -56,6 +56,14 @@ bool LzmaPositionBits::operator!=(LzmaPositionBits lhs, LzmaPositionBits rhs)
 }
 
 //---------------------------------------------------------------------------
+// LzmaPositionBits::operator LzmaPositionBits (static)
+
+LzmaPositionBits::operator LzmaPositionBits(int bits)
+{
+	return LzmaPositionBits(bits);
+}
+
+//---------------------------------------------------------------------------
 // LzmaPositionBits::operator int (static)
 
 LzmaPositionBits::operator int(LzmaPositionBits rhs)

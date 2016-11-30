@@ -28,7 +28,7 @@
 #include "Encoder.h"
 #include "GzipCompressionLevel.h"
 #include "GzipCompressionStrategy.h"
-#include "GzipMemoryUsage.h"
+#include "GzipMemoryUsageLevel.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -117,10 +117,10 @@ public:
 	// MemoryUsage
 	//
 	// Gets/sets the maximum amount of memory to use
-	property GzipMemoryUsage MemoryUsage
+	property GzipMemoryUsageLevel MemoryUsage
 	{
-		GzipMemoryUsage get(void);
-		void set(GzipMemoryUsage value);
+		GzipMemoryUsageLevel get(void);
+		void set(GzipMemoryUsageLevel value);
 	}
 
 private:
@@ -131,7 +131,7 @@ private:
 	int							m_buffersize;		// Size of the compression buffer
 	GzipCompressionLevel		m_level;			// Compression level
 	GzipCompressionStrategy		m_strategy;			// Compression strategy
-	GzipMemoryUsage				m_maxmem;			// Memory usage level
+	GzipMemoryUsageLevel		m_maxmem;			// Memory usage level
 };
 
 //---------------------------------------------------------------------------

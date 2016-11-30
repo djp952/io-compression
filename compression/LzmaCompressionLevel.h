@@ -57,6 +57,10 @@ public:
 	//
 	static bool operator!=(LzmaCompressionLevel lhs, LzmaCompressionLevel rhs);
 
+	// operator LzmaCompressionLevel (static)
+	//
+	static operator LzmaCompressionLevel(int level);
+
 	//-----------------------------------------------------------------------
 	// Member Functions
 

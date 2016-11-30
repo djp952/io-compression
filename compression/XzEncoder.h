@@ -27,6 +27,9 @@
 #include <XzEnc.h>
 #include "Encoder.h"
 #include "LzmaEncoder.h"
+#include "Lzma2BlockSize.h"
+#include "Lzma2MaximumThreads.h"
+#include "Lzma2ThreadsPerBlock.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -88,29 +91,29 @@ public:
 
 	// BlockSize
 	//
-	// Indicates the LZMA2 block size (0 = disabled)
-	property __int64 BlockSize
+	// Indicates the LZMA2 block size
+	property Lzma2BlockSize BlockSize
 	{
-		__int64 get(void);
-		void set(__int64 value);
+		Lzma2BlockSize get(void);
+		void set(Lzma2BlockSize value);
 	}
 
 	// MaximumThreads
 	//
 	// Indicates the maximum number of LZMA2 threads
-	property int MaximumThreads
+	property Lzma2MaximumThreads MaximumThreads
 	{
-		int get(void);
-		void set(int value);
+		Lzma2MaximumThreads get(void);
+		void set(Lzma2MaximumThreads value);
 	}
 
 	// ThreadsPerBlock
 	//
 	// Indicates the LZMA2 threads per block
-	property int ThreadsPerBlock
+	property Lzma2ThreadsPerBlock ThreadsPerBlock
 	{
-		int get(void);
-		void set(int value);
+		Lzma2ThreadsPerBlock get(void);
+		void set(Lzma2ThreadsPerBlock value);
 	}
 
 private:
@@ -201,9 +204,9 @@ private:
 	//-----------------------------------------------------------------------
 	// Member Variables
 
-	__int64					m_blocksize;			// LZMA2 block size
-	int						m_blockthreads;			// Threads per block
-	int						m_totalthreads;			// Total LZMA2 threads
+	Lzma2BlockSize				m_blocksize;			// LZMA2 block size
+	Lzma2ThreadsPerBlock		m_blockthreads;			// Threads per block
+	Lzma2MaximumThreads			m_totalthreads;			// Total LZMA2 threads
 };
 
 //---------------------------------------------------------------------------

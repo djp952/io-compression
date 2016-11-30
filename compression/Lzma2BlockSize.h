@@ -20,8 +20,8 @@
 // SOFTWARE.
 //---------------------------------------------------------------------------
 
-#ifndef __LZMADICTIONARYSIZE_H_
-#define __LZMADICTIONARYSIZE_H_
+#ifndef __LZMA2BLOCKSIZE_H_
+#define __LZMA2BLOCKSIZE_H_
 #pragma once
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
@@ -32,33 +32,37 @@ using namespace System::IO;
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// Class LzmaDictionarySize
+// Class Lzma2BlockSize
 //
-// Indicates the dictionary size to use with the LZMA encoder
+// Indicates the block size to use with the XZ (LZMA2) encoder
 //---------------------------------------------------------------------------
 
-public value class LzmaDictionarySize
+public value class Lzma2BlockSize
 {
 public:
 
 	// Instance Constructors
 	//
-	LzmaDictionarySize(int size);
+	Lzma2BlockSize(__int64 size);
 
 	//-----------------------------------------------------------------------
 	// Overloaded Operators
 
 	// operator== (static)
 	//
-	static bool operator==(LzmaDictionarySize lhs, LzmaDictionarySize rhs);
+	static bool operator==(Lzma2BlockSize lhs, Lzma2BlockSize rhs);
 
 	// operator!= (static)
 	//
-	static bool operator!=(LzmaDictionarySize lhs, LzmaDictionarySize rhs);
+	static bool operator!=(Lzma2BlockSize lhs, Lzma2BlockSize rhs);
 
-	// operator LzmaDictionarySize (static)
+	// operator Lzma2BlockSize (static)
 	//
-	static operator LzmaDictionarySize(int size);
+	static operator Lzma2BlockSize(int size);
+
+	// operator Lzma2BlockSize (static)
+	//
+	static operator Lzma2BlockSize(__int64 size);
 
 	//-----------------------------------------------------------------------
 	// Member Functions
@@ -70,8 +74,8 @@ public:
 
 	// Equals
 	//
-	// Compares this LzmaDictionarySize to another LzmaDictionarySize
-	bool Equals(LzmaDictionarySize rhs);
+	// Compares this Lzma2BlockSize to another Lzma2BlockSize
+	bool Equals(Lzma2BlockSize rhs);
 
 	// GetHashCode
 	//
@@ -86,30 +90,24 @@ public:
 	//-----------------------------------------------------------------------
 	// Fields
 
-	static initonly LzmaDictionarySize Default		= LzmaDictionarySize(1 << 24);
-	static initonly LzmaDictionarySize Minimum		= LzmaDictionarySize(1 << 12);
-#ifndef _M_X64
-	static initonly LzmaDictionarySize Maximum		= LzmaDictionarySize(1 << 27);
-#else
-	static initonly LzmaDictionarySize Maximum		= LzmaDictionarySize(1 << 30);
-#endif
+	static initonly Lzma2BlockSize Disabled		= Lzma2BlockSize(0);
 
 internal:
 
 	//-----------------------------------------------------------------------
 	// Internal Operators
 
-	// operator int
+	// operator __int64
 	//
 	// Exposes the value as an integer
-	static operator int(LzmaDictionarySize rhs);
+	static operator __int64(Lzma2BlockSize rhs);
 
 private:
 
 	//-----------------------------------------------------------------------
 	// Member Variables
 
-	int							m_size;		// Underlying dictionary size
+	__int64						m_size;		// Underlying block size
 };
 
 //---------------------------------------------------------------------------
@@ -118,4 +116,4 @@ private:
 
 #pragma warning(pop)
 
-#endif	// __LZMADICTIONARYSIZE_H_
+#endif	// __LZMA2BLOCKSIZE_H_

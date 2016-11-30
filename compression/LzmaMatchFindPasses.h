@@ -56,6 +56,10 @@ public:
 	//
 	static bool operator!=(LzmaMatchFindPasses lhs, LzmaMatchFindPasses rhs);
 
+	// operator LzmaMatchFindPasses (static)
+	//
+	static operator LzmaMatchFindPasses(int bits);
+
 	//-----------------------------------------------------------------------
 	// Member Functions
 

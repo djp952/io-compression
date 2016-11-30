@@ -111,6 +111,14 @@ bool Bzip2CompressionLevel::operator!=(Bzip2CompressionLevel lhs, Bzip2Compressi
 }
 
 //---------------------------------------------------------------------------
+// Bzip2CompressionLevel::operator Bzip2CompressionLevel (static)
+
+Bzip2CompressionLevel::operator Bzip2CompressionLevel(int level)
+{
+	return Bzip2CompressionLevel(level);
+}
+
+//---------------------------------------------------------------------------
 // Bzip2CompressionLevel::operator int (static)
 
 Bzip2CompressionLevel::operator int(Bzip2CompressionLevel rhs)

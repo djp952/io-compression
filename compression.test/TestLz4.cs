@@ -366,9 +366,6 @@ namespace zuki.io.compression.test
 					compressor.Flush();
 				}
 
-				compressed.Position = 0;
-				using (Stream file = File.Create("D:\\test.lz4")) { compressed.CopyTo(file); file.Flush(); }
-
 				// Create a decompressor to test some of the error cases
 				using (Lz4Reader decompressor = new Lz4Reader(compressed, true))
 				{

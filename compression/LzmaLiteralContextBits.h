@@ -56,6 +56,10 @@ public:
 	//
 	static bool operator!=(LzmaLiteralContextBits lhs, LzmaLiteralContextBits rhs);
 
+	// operator LzmaLiteralContextBits (static)
+	//
+	static operator LzmaLiteralContextBits(int bits);
+
 	//-----------------------------------------------------------------------
 	// Member Functions
 

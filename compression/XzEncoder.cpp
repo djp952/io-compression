@@ -49,16 +49,16 @@ static XzEncoder::XzEncoder()
 //
 //	NONE
 
-XzEncoder::XzEncoder() : m_blocksize(0), m_blockthreads(0), m_totalthreads(0)
+XzEncoder::XzEncoder() : m_blocksize(Lzma2BlockSize::Disabled), m_blockthreads(Lzma2ThreadsPerBlock::Default), m_totalthreads(Lzma2MaximumThreads::Default)
 {
 }
 
 //---------------------------------------------------------------------------
 // XzEncoder::BlockSize::get
 //
-// Indicates the LZMA2 block size (0 = disabled)
+// Indicates the LZMA2 block size
 
-__int64 XzEncoder::BlockSize::get(void)
+Lzma2BlockSize XzEncoder::BlockSize::get(void)
 {
 	return m_blocksize;
 }
@@ -66,15 +66,11 @@ __int64 XzEncoder::BlockSize::get(void)
 //---------------------------------------------------------------------------
 // XzEncoder::BlockSize::set
 //
-// Indicates the LZMA2 block size (0 = disabled)
+// Indicates the LZMA2 block size
 
-void XzEncoder::BlockSize::set(__int64 value)
+void XzEncoder::BlockSize::set(Lzma2BlockSize value)
 {
-#ifndef _M_X64
-	if((value < 0) || (value > System::UInt32::MaxValue)) throw gcnew ArgumentOutOfRangeException("value");
-#else
-	if(value < 0) throw gcnew ArgumentOutOfRangeException("value");
-#endif
+	m_blocksize = value;
 }
 
 //---------------------------------------------------------------------------
@@ -193,7 +189,7 @@ void XzEncoder::Encode(Stream^ instream, unsigned __int64 insize, Stream^ outstr
 	lzma2props.lzmaProps.numThreads = (m_multithreaded) ? 2 : 1;
 
 	// Set the LZMA2 encoder properties for this instance
-	lzma2props.blockSize = static_cast<size_t>(m_blocksize);
+	lzma2props.blockSize = static_cast<size_t>(static_cast<__int64>(m_blocksize));
 	lzma2props.numBlockThreads = m_blockthreads;
 	lzma2props.numTotalThreads = m_totalthreads;
   
@@ -258,7 +254,7 @@ void XzEncoder::Encode(array<unsigned __int8>^ buffer, int offset, int count, St
 //
 // Indicates the maximum number of LZMA2 threads
 
-int XzEncoder::MaximumThreads::get(void)
+Lzma2MaximumThreads XzEncoder::MaximumThreads::get(void)
 {
 	return m_totalthreads;
 }
@@ -268,9 +264,8 @@ int XzEncoder::MaximumThreads::get(void)
 //
 // Indicates the maximum number of LZMA2 threads
 
-void XzEncoder::MaximumThreads::set(int value)
+void XzEncoder::MaximumThreads::set(Lzma2MaximumThreads value)
 {
-	if(value < 0) throw gcnew ArgumentOutOfRangeException("value");
 	m_totalthreads = value;
 }
 
@@ -279,7 +274,7 @@ void XzEncoder::MaximumThreads::set(int value)
 //
 // Indicates the LZMA2 threads per block
 
-int XzEncoder::ThreadsPerBlock::get(void)
+Lzma2ThreadsPerBlock XzEncoder::ThreadsPerBlock::get(void)
 {
 	return m_blockthreads;
 }
@@ -289,9 +284,8 @@ int XzEncoder::ThreadsPerBlock::get(void)
 //
 // Indicates the LZMA2 threads per block
 
-void XzEncoder::ThreadsPerBlock::set(int value)
+void XzEncoder::ThreadsPerBlock::set(Lzma2ThreadsPerBlock value)
 {
-	if(value < 0) throw gcnew ArgumentOutOfRangeException("value");
 	m_blockthreads = value;
 }
 

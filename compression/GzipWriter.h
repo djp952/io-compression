@@ -27,7 +27,7 @@
 #include <zlib.h>
 #include "GzipCompressionLevel.h"
 #include "GzipCompressionStrategy.h"
-#include "GzipMemoryUsage.h"
+#include "GzipMemoryUsageLevel.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -147,7 +147,7 @@ internal:
 
 	// Instance Constructor
 	//
-	GzipWriter(Stream^ stream, GzipCompressionLevel level, GzipCompressionStrategy strategy, GzipMemoryUsage maxmem, int buffersize, bool leaveopen);
+	GzipWriter(Stream^ stream, GzipCompressionLevel level, GzipCompressionStrategy strategy, GzipMemoryUsageLevel maxmem, int buffersize, bool leaveopen);
 
 private:
 

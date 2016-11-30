@@ -130,9 +130,6 @@
     <ClInclude Include="GzipCompressionLevel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GzipMemoryUsage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Bzip2CompressionLevel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -185,6 +182,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LzmaMatchFindPasses.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GzipMemoryUsageLevel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lzma2BlockSize.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lzma2MaximumThreads.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lzma2ThreadsPerBlock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -384,9 +393,6 @@
     <ClCompile Include="GzipCompressionLevel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GzipMemoryUsage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Bzip2CompressionLevel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -424,6 +430,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LzmaMatchFindPasses.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GzipMemoryUsageLevel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Lzma2BlockSize.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Lzma2MaximumThreads.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Lzma2ThreadsPerBlock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

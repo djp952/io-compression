@@ -85,7 +85,7 @@ public:
 
 	// Instance Constructors
 	//
-	Bzip2WorkFactor(int level);
+	Bzip2WorkFactor(int factor);
 
 	//-----------------------------------------------------------------------
 	// Overloaded Operators
@@ -97,6 +97,10 @@ public:
 	// operator!= (static)
 	//
 	static bool operator!=(Bzip2WorkFactor lhs, Bzip2WorkFactor rhs);
+
+	// operator Bzip2WorkFactor (static)
+	//
+	static operator Bzip2WorkFactor(int factor);
 
 	//-----------------------------------------------------------------------
 	// Member Functions
@@ -141,7 +145,7 @@ private:
 	//-----------------------------------------------------------------------
 	// Member Variables
 
-	int							m_level;		// Underlying compression level
+	int							m_factor;		// Underlying work factor
 };
 
 //---------------------------------------------------------------------------

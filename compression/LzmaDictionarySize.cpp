@@ -32,14 +32,14 @@ namespace zuki::io::compression {
 //
 // Arguments:
 //
-//	level		- Memory usage level as an integer
+//	size		- Dictionary size as an integer
 
-LzmaDictionarySize::LzmaDictionarySize(int level) : m_level(level)
+LzmaDictionarySize::LzmaDictionarySize(int size) : m_size(size)
 {
 #ifndef _M_X64
-	if((level < (1 << 12)) || (level > (1 << 27))) throw gcnew ArgumentOutOfRangeException("level");
+	if((size < (1 << 12)) || (size > (1 << 27))) throw gcnew ArgumentOutOfRangeException("size");
 #else
-	if((level < (1 << 12)) || (level > (1 << 30))) throw gcnew ArgumentOutOfRangeException("level");
+	if((size < (1 << 12)) || (size > (1 << 30))) throw gcnew ArgumentOutOfRangeException("size");
 #endif
 }
 
@@ -48,7 +48,7 @@ LzmaDictionarySize::LzmaDictionarySize(int level) : m_level(level)
 
 bool LzmaDictionarySize::operator==(LzmaDictionarySize lhs, LzmaDictionarySize rhs)
 {
-	return lhs.m_level == rhs.m_level;
+	return lhs.m_size == rhs.m_size;
 }
 
 //---------------------------------------------------------------------------
@@ -56,7 +56,15 @@ bool LzmaDictionarySize::operator==(LzmaDictionarySize lhs, LzmaDictionarySize r
 
 bool LzmaDictionarySize::operator!=(LzmaDictionarySize lhs, LzmaDictionarySize rhs)
 {
-	return lhs.m_level != rhs.m_level;
+	return lhs.m_size != rhs.m_size;
+}
+
+//---------------------------------------------------------------------------
+// LzmaDictionarySize::operator LzmaDictionarySize (static)
+
+LzmaDictionarySize::operator LzmaDictionarySize(int size)
+{
+	return LzmaDictionarySize(size);
 }
 
 //---------------------------------------------------------------------------
@@ -64,7 +72,7 @@ bool LzmaDictionarySize::operator!=(LzmaDictionarySize lhs, LzmaDictionarySize r
 
 LzmaDictionarySize::operator int(LzmaDictionarySize rhs)
 {
-	return rhs.m_level;
+	return rhs.m_size;
 }
 
 //---------------------------------------------------------------------------
@@ -112,7 +120,7 @@ bool LzmaDictionarySize::Equals(Object^ rhs)
 
 int LzmaDictionarySize::GetHashCode(void)
 {
-	return m_level.GetHashCode();
+	return m_size.GetHashCode();
 }
 
 //---------------------------------------------------------------------------
@@ -126,7 +134,7 @@ int LzmaDictionarySize::GetHashCode(void)
 
 String^ LzmaDictionarySize::ToString(void)
 {
-	return m_level.ToString();
+	return m_size.ToString();
 }
 
 //---------------------------------------------------------------------------

@@ -21,64 +21,84 @@
 //---------------------------------------------------------------------------
 
 #include "stdafx.h"
-#include "GzipMemoryUsage.h"
+#include "Lzma2BlockSize.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// GzipMemoryUsage Constructor
+// Lzma2BlockSize Constructor
 //
 // Arguments:
 //
-//	level		- Memory usage level as an integer
+//	size		- Block size as a signed integer
 
-GzipMemoryUsage::GzipMemoryUsage(int level) : m_level(level)
+Lzma2BlockSize::Lzma2BlockSize(__int64 size) : m_size(size)
 {
-	if((level < 1) || (level > MAX_MEM_LEVEL)) throw gcnew ArgumentOutOfRangeException("level");
+#ifndef _M_X64
+	if((size < 0) || (size > System::UInt32::MaxValue)) throw gcnew ArgumentOutOfRangeException("size");
+#else
+	if(size < 0) throw gcnew ArgumentOutOfRangeException("size");
+#endif
 }
 
 //---------------------------------------------------------------------------
-// GzipMemoryUsage::operator == (static)
+// Lzma2BlockSize::operator == (static)
 
-bool GzipMemoryUsage::operator==(GzipMemoryUsage lhs, GzipMemoryUsage rhs)
+bool Lzma2BlockSize::operator==(Lzma2BlockSize lhs, Lzma2BlockSize rhs)
 {
-	return lhs.m_level == rhs.m_level;
+	return lhs.m_size == rhs.m_size;
 }
 
 //---------------------------------------------------------------------------
-// GzipMemoryUsage::operator != (static)
+// Lzma2BlockSize::operator != (static)
 
-bool GzipMemoryUsage::operator!=(GzipMemoryUsage lhs, GzipMemoryUsage rhs)
+bool Lzma2BlockSize::operator!=(Lzma2BlockSize lhs, Lzma2BlockSize rhs)
 {
-	return lhs.m_level != rhs.m_level;
+	return lhs.m_size != rhs.m_size;
 }
 
 //---------------------------------------------------------------------------
-// GzipMemoryUsage::operator int (static)
+// Lzma2BlockSize::operator Lzma2BlockSize (static)
 
-GzipMemoryUsage::operator int(GzipMemoryUsage rhs)
+Lzma2BlockSize::operator Lzma2BlockSize(int size)
 {
-	return rhs.m_level;
+	return Lzma2BlockSize(size);
 }
 
 //---------------------------------------------------------------------------
-// GzipMemoryUsage::Equals
+// Lzma2BlockSize::operator Lzma2BlockSize (static)
+
+Lzma2BlockSize::operator Lzma2BlockSize(__int64 size)
+{
+	return Lzma2BlockSize(size);
+}
+
+//---------------------------------------------------------------------------
+// Lzma2BlockSize::operator __int64 (static)
+
+Lzma2BlockSize::operator __int64(Lzma2BlockSize rhs)
+{
+	return rhs.m_size;
+}
+
+//---------------------------------------------------------------------------
+// Lzma2BlockSize::Equals
 //
-// Compares this GzipMemoryUsage to another GzipMemoryUsage
+// Compares this Lzma2BlockSize to another Lzma2BlockSize
 //
 // Arguments:
 //
-//	rhs		- Right-hand GzipMemoryUsage to compare against
+//	rhs		- Right-hand Lzma2BlockSize to compare against
 
-bool GzipMemoryUsage::Equals(GzipMemoryUsage rhs)
+bool Lzma2BlockSize::Equals(Lzma2BlockSize rhs)
 {
 	return (*this == rhs);
 }
 
 //---------------------------------------------------------------------------
-// GzipMemoryUsage::Equals
+// Lzma2BlockSize::Equals
 //
 // Overrides Object::Equals()
 //
@@ -86,19 +106,19 @@ bool GzipMemoryUsage::Equals(GzipMemoryUsage rhs)
 //
 //	rhs		- Right-hand object instance to compare against
 
-bool GzipMemoryUsage::Equals(Object^ rhs)
+bool Lzma2BlockSize::Equals(Object^ rhs)
 {
 	if(Object::ReferenceEquals(rhs, nullptr)) return false;
 
-	// Convert the provided object into a GzipMemoryUsage instance
-	GzipMemoryUsage^ rhsref = dynamic_cast<GzipMemoryUsage^>(rhs);
+	// Convert the provided object into a Lzma2BlockSize instance
+	Lzma2BlockSize^ rhsref = dynamic_cast<Lzma2BlockSize^>(rhs);
 	if(rhsref == nullptr) return false;
 
 	return (*this == *rhsref);
 }
 
 //---------------------------------------------------------------------------
-// GzipMemoryUsage::GetHashCode
+// Lzma2BlockSize::GetHashCode
 //
 // Overrides Object::GetHashCode()
 //
@@ -106,13 +126,13 @@ bool GzipMemoryUsage::Equals(Object^ rhs)
 //
 //	NONE
 
-int GzipMemoryUsage::GetHashCode(void)
+int Lzma2BlockSize::GetHashCode(void)
 {
-	return m_level.GetHashCode();
+	return m_size.GetHashCode();
 }
 
 //---------------------------------------------------------------------------
-// GzipMemoryUsage::ToString
+// Lzma2BlockSize::ToString
 //
 // Overrides Object::ToString()
 //
@@ -120,9 +140,9 @@ int GzipMemoryUsage::GetHashCode(void)
 //
 //	NONE
 
-String^ GzipMemoryUsage::ToString(void)
+String^ Lzma2BlockSize::ToString(void)
 {
-	return m_level.ToString();
+	return m_size.ToString();
 }
 
 //---------------------------------------------------------------------------

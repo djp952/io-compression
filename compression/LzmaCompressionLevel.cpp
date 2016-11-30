@@ -71,6 +71,14 @@ bool LzmaCompressionLevel::operator!=(LzmaCompressionLevel lhs, LzmaCompressionL
 }
 
 //---------------------------------------------------------------------------
+// LzmaCompressionLevel::operator LzmaCompressionLevel (static)
+
+LzmaCompressionLevel::operator LzmaCompressionLevel(int level)
+{
+	return LzmaCompressionLevel(level);
+}
+
+//---------------------------------------------------------------------------
 // LzmaCompressionLevel::operator int (static)
 
 LzmaCompressionLevel::operator int(LzmaCompressionLevel rhs)

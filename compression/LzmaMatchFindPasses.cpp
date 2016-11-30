@@ -56,6 +56,14 @@ bool LzmaMatchFindPasses::operator!=(LzmaMatchFindPasses lhs, LzmaMatchFindPasse
 }
 
 //---------------------------------------------------------------------------
+// LzmaMatchFindPasses::operator LzmaMatchFindPasses (static)
+
+LzmaMatchFindPasses::operator LzmaMatchFindPasses(int passes)
+{
+	return LzmaMatchFindPasses(passes);
+}
+
+//---------------------------------------------------------------------------
 // LzmaMatchFindPasses::operator int (static)
 
 LzmaMatchFindPasses::operator int(LzmaMatchFindPasses rhs)

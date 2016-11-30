@@ -21,72 +21,72 @@
 //---------------------------------------------------------------------------
 
 #include "stdafx.h"
-#include "LzmaHashBytes.h"
+#include "GzipMemoryUsageLevel.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes Constructor
+// GzipMemoryUsageLevel Constructor
 //
 // Arguments:
 //
-//	bytes		- Number of Hash bytes to use during encoding
+//	level		- Memory usage level as an integer
 
-LzmaHashBytes::LzmaHashBytes(int bytes) : m_bytes(bytes)
+GzipMemoryUsageLevel::GzipMemoryUsageLevel(int level) : m_level(level)
 {
-	if((bytes < 2) || (bytes > 4)) throw gcnew ArgumentOutOfRangeException("bytes");
+	if((level < 1) || (level > MAX_MEM_LEVEL)) throw gcnew ArgumentOutOfRangeException("level");
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::operator == (static)
+// GzipMemoryUsageLevel::operator == (static)
 
-bool LzmaHashBytes::operator==(LzmaHashBytes lhs, LzmaHashBytes rhs)
+bool GzipMemoryUsageLevel::operator==(GzipMemoryUsageLevel lhs, GzipMemoryUsageLevel rhs)
 {
-	return lhs.m_bytes == rhs.m_bytes;
+	return lhs.m_level == rhs.m_level;
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::operator != (static)
+// GzipMemoryUsageLevel::operator != (static)
 
-bool LzmaHashBytes::operator!=(LzmaHashBytes lhs, LzmaHashBytes rhs)
+bool GzipMemoryUsageLevel::operator!=(GzipMemoryUsageLevel lhs, GzipMemoryUsageLevel rhs)
 {
-	return lhs.m_bytes != rhs.m_bytes;
+	return lhs.m_level != rhs.m_level;
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::operator LzmaHashBytes (static)
+// GzipMemoryUsageLevel::operator GzipMemoryUsageLevel (static)
 
-LzmaHashBytes::operator LzmaHashBytes(int bytes)
+GzipMemoryUsageLevel::operator GzipMemoryUsageLevel(int level)
 {
-	return LzmaHashBytes(bytes);
+	return GzipMemoryUsageLevel(level);
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::operator int (static)
+// GzipMemoryUsageLevel::operator int (static)
 
-LzmaHashBytes::operator int(LzmaHashBytes rhs)
+GzipMemoryUsageLevel::operator int(GzipMemoryUsageLevel rhs)
 {
-	return rhs.m_bytes;
+	return rhs.m_level;
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::Equals
+// GzipMemoryUsageLevel::Equals
 //
-// Compares this LzmaHashBytes to another LzmaHashBytes
+// Compares this GzipMemoryUsageLevel to another GzipMemoryUsageLevel
 //
 // Arguments:
 //
-//	rhs		- Right-hand LzmaHashBytes to compare against
+//	rhs		- Right-hand GzipMemoryUsageLevel to compare against
 
-bool LzmaHashBytes::Equals(LzmaHashBytes rhs)
+bool GzipMemoryUsageLevel::Equals(GzipMemoryUsageLevel rhs)
 {
 	return (*this == rhs);
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::Equals
+// GzipMemoryUsageLevel::Equals
 //
 // Overrides Object::Equals()
 //
@@ -94,19 +94,19 @@ bool LzmaHashBytes::Equals(LzmaHashBytes rhs)
 //
 //	rhs		- Right-hand object instance to compare against
 
-bool LzmaHashBytes::Equals(Object^ rhs)
+bool GzipMemoryUsageLevel::Equals(Object^ rhs)
 {
 	if(Object::ReferenceEquals(rhs, nullptr)) return false;
 
-	// Convert the provided object into a LzmaHashBytes instance
-	LzmaHashBytes^ rhsref = dynamic_cast<LzmaHashBytes^>(rhs);
+	// Convert the provided object into a GzipMemoryUsageLevel instance
+	GzipMemoryUsageLevel^ rhsref = dynamic_cast<GzipMemoryUsageLevel^>(rhs);
 	if(rhsref == nullptr) return false;
 
 	return (*this == *rhsref);
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::GetHashCode
+// GzipMemoryUsageLevel::GetHashCode
 //
 // Overrides Object::GetHashCode()
 //
@@ -114,13 +114,13 @@ bool LzmaHashBytes::Equals(Object^ rhs)
 //
 //	NONE
 
-int LzmaHashBytes::GetHashCode(void)
+int GzipMemoryUsageLevel::GetHashCode(void)
 {
-	return m_bytes.GetHashCode();
+	return m_level.GetHashCode();
 }
 
 //---------------------------------------------------------------------------
-// LzmaHashBytes::ToString
+// GzipMemoryUsageLevel::ToString
 //
 // Overrides Object::ToString()
 //
@@ -128,9 +128,9 @@ int LzmaHashBytes::GetHashCode(void)
 //
 //	NONE
 
-String^ LzmaHashBytes::ToString(void)
+String^ GzipMemoryUsageLevel::ToString(void)
 {
-	return m_bytes.ToString();
+	return m_level.ToString();
 }
 
 //---------------------------------------------------------------------------

@@ -43,7 +43,7 @@ public:
 
 	// Instance Constructors
 	//
-	LzmaHashBytes(int bits);
+	LzmaHashBytes(int bytes);
 
 	//-----------------------------------------------------------------------
 	// Overloaded Operators
@@ -55,6 +55,10 @@ public:
 	// operator!= (static)
 	//
 	static bool operator!=(LzmaHashBytes lhs, LzmaHashBytes rhs);
+
+	// operator LzmaHashBytes (static)
+	//
+	static operator LzmaHashBytes(int bytes);
 
 	//-----------------------------------------------------------------------
 	// Member Functions
