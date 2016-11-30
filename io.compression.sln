@@ -15,6 +15,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "compression.setup", "compression.setup\compression.setup.wixproj", "{73F246C7-D809-48F6-8408-D394CEA32DEC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E43C0386-D486-493E-BCDB-560A1FCE167E} = {E43C0386-D486-493E-BCDB-560A1FCE167E}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -39,6 +44,12 @@ Global
 		{CB2B2FA8-4062-4E54-9053-0FC028B76A61}.Release|Win32.Build.0 = Release|x86
 		{CB2B2FA8-4062-4E54-9053-0FC028B76A61}.Release|x64.ActiveCfg = Release|x64
 		{CB2B2FA8-4062-4E54-9053-0FC028B76A61}.Release|x64.Build.0 = Release|x64
+		{73F246C7-D809-48F6-8408-D394CEA32DEC}.Debug|Win32.ActiveCfg = Debug|x86
+		{73F246C7-D809-48F6-8408-D394CEA32DEC}.Debug|x64.ActiveCfg = Debug|x64
+		{73F246C7-D809-48F6-8408-D394CEA32DEC}.Release|Win32.ActiveCfg = Release|x86
+		{73F246C7-D809-48F6-8408-D394CEA32DEC}.Release|Win32.Build.0 = Release|x86
+		{73F246C7-D809-48F6-8408-D394CEA32DEC}.Release|x64.ActiveCfg = Release|x64
+		{73F246C7-D809-48F6-8408-D394CEA32DEC}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
