@@ -25,6 +25,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -142,12 +143,15 @@ namespace zuki.io.compression.test
 		}
 
 		[TestMethod(), TestCategory("Lz4")]
-		public void Lz4_Dispose()
+		public void Lz4_ReaderDispose()
 		{
 			byte[] buffer = new byte[8192];         // 8KiB data buffer
 
 			// Create a dummy stream and immediately dispose of it
-			Lz4Writer stream = new Lz4Writer(new MemoryStream(s_sampledata), CompressionLevel.Optimal);
+			Lz4Reader stream = new Lz4Reader(new MemoryStream(s_sampledata));
+			stream.Dispose();
+
+			// Test double dispose
 			stream.Dispose();
 
 			// All properties and methods should throw an ObjectDisposedException
@@ -186,6 +190,59 @@ namespace zuki.io.compression.test
 
 			try { stream.Write(buffer, 0, 8192); Assert.Fail("Method call should have thrown an exception"); }
 			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ObjectDisposedException)); }
+		}
+
+		[TestMethod(), TestCategory("Lz4")]
+		public void Lz4_WriterDispose()
+		{
+			byte[] buffer = new byte[8192];         // 8KiB data buffer
+
+			// Create a dummy stream and immediately dispose of it
+			Lz4Writer stream = new Lz4Writer(new MemoryStream(s_sampledata), CompressionLevel.Optimal);
+			stream.Dispose();
+
+			// Test double dispose
+			stream.Dispose();
+
+			// All properties and methods should throw an ObjectDisposedException
+			try { var bs = stream.BaseStream; Assert.Fail("Property access should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ObjectDisposedException)); }
+
+			try { var b = stream.CanRead; Assert.Fail("Property access should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ObjectDisposedException)); }
+
+			try { var b = stream.CanSeek; Assert.Fail("Property access should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ObjectDisposedException)); }
+
+			try { var b = stream.CanWrite; Assert.Fail("Property access should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ObjectDisposedException)); }
+
+			try { stream.Flush(); Assert.Fail("Method call should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ObjectDisposedException)); }
+
+			try { var l = stream.Length; Assert.Fail("Property access should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ObjectDisposedException)); }
+
+			try { var l = stream.Position; Assert.Fail("Property access should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ObjectDisposedException)); }
+
+			try { stream.Position = 12345L; Assert.Fail("Property access should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ObjectDisposedException)); }
+
+			try { stream.Read(buffer, 0, 8192); Assert.Fail("Method call should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ObjectDisposedException)); }
+
+			try { stream.Seek(0, SeekOrigin.Current); Assert.Fail("Method call should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ObjectDisposedException)); }
+
+			try { stream.SetLength(12345L); Assert.Fail("Method call should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ObjectDisposedException)); }
+
+			try { stream.Write(buffer); Assert.Fail("Method call should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ObjectDisposedException)); }
+
+			try { stream.Write(buffer, 0, 8192); Assert.Fail("Method call should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ObjectDisposedException)); }
 
 			// Ensure that an underlying stream is disposed of properly if leaveopen is not set
 			MemoryStream ms = new MemoryStream(s_sampledata);
@@ -206,6 +263,12 @@ namespace zuki.io.compression.test
 			using (MemoryStream source = new MemoryStream())
 			{
 				using (Lz4Writer stream = new Lz4Writer(source, CompressionLevel.Optimal))
+				{
+					Assert.IsNotNull(stream.BaseStream);
+					Assert.AreSame(source, stream.BaseStream);
+				}
+
+				using (Lz4Reader stream = new Lz4Reader(source, true))
 				{
 					Assert.IsNotNull(stream.BaseStream);
 					Assert.AreSame(source, stream.BaseStream);
@@ -362,9 +425,16 @@ namespace zuki.io.compression.test
 				// Start with a compressed MemoryStream created from the sample data
 				using (Lz4Writer compressor = new Lz4Writer(compressed, CompressionLevel.Optimal, true))
 				{
+					try { compressor.Read(buffer, 0, 8192); Assert.Fail("Method call should have thrown an exception"); }
+					catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(NotSupportedException)); }
+
 					compressor.Write(s_sampledata, 0, s_sampledata.Length);
 					compressor.Flush();
 				}
+
+				// Check the constructor for ArgumentNullException while we're here
+				try { using (Lz4Reader decompressor = new Lz4Reader(null, false)) { }; Assert.Fail("Constructor should have thrown an exception"); }
+				catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentNullException)); }
 
 				// Create a decompressor to test some of the error cases
 				using (Lz4Reader decompressor = new Lz4Reader(compressed, true))
@@ -396,6 +466,9 @@ namespace zuki.io.compression.test
 				compressed.Position = 0;
 				using (Lz4Reader decompressor = new Lz4Reader(compressed, true))
 				{
+					// Reading zero bytes should not throw an exception
+					decompressor.Read(buffer, 0, 0);
+
 					while (decompressor.Read(buffer, 0, 8192) != 0) { }
 				}
 			}
@@ -457,9 +530,16 @@ namespace zuki.io.compression.test
 			// Compress the sample data using a call to Write directly
 			using (MemoryStream compressed = new MemoryStream())
 			{
+				// Check the constructor for ArgumentNullException while we're here
+				try { using (Lz4Writer compressor = new Lz4Writer(null)) { }; Assert.Fail("Constructor should have thrown an exception"); }
+				catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentNullException)); }
+
 				using (Lz4Writer compressor = new Lz4Writer(compressed, CompressionLevel.Optimal, true))
 				{
 					// Send in some bum arguments to Write() to check they are caught
+					try { compressor.Write(null); Assert.Fail("Method call should have thrown an exception"); }
+					catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentNullException)); }
+
 					try { compressor.Write(null, 0, 0); Assert.Fail("Method call should have thrown an exception"); }
 					catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentNullException)); }
 
@@ -472,10 +552,254 @@ namespace zuki.io.compression.test
 					try { compressor.Write(s_sampledata, 0, s_sampledata.Length + 1024); Assert.Fail("Method call should have thrown an exception"); }
 					catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentException)); }
 
+					// Not writing anything shouldn't throw an exception
+					compressor.Write(s_sampledata, 0, 0);
+
 					// Compress the data; there really isn't much that can go wrong with Write() itself
 					compressor.Write(s_sampledata, 0, s_sampledata.Length);
 					compressor.Flush();
 				}
+
+				using (Lz4Reader reader = new Lz4Reader(compressed, true))
+				{
+					try { reader.Write(buffer, 0, buffer.Length); Assert.Fail("Method call should have thrown an exception"); }
+					catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(NotSupportedException)); }
+				}
+			}
+		}
+
+		[TestMethod(), TestCategory("Lz4")]
+		public void Lz4_Lz4Exception()
+		{
+			using (MemoryStream compressed = new MemoryStream())
+			{
+				// Start with a compressed MemoryStream created from the sample data
+				using (Lz4Writer compressor = new Lz4Writer(compressed, CompressionLevel.Optimal, true))
+				{
+					compressor.Write(s_sampledata, 0, s_sampledata.Length);
+					compressor.Flush();
+				}
+
+				byte[] buffer = new byte[8192];
+				Lz4Exception thrown = null;
+				Lz4Exception deserialized = null;
+
+				// Create a decompressor to test exception cases
+				using (Lz4Reader decompressor = new Lz4Reader(compressed, true))
+				{
+					// Attempting to read from the middle of the compressed stream should throw a Lz4Exception
+					compressed.Position = compressed.Length / 2;
+					try { decompressor.Read(buffer, 0, 8192); Assert.Fail("Method call should have thrown an exception"); }
+					catch (Lz4Exception ex) { thrown = ex; }
+
+					Assert.IsNotNull(thrown);
+					Assert.IsInstanceOfType(thrown, typeof(Lz4Exception));
+
+					// Check the error code property
+					Assert.AreEqual(-13, (int)thrown.ErrorCode);      // ERROR_frameType_unknown (-13)
+
+					// Serialize and de-serialize the exception with a BinaryFormatter
+					BinaryFormatter formatter = new BinaryFormatter();
+					using (MemoryStream memstream = new MemoryStream())
+					{
+						formatter.Serialize(memstream, thrown);
+						memstream.Seek(0, 0);
+						deserialized = (Lz4Exception)formatter.Deserialize(memstream);
+					}
+
+					// Check that the exceptions are equivalent
+					Assert.AreEqual(thrown.ErrorCode, deserialized.ErrorCode);
+					Assert.AreEqual(thrown.StackTrace, deserialized.StackTrace);
+					Assert.AreEqual(thrown.ToString(), deserialized.ToString());
+				}
+			}
+		}
+
+		[TestMethod(), TestCategory("Lz4")]
+		public void Lz4_Lz4CompressionLevel()
+		{
+			// Constructors
+			var level = new Lz4CompressionLevel(5);
+			Assert.AreEqual(5, level);
+
+			level = new Lz4CompressionLevel(CompressionLevel.Fastest);
+			Assert.AreEqual(1, level);
+
+			level = new Lz4CompressionLevel(CompressionLevel.Optimal);
+			Assert.AreEqual(9, level);
+
+			try { level = new Lz4CompressionLevel(CompressionLevel.NoCompression); Assert.Fail("Constructor should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
+
+			try { level = new Lz4CompressionLevel(-1); Assert.Fail("Constructor should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
+
+			try { level = new Lz4CompressionLevel(17); Assert.Fail("Constructor should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
+
+			try { level = new Lz4CompressionLevel((CompressionLevel)99); Assert.Fail("Constructor should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentOutOfRangeException)); }
+
+			// Implicit conversion
+			level = 8;
+			Assert.AreEqual(8, level);
+
+			// Equality
+			Assert.IsTrue(new Lz4CompressionLevel(8) == level);
+			Assert.IsFalse(new Lz4CompressionLevel(1) == level);
+			Assert.IsTrue(new Lz4CompressionLevel(3) != level);
+			Assert.IsFalse(new Lz4CompressionLevel(8) != level);
+
+			object o = new Lz4CompressionLevel(2);
+			Assert.IsTrue(o.Equals(new Lz4CompressionLevel(2)));
+			Assert.IsFalse(o.Equals(new Lz4CompressionLevel(9)));
+			Assert.IsTrue(new Lz4CompressionLevel(2).Equals(new Lz4CompressionLevel(2)));
+			Assert.IsFalse(new Lz4CompressionLevel(8).Equals(new Lz4CompressionLevel(2)));
+			Assert.IsFalse(o.Equals(null));
+			Assert.IsFalse(o.Equals(new GzipMemoryUsageLevel(3)));
+
+			// HashCode
+			int hash = new Lz4CompressionLevel(CompressionLevel.Fastest).GetHashCode();
+			Assert.AreNotEqual(0, hash);
+
+			// ToString
+			string s = new Lz4CompressionLevel(9).ToString();
+			Assert.IsFalse(String.IsNullOrEmpty(s));
+		}
+
+		[TestMethod(), TestCategory("Lz4")]
+		public void Lz4_Encoder()
+		{
+			// The Lz4Encoder is just a wrapper around Lz4Writer that provides 
+			// more complete control over the compression/encoder parameters
+			Lz4Encoder encoder = new Lz4Encoder();
+
+			// Check the default values
+			Assert.AreEqual(false, encoder.AutoFlush);
+			Assert.AreEqual(Lz4BlockMode.Default, encoder.BlockMode);
+			Assert.AreEqual(Lz4BlockSize.Default, encoder.BlockSize);
+			Assert.AreEqual(Lz4CompressionLevel.Default, encoder.CompressionLevel);
+			Assert.AreEqual(Lz4ContentChecksum.Default, encoder.ContentChecksum);
+
+			// Set and reset encoder parameters to exercise the property setters
+			encoder.AutoFlush = true;
+			Assert.AreEqual(true, encoder.AutoFlush);
+			encoder.AutoFlush = false;
+			Assert.AreEqual(false, encoder.AutoFlush);
+
+			encoder.BlockMode = Lz4BlockMode.Independent;
+			Assert.AreEqual(Lz4BlockMode.Independent, encoder.BlockMode);
+			encoder.BlockMode = Lz4BlockMode.Default;
+			Assert.AreEqual(Lz4BlockMode.Default, encoder.BlockMode);
+
+			encoder.BlockSize = Lz4BlockSize.Maximum64KiB;
+			Assert.AreEqual(Lz4BlockSize.Maximum64KiB, encoder.BlockSize);
+			encoder.BlockSize = Lz4BlockSize.Default;
+			Assert.AreEqual(Lz4BlockSize.Default, encoder.BlockSize);
+
+			encoder.CompressionLevel = Lz4CompressionLevel.Fastest;
+			Assert.AreEqual(Lz4CompressionLevel.Fastest, encoder.CompressionLevel);
+			encoder.CompressionLevel = Lz4CompressionLevel.Default;
+			Assert.AreEqual(Lz4CompressionLevel.Default, encoder.CompressionLevel);
+
+			encoder.ContentChecksum = Lz4ContentChecksum.Enabled;
+			Assert.AreEqual(Lz4ContentChecksum.Enabled, encoder.ContentChecksum);
+			encoder.ContentChecksum = Lz4ContentChecksum.Default;
+			Assert.AreEqual(Lz4ContentChecksum.Default, encoder.ContentChecksum);
+
+			// Block size is used a lot internally to the Lz4 writer/encoder, check that they all work
+			byte[] blocksizeresult;
+			encoder.BlockSize = Lz4BlockSize.Default;
+			blocksizeresult = encoder.Encode(s_sampledata);
+			Assert.IsNotNull(blocksizeresult);
+			Assert.AreNotEqual(0, blocksizeresult.Length);
+
+			encoder.BlockSize = Lz4BlockSize.Maximum1MiB;
+			blocksizeresult = encoder.Encode(s_sampledata);
+			Assert.IsNotNull(blocksizeresult);
+			Assert.AreNotEqual(0, blocksizeresult.Length);
+
+			encoder.BlockSize = Lz4BlockSize.Maximum256KiB;
+			blocksizeresult = encoder.Encode(s_sampledata);
+			Assert.IsNotNull(blocksizeresult);
+			Assert.AreNotEqual(0, blocksizeresult.Length);
+
+			encoder.BlockSize = Lz4BlockSize.Maximum4MiB;
+			blocksizeresult = encoder.Encode(s_sampledata);
+			Assert.IsNotNull(blocksizeresult);
+			Assert.AreNotEqual(0, blocksizeresult.Length);
+
+			encoder.BlockSize = Lz4BlockSize.Maximum64KiB;
+			blocksizeresult = encoder.Encode(s_sampledata);
+			Assert.IsNotNull(blocksizeresult);
+			Assert.AreNotEqual(0, blocksizeresult.Length);
+
+			// Put the block size back to default
+			encoder.BlockSize = Lz4BlockSize.Default;
+
+			// Check all of the Encoder methods work and encode as expected
+			byte[] expected, actual;
+
+			using (MemoryStream ms = new MemoryStream())
+			{
+				using (var writer = new Lz4Writer(ms, true)) { writer.Write(s_sampledata, 0, s_sampledata.Length); }
+				expected = ms.ToArray();
+			}
+
+			// Check parameter validations
+			try { actual = encoder.Encode((byte[])null); Assert.Fail("Method call should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentNullException)); }
+
+			try { actual = encoder.Encode((Stream)null); Assert.Fail("Method call should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentNullException)); }
+
+			try { actual = encoder.Encode(null, 0, 0); Assert.Fail("Method call should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentNullException)); }
+
+			try { encoder.Encode(s_sampledata, null); Assert.Fail("Method call should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentNullException)); }
+
+			try { encoder.Encode((byte[])null, new MemoryStream()); Assert.Fail("Method call should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentNullException)); }
+
+			try { encoder.Encode((byte[])null, 0, 0, new MemoryStream()); Assert.Fail("Method call should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentNullException)); }
+
+			try { encoder.Encode(s_sampledata, 0, s_sampledata.Length, (Stream)null); Assert.Fail("Method call should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentNullException)); }
+
+			try { encoder.Encode((Stream)null, new MemoryStream()); Assert.Fail("Method call should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentNullException)); }
+
+			try { encoder.Encode(new MemoryStream(), (Stream)null); Assert.Fail("Method call should have thrown an exception"); }
+			catch (Exception ex) { Assert.IsInstanceOfType(ex, typeof(ArgumentNullException)); }
+
+			// Check actual encoding operations
+			actual = encoder.Encode(s_sampledata);
+			Assert.IsTrue(Enumerable.SequenceEqual(expected, actual));
+
+			actual = encoder.Encode(new MemoryStream(s_sampledata));
+			Assert.IsTrue(Enumerable.SequenceEqual(expected, actual));
+
+			actual = encoder.Encode(s_sampledata, 0, s_sampledata.Length);
+			Assert.IsTrue(Enumerable.SequenceEqual(expected, actual));
+
+			using (MemoryStream dest = new MemoryStream())
+			{
+				encoder.Encode(s_sampledata, dest);
+				Assert.IsTrue(Enumerable.SequenceEqual(expected, dest.ToArray()));
+			}
+
+			using (MemoryStream dest = new MemoryStream())
+			{
+				encoder.Encode(new MemoryStream(s_sampledata), dest);
+				Assert.IsTrue(Enumerable.SequenceEqual(expected, dest.ToArray()));
+			}
+
+			using (MemoryStream dest = new MemoryStream())
+			{
+				encoder.Encode(s_sampledata, 0, s_sampledata.Length, dest);
+				Assert.IsTrue(Enumerable.SequenceEqual(expected, dest.ToArray()));
 			}
 		}
 	}

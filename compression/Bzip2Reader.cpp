@@ -345,7 +345,7 @@ void Bzip2Reader::Write(array<unsigned __int8>^ buffer, int offset, int count)
 	UNREFERENCED_PARAMETER(count);
 
 	CHECK_DISPOSED(m_disposed);
-	throw gcnew NotImplementedException();
+	throw gcnew NotSupportedException();
 }
 
 //---------------------------------------------------------------------------

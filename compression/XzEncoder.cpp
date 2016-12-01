@@ -144,7 +144,7 @@ array<unsigned __int8>^ XzEncoder::Encode(array<unsigned __int8>^ buffer, int of
 void XzEncoder::Encode(Stream^ instream, Stream^ outstream)
 {
 	if(Object::ReferenceEquals(instream, nullptr)) throw gcnew ArgumentNullException("instream");
-	if(Object::ReferenceEquals(instream, nullptr)) throw gcnew ArgumentNullException("outstream");
+	if(Object::ReferenceEquals(outstream, nullptr)) throw gcnew ArgumentNullException("outstream");
 
 	// The length of the input stream is not necessarily fixed, do not specify a length
 	Encode(instream, System::UInt64::MaxValue, outstream);

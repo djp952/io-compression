@@ -75,7 +75,11 @@ Lz4Exception::Lz4Exception(LZ4F_errorCode_t code) : m_code(code), IOException(Ge
 
 Lz4Exception::Lz4Exception(SerializationInfo^ info, StreamingContext context) : IOException(info, context)
 {
-	m_code = info->GetInt32("@m_code");
+#ifndef _M_X64
+	m_code = info->GetUInt32("@m_code");
+#else
+	m_code = info->GetUInt64("@m_code");
+#endif
 }
 
 //---------------------------------------------------------------------------

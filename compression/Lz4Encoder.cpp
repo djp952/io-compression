@@ -221,9 +221,7 @@ array<unsigned __int8>^ Lz4Encoder::Encode(array<unsigned __int8>^ buffer, int o
 	msclr::auto_handle<MemoryStream> instream(gcnew MemoryStream(buffer, offset, count, false));
 	msclr::auto_handle<MemoryStream> outstream(gcnew MemoryStream());
 
-	// When the input is a byte array, the length is known and can be encoded into the stream
-	msclr::auto_handle<Lz4Writer> writer(gcnew Lz4Writer(outstream.get(), m_level, m_autoflush, m_blocksize, m_blockmode, m_checksum, count, true));
-	instream->CopyTo(writer.get());
+	Encode(instream.get(), outstream.get());
 
 	return outstream->ToArray();
 }
@@ -243,8 +241,7 @@ void Lz4Encoder::Encode(Stream^ instream, Stream^ outstream)
 	if(Object::ReferenceEquals(instream, nullptr)) throw gcnew ArgumentNullException("instream");
 	if(Object::ReferenceEquals(outstream, nullptr)) throw gcnew ArgumentNullException("outstream");
 
-	// When the input is a stream, the overall length is not immutable, pass a zero to the Lz4Writer for length
-	msclr::auto_handle<Lz4Writer> writer(gcnew Lz4Writer(outstream, m_level, m_autoflush, m_blocksize, m_blockmode, m_checksum, 0, true));
+	msclr::auto_handle<Lz4Writer> writer(gcnew Lz4Writer(outstream, m_level, m_autoflush, m_blocksize, m_blockmode, m_checksum, true));
 	instream->CopyTo(writer.get());
 }
 
@@ -263,8 +260,7 @@ void Lz4Encoder::Encode(array<unsigned __int8>^ buffer, Stream^ outstream)
 	if(Object::ReferenceEquals(buffer, nullptr)) throw gcnew ArgumentNullException("buffer");
 	if(Object::ReferenceEquals(outstream, nullptr)) throw gcnew ArgumentNullException("outstream");
 
-	// When the input is a byte array, the length is known and can be encoded into the stream
-	msclr::auto_handle<Lz4Writer> writer(gcnew Lz4Writer(outstream, m_level, m_autoflush, m_blocksize, m_blockmode, m_checksum, buffer->Length, true));
+	msclr::auto_handle<Lz4Writer> writer(gcnew Lz4Writer(outstream, m_level, m_autoflush, m_blocksize, m_blockmode, m_checksum, true));
 	writer->Write(buffer, 0, buffer->Length);
 }
 
@@ -285,8 +281,7 @@ void Lz4Encoder::Encode(array<unsigned __int8>^ buffer, int offset, int count, S
 	if(Object::ReferenceEquals(buffer, nullptr)) throw gcnew ArgumentNullException("buffer");
 	if(Object::ReferenceEquals(outstream, nullptr)) throw gcnew ArgumentNullException("outstream");
 
-	// When the input is a byte array, the length is known and can be encoded into the stream
-	msclr::auto_handle<Lz4Writer> writer(gcnew Lz4Writer(outstream, m_level, m_autoflush, m_blocksize, m_blockmode, m_checksum, count, true));
+	msclr::auto_handle<Lz4Writer> writer(gcnew Lz4Writer(outstream, m_level, m_autoflush, m_blocksize, m_blockmode, m_checksum, true));
 	writer->Write(buffer, offset, count);
 }
 

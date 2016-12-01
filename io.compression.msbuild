@@ -22,7 +22,7 @@
 
 	<!-- Generate Code Coverage Report (x86) -->
     <MakeDir Directories="$(CodeCoverageDir)" ContinueOnError="false"/>
-    <Exec Command="$(OpenCoverConsoleExe) -register:user -target:$(VsTestConsoleExe) -targetargs:&quot;/Settings:$(SolutionDir)default.runsettings /Logger:trx /inIsolation $(SolutionDir)out\Win32\Debug\zuki.io.compression.test.dll&quot; -filter:&quot;+[zuki.io.compression]*&quot; -mergebyhash -output:&quot;$(CodeCoverageDir)\compression.xml&quot;" ContinueOnError="true"/>
+    <Exec Command="$(OpenCoverConsoleExe) -register:user -target:$(VsTestConsoleExe) -targetargs:&quot;/Settings:$(SolutionDir)default.runsettings /Logger:trx /inIsolation $(SolutionDir)out\Win32\Debug\zuki.io.compression.test.dll&quot; -filter:&quot;+[zuki.io.compression]* -[zuki.io.compression]msclr.*&quot; -mergebyhash -output:&quot;$(CodeCoverageDir)\compression.xml&quot;" ContinueOnError="true"/>
     <Exec Command="$(ReportGeneratorExe) -reports:&quot;$(CodeCoverageDir)compression.xml&quot; -targetdir:&quot;$(CodeCoverageDir)&quot;" ContinueOnError="false"/>
     
   </Target>

@@ -50,6 +50,7 @@
 #include "stdafx.h"
 #include "Lz4Writer.h"
 
+#include <lz4frame_static.h>
 #include "Lz4Exception.h"
 
 // LZ4F_cctx_s is an incomplete type; causes LNK4248
@@ -61,6 +62,26 @@ struct LZ4F_cctx_s {};
 namespace zuki::io::compression {
 
 //---------------------------------------------------------------------------
+// LZ4F_getBlockSize
+//
+// Copy of an internal LZ4 function that I needed
+//
+// Arguments:
+//
+//	blockSizeID		- LZ4F block size identifier
+
+static size_t LZ4F_getBlockSize(unsigned blockSizeID)
+{
+    static const size_t blockSizes[4] = { 64 * (1 << 10), 256 * (1 << 10), 1 * (1 << 20), 4 * (1 << 20) };
+
+    if (blockSizeID == 0) blockSizeID = LZ4F_max64KB;
+    blockSizeID -= 4;
+    if (blockSizeID > 3) throw gcnew Lz4Exception(LZ4F_errorCodes::LZ4F_ERROR_maxBlockSize_invalid);
+
+    return blockSizes[blockSizeID];
+}
+
+//---------------------------------------------------------------------------
 // Lz4Writer Constructor
 //
 // Arguments:
@@ -68,7 +89,7 @@ namespace zuki::io::compression {
 //	stream		- The stream the compressed data is written to
 
 Lz4Writer::Lz4Writer(Stream^ stream) : 
-	Lz4Writer(stream, Lz4CompressionLevel::Default, false, Lz4BlockSize::Default, Lz4BlockMode::Default, Lz4ContentChecksum::Default, 0, false)
+	Lz4Writer(stream, Lz4CompressionLevel::Default, false, Lz4BlockSize::Default, Lz4BlockMode::Default, Lz4ContentChecksum::Default, false)
 {
 }
 
@@ -81,7 +102,7 @@ Lz4Writer::Lz4Writer(Stream^ stream) :
 //	level		- Indicates whether to emphasize speed or compression efficiency
 
 Lz4Writer::Lz4Writer(Stream^ stream, Compression::CompressionLevel level) : 
-	Lz4Writer(stream, Lz4CompressionLevel(level), false, Lz4BlockSize::Default, Lz4BlockMode::Default, Lz4ContentChecksum::Default, 0, false)
+	Lz4Writer(stream, Lz4CompressionLevel(level), false, Lz4BlockSize::Default, Lz4BlockMode::Default, Lz4ContentChecksum::Default, false)
 {
 }
 
@@ -94,7 +115,7 @@ Lz4Writer::Lz4Writer(Stream^ stream, Compression::CompressionLevel level) :
 //	leaveopen	- Flag to leave the base stream open after disposal
 
 Lz4Writer::Lz4Writer(Stream^ stream, bool leaveopen) : 
-	Lz4Writer(stream, Lz4CompressionLevel::Default, false, Lz4BlockSize::Default, Lz4BlockMode::Default, Lz4ContentChecksum::Default, 0, leaveopen)
+	Lz4Writer(stream, Lz4CompressionLevel::Default, false, Lz4BlockSize::Default, Lz4BlockMode::Default, Lz4ContentChecksum::Default, leaveopen)
 {
 }
 
@@ -108,7 +129,7 @@ Lz4Writer::Lz4Writer(Stream^ stream, bool leaveopen) :
 //	leaveopen	- Flag to leave the base stream open after disposal
 
 Lz4Writer::Lz4Writer(Stream^ stream, Compression::CompressionLevel level, bool leaveopen) :
-	Lz4Writer(stream, Lz4CompressionLevel(level), false, Lz4BlockSize::Default, Lz4BlockMode::Default, Lz4ContentChecksum::Default, 0, leaveopen)
+	Lz4Writer(stream, Lz4CompressionLevel(level), false, Lz4BlockSize::Default, Lz4BlockMode::Default, Lz4ContentChecksum::Default, leaveopen)
 {
 }
 
@@ -123,16 +144,14 @@ Lz4Writer::Lz4Writer(Stream^ stream, Compression::CompressionLevel level, bool l
 //	blocksize		- Maximum block size to use during encoding
 //	blockmode		- Block mode (linked/unlinked) to use during encoding
 //	checksum		- Content checksum flag to use during encoding
-//	contentlength	- Length of the input content if known, otherwise zero
 //	leaveopen		- Flag to leave the base stream open after disposal
 
-Lz4Writer::Lz4Writer(Stream^ stream, Lz4CompressionLevel level, bool autoflush, Lz4BlockSize blocksize, Lz4BlockMode blockmode, Lz4ContentChecksum checksum, __int64 contentlength, bool leaveopen) : 
+Lz4Writer::Lz4Writer(Stream^ stream, Lz4CompressionLevel level, bool autoflush, Lz4BlockSize blocksize, Lz4BlockMode blockmode, Lz4ContentChecksum checksum, bool leaveopen) : 
 	m_disposed(false), m_stream(stream), m_leaveopen(leaveopen)
 {
 	LZ4F_errorCode_t				result;				// Result from LZ4 function call
 
 	if(Object::ReferenceEquals(stream, nullptr)) throw gcnew ArgumentNullException("stream");
-	if(contentlength < 0) throw gcnew ArgumentOutOfRangeException("contentlength");
 
 	// Allocate and initialize the compression context structure
 	try { m_context = new LZ4F_compressionContext_t; memset(m_context, 0, sizeof(LZ4F_compressionContext_t)); }
@@ -153,7 +172,6 @@ Lz4Writer::Lz4Writer(Stream^ stream, Lz4CompressionLevel level, bool autoflush, 
 	m_prefs->frameInfo.blockSizeID = static_cast<LZ4F_blockSizeID_t>(blocksize);
 	m_prefs->frameInfo.contentChecksumFlag = static_cast<LZ4F_contentChecksum_t>(checksum);
 	m_prefs->frameInfo.frameType = LZ4F_frameType_t::LZ4F_frame;
-	m_prefs->frameInfo.contentSize = static_cast<unsigned __int64>(contentlength);
 
 	// Create a temporary buffer to hold the stream header information (max 15 bytes)
 	array<unsigned __int8>^ header = gcnew array<unsigned __int8>(15);
@@ -175,14 +193,15 @@ Lz4Writer::~Lz4Writer()
 {
 	if(m_disposed) return;
 
-	// There is no way to know how much data there is in the lz4 buffers, assume
-	// the worst case, which is a 4MiB block (LZ4F_blockSizeID_t::LZ4F_max4MB)
-	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(4 << 20);
+	// There is no way to know how much data there is in the lz4 buffers, use a full block
+	size_t bound = LZ4F_compressBound(LZ4F_getBlockSize(m_prefs->frameInfo.blockSizeID), m_prefs);
+	if(bound > Int32::MaxValue) throw gcnew OverflowException();
+
+	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(static_cast<int>(bound));
 	pin_ptr<unsigned __int8> pinout = &out[0];
 
 	// Complete the compression stream and write out any generated data
-	LZ4F_compressOptions_t options ={ 0 /* stableSrc */, {0, 0, 0} /* reserved */};
-	LZ4F_errorCode_t result = LZ4F_compressEnd(*m_context, pinout, out->Length, &options);
+	LZ4F_errorCode_t result = LZ4F_compressEnd(*m_context, pinout, out->Length, nullptr);
 	if(LZ4F_isError(result)) throw gcnew Lz4Exception(result);
 
 	// Result cannot be larger than Int32::MaxValue
@@ -201,13 +220,11 @@ Lz4Writer::~Lz4Writer()
 
 Lz4Writer::!Lz4Writer()
 {
-	if(m_context == nullptr) return;
-
 	// Release the LZ4 compression context structure
-	LZ4F_freeCompressionContext(*m_context);
+	if(m_context) LZ4F_freeCompressionContext(*m_context);
 
-	delete m_context;
-	m_context = nullptr;
+	if(m_prefs) { delete m_prefs; m_prefs = nullptr; }
+	if(m_context) { delete m_context; m_context = nullptr; }
 }
 
 //---------------------------------------------------------------------------
@@ -269,14 +286,15 @@ void Lz4Writer::Flush(void)
 
 	msclr::lock lock(m_lock);
 
-	// There is no way to know how much data there is in the lz4 buffers, assume
-	// the worst case, which is a 4MiB block (LZ4F_blockSizeID_t::LZ4F_max4MB)
-	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(4 << 20);
+	// There is no way to know how much data there is in the lz4 buffers, use a full block
+	size_t bound = LZ4F_compressBound(LZ4F_getBlockSize(m_prefs->frameInfo.blockSizeID), m_prefs);
+	if(bound > Int32::MaxValue) throw gcnew OverflowException();
+
+	array<unsigned __int8>^ out = gcnew array<unsigned __int8>(static_cast<int>(bound));
 	pin_ptr<unsigned __int8> pinout = &out[0];
 
 	// Compress any buffered block data into the output buffer
-	LZ4F_compressOptions_t options ={ 0 /* stableSrc */, {0, 0, 0} /* reserved */};
-	LZ4F_errorCode_t result = LZ4F_flush(*m_context, pinout, out->Length, &options);
+	LZ4F_errorCode_t result = LZ4F_flush(*m_context, pinout, out->Length, nullptr);
 	if(LZ4F_isError(result)) throw gcnew Lz4Exception(result);
 
 	// Result cannot be larger than Int32::MaxValue
@@ -431,8 +449,7 @@ void Lz4Writer::Write(array<unsigned __int8>^ buffer, int offset, int count)
 	pin_ptr<unsigned __int8> pinout = &out[0];
 
 	// Compress this block of data; lz4 may return zero if all the data was buffered
-	LZ4F_compressOptions_t options ={ 0 /* stableSrc */, {0, 0, 0} /* reserved */};
-	LZ4F_errorCode_t result = LZ4F_compressUpdate(*m_context, pinout, out->Length, &pinin[offset], count, &options);
+	LZ4F_errorCode_t result = LZ4F_compressUpdate(*m_context, pinout, out->Length, &pinin[offset], count, nullptr);
 	if(LZ4F_isError(result)) throw gcnew Lz4Exception(result);
 
 	// Result cannot be larger than Int32::MaxValue

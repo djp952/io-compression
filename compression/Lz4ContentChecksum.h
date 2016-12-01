@@ -67,9 +67,9 @@ namespace zuki::io::compression {
 
 public enum class Lz4ContentChecksum
 {
-	Default			= 0,	// LZ4F_noContentChecksum
-	Linked			= LZ4F_contentChecksum_t::LZ4F_noContentChecksum,
-	Independent		= LZ4F_contentChecksum_t::LZ4F_contentChecksumEnabled,
+	Default			= 0,		// LZ4F_noContentChecksum
+	Disabled		= LZ4F_contentChecksum_t::LZ4F_noContentChecksum,
+	Enabled			= LZ4F_contentChecksum_t::LZ4F_contentChecksumEnabled,
 };
 
 //---------------------------------------------------------------------------

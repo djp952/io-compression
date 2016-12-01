@@ -171,7 +171,7 @@ internal:
 	// Instance Constructor
 	//
 	Lz4Writer(Stream^ stream, Lz4CompressionLevel level, bool autoflush, Lz4BlockSize blocksize, Lz4BlockMode blockmode, 
-		Lz4ContentChecksum checksum, __int64 contentlength, bool leaveopen);
+		Lz4ContentChecksum checksum, bool leaveopen);
 
 private:
 
