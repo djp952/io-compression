@@ -24,6 +24,7 @@
 #include "LzmaReader.h"
 
 #include <Alloc.h>
+#include "LzmaException.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -49,7 +50,7 @@ LzmaReader::LzmaReader(Stream^ stream) : LzmaReader(stream, false)
 //	leaveopen	- Flag to leave the base stream open after disposal
 
 LzmaReader::LzmaReader(Stream^ stream, bool leaveopen) : m_disposed(false), m_stream(stream), m_leaveopen(leaveopen), m_init(false), 
-	m_finished(false), m_inpos(0), m_insize(0)
+	m_finished(false), m_inpos(0), m_insize(0), m_expected(System::UInt64::MaxValue), m_processed(0)
 {
 	if(Object::ReferenceEquals(stream, nullptr)) throw gcnew ArgumentNullException("stream");
 
@@ -171,7 +172,7 @@ __int64 LzmaReader::Position::get(void)
 	CHECK_DISPOSED(m_disposed);
 	
 	msclr::lock lock(m_lock);
-	return static_cast<__int64>(m_state->processedPos);
+	return (m_processed > System::Int64::MaxValue) ? System::Int64::MaxValue : static_cast<__int64>(m_processed);
 }
 
 //---------------------------------------------------------------------------
@@ -217,12 +218,15 @@ int LzmaReader::Read(array<unsigned __int8>^ buffer, int offset, int count)
 	// Wait to initialize the LZMA decoder until the first call to Read()
 	if(!m_init) {
 
-		// Read the properties and stream length from the input stream
+		// Create a local temporary buffer to hold the header information
 		array<unsigned __int8>^ props = gcnew array<unsigned __int8>(LZMA_PROPS_SIZE + sizeof(uint64_t));
+		pin_ptr<unsigned __int8> pinprops = &props[0];
+
+		// Read the properties and expected stream length from the input stream
 		if(m_stream->Read(props, 0, LZMA_PROPS_SIZE + sizeof(uint64_t)) != LZMA_PROPS_SIZE + sizeof(uint64_t)) throw gcnew InvalidDataException();
+		m_expected = *reinterpret_cast<unsigned __int64*>(&pinprops[LZMA_PROPS_SIZE]);
 
 		// Allocate the LZMA decoder state
-		pin_ptr<unsigned __int8> pinprops = &props[0];
 		SRes result = LzmaDec_Allocate(m_state, pinprops, LZMA_PROPS_SIZE, &g_Alloc);
 		if(result == SZ_ERROR_MEM) throw gcnew OutOfMemoryException();
 		else if(result == SZ_ERROR_UNSUPPORTED) throw gcnew InvalidDataException();
@@ -247,22 +251,35 @@ int LzmaReader::Read(array<unsigned __int8>^ buffer, int offset, int count)
 			if(m_insize > BUFFER_SIZE) throw gcnew InvalidDataException();
 		}
 
-		// Use local input/output size values, they are modified by XzUnpacker_Code
+		// Use local input/output size values, they are modified by LzmaDec_DecodeToBuf
 		size_t insize = m_insize - m_inpos;
 		size_t outsize = count - offset;
 
+		// If this will definitively be the final decode operation set LZMA_FINISH_END
+		ELzmaFinishMode finishmode = ((m_processed + outsize) >= m_expected) ? LZMA_FINISH_END : LZMA_FINISH_ANY;
+
 		// Attempt to decode the next block of compressed data into the output buffer
-		SRes result = LzmaDec_DecodeToBuf(m_state, &pinout[offset], &outsize, &pinin[m_inpos], &insize, LZMA_FINISH_ANY, &status);
- 		if(result == SZ_ERROR_DATA) throw gcnew InvalidDataException();
+		SRes result = LzmaDec_DecodeToBuf(m_state, &pinout[offset], &outsize, &pinin[m_inpos], &insize, finishmode, &status);
+ 		if(result != SZ_OK) throw gcnew LzmaException(SZ_ERROR_DATA);
 
 		m_inpos += insize;							// Increment the input buffer offset
 		offset += static_cast<int>(outsize);		// Increment the output buffer offset
+		m_processed += outsize;						// Increment total processed bytes
 		availout -= static_cast<int>(outsize);		// Decrement the available output size
+													
+		// LZMA_STATUS_FINISHED_WITH_MARK - An end mark was detected
+		if(status == LZMA_STATUS_FINISHED_WITH_MARK) m_finished = true;
 
-		// LZMA_STATUS_FINISHED_WITH_MARK indicates that there is no more data
-		if(m_finished = (status == LZMA_STATUS_FINISHED_WITH_MARK)) break;
+		// Otherwise if nothing was read or written, the stream is also finished
+		else if((insize == 0) && (outsize == 0)) { 
+			
+			// If insufficient data was decompressed, the input stream has an error
+			if(m_expected > m_processed) throw gcnew LzmaException(SZ_ERROR_DATA);
 
-	} while(availout > 0);
+			m_finished = true;						
+		}
+
+	} while((!m_finished) && (availout > 0));
 
 	return (count - availout);
 }

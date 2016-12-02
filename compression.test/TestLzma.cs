@@ -51,6 +51,12 @@ namespace zuki.io.compression.test
 			// This method generates an output file that can be tested externally; "thethreemusketeers.txt" is
 			// set to Copy Always to the output directory, it can be diffed after running the external tool
 			LzmaEncoder encoder = new LzmaEncoder();
+
+			// Don't use an endmark with this test, the commandline xz-utils version of "lzma" cannot decompress
+			// files with an endmark from what I can gather.  Using 7-zip is recommended instead to test, it can
+			// open both flavors of LZMA and decompress them successfully
+			encoder.WriteEndMark = false;
+
 			using (var outfile = File.Create(Path.Combine(Environment.CurrentDirectory, "thethreemusketeers.lzma")))
 			{
 				encoder.Encode(s_sampledata, outfile);
@@ -76,15 +82,17 @@ namespace zuki.io.compression.test
 		}
 
 		[TestMethod(), TestCategory("Lzma")]
-		public void Lzma_CompressDecompress()
+		public void Lzma_CompressDecompressEndMark()
 		{
-			// Start with a MemoryStream created from the sample data
+			// Start with a MemoryStream created from the sample data, when a stream is
+			// sent into the encoder an end mark is always written
 			using (MemoryStream source = new MemoryStream(s_sampledata))
 			{
 				using (MemoryStream dest = new MemoryStream())
 				{
 					// Compress the data into the destination memory stream instance
 					LzmaEncoder encoder = new LzmaEncoder();
+					encoder.WriteEndMark = true;
 					encoder.Encode(source, dest);
 
 					// The compressed data should be smaller than the source data
@@ -99,6 +107,34 @@ namespace zuki.io.compression.test
 					// Ensure that the original data has been restored
 					Assert.AreEqual(source.Length, s_sampledata.Length);
 					Assert.IsTrue(s_sampledata.SequenceEqual(source.ToArray()));
+				}
+			}
+		}
+
+		[TestMethod(), TestCategory("Lzma")]
+		public void Lzma_CompressDecompressNoEndMark()
+		{
+			using (MemoryStream dest = new MemoryStream())
+			{
+				// Compress the data into the destination memory stream instance using
+				// the raw sample data array and without an end mark.  Since the length
+				// of the input data is known, the encoder will not enforce the end mark
+				LzmaEncoder encoder = new LzmaEncoder();
+				encoder.WriteEndMark = false;
+				encoder.Encode(s_sampledata, dest);
+
+				// The compressed data should be smaller than the source data
+				Assert.IsTrue(dest.Length < s_sampledata.Length);
+
+				// Decompress the data back into a new memory stream
+				using (MemoryStream uncompressed = new MemoryStream())
+				{
+					dest.Position = 0;
+					using (LzmaReader decompressor = new LzmaReader(dest, true)) decompressor.CopyTo(uncompressed);
+
+					// Ensure that the original data has been restored
+					Assert.AreEqual(uncompressed.Length, s_sampledata.Length);
+					Assert.IsTrue(s_sampledata.SequenceEqual(uncompressed.ToArray()));
 				}
 			}
 		}
@@ -689,7 +725,7 @@ namespace zuki.io.compression.test
 			Assert.AreEqual(LzmaMatchFindPasses.Default, encoder.MatchFindPasses);
 			Assert.AreEqual(LzmaPositionBits.Default, encoder.PositionBits);
 			Assert.AreEqual(true, encoder.UseMultipleThreads);
-			Assert.AreEqual(false, encoder.WriteEndMark);
+			Assert.AreEqual(true, encoder.WriteEndMark);
 
 			// Set and reset encoder parameters to exercise the property setters
 			encoder.CompressionLevel = LzmaCompressionLevel.Fastest;
@@ -747,10 +783,10 @@ namespace zuki.io.compression.test
 			encoder.UseMultipleThreads = true;
 			Assert.AreEqual(true, encoder.UseMultipleThreads);
 
-			encoder.WriteEndMark = true;
-			Assert.AreEqual(true, encoder.WriteEndMark);
 			encoder.WriteEndMark = false;
 			Assert.AreEqual(false, encoder.WriteEndMark);
+			encoder.WriteEndMark = true;
+			Assert.AreEqual(true, encoder.WriteEndMark);
 
 			// Check all of the Encoder methods work and encode as expected
 			byte[] expected, expectedstreamed, actual;

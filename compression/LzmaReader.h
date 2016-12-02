@@ -152,6 +152,8 @@ private:
 	array<unsigned __int8>^			m_in;				// LZMA input stream buffer
 	size_t							m_inpos;			// Current position in the buffer
 	size_t							m_insize;			// Size of the input buffer data
+	unsigned __int64				m_expected;			// Expected output length
+	unsigned __int64				m_processed;		// Output bytes processed
 
 	Object^	m_lock = gcnew Object();		// Synchronization object
 };

@@ -215,8 +215,11 @@ void LzmaEncoder::Encode(Stream^ instream, unsigned __int64 insize, Stream^ outs
 	props.btMode = static_cast<int>(m_matchfindmode);
 	props.numHashBytes = m_hashbytes;
 	props.mc = m_matchfindpasses;
-	props.writeEndMark = (m_writeendmark) ? 1 : 0;
 	props.numThreads = (m_multithreaded) ? 2 : 1;
+
+	// If the length of the input stream is not known, an end mark must be used otherwise
+	// there will be no way to properly decode the compressed stream
+	props.writeEndMark = (m_writeendmark || (insize == System::UInt64::MaxValue)) ? 1 : 0;
 
 	// Normalize the properties to ensure nothing is out of range
 	LzmaEncProps_Normalize(&props);
