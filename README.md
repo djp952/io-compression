@@ -10,7 +10,7 @@ Copyright (C)2016 Michael G. Brehm
 [__LZMA SDK__](http://www.7-zip.org/sdk.html) - LZMA SDK is written and placed in the public domain by Igor Pavlov  
 [__ZLIB__](http://www.zlib.net) - Copyright (C) 1995-2013 Jean-loup Gailly and Mark Adler  
   
-LZO compression [__http://www.oberhumer.com/opensource/lzo/__](http://www.oberhumer.com/opensource/lzo/) is not included in this library as its source code is distributed under the terms of the [__GNU General Public License__](http://www.oberhumer.com/opensource/gpl.htm).  
+LZO compression [__http://www.oberhumer.com/opensource/lzo/__](http://www.oberhumer.com/opensource/lzo/) is not included in this library as its source code is distributed under the terms of the [__GNU General Public License__](http://www.oberhumer.com/opensource/gpl.html).  
   
 ##__NUGET PACKAGES__  
 zuki.io.compression is available as a public nuget package:  
