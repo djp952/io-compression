@@ -27,7 +27,7 @@
     
   </Target>
 
-  <Target Name="UnitTest">
+  <Target Name="Build">
 
 	<!-- Clean Release Targets -->
     <MSBuild Projects="io.compression.sln" Properties="Configuration=Release;Platform=Win32" Targets="Clean" ContinueOnError="false"/>
@@ -48,7 +48,7 @@
 
   </Target>
 
-  <Target Name="Build" DependsOnTargets="UnitTest">
+  <Target Name="Package" DependsOnTargets="Build">
 
     <PropertyGroup>
       <PackageVersion>$([System.IO.File]::ReadAllText($(SolutionDir)compression\tmp\version.txt))</PackageVersion>
