@@ -22,8 +22,7 @@ PM> Install-Package zuki.io.compression
    
 ## __BUILD__  
 ###__System Requirements__  
-* Microsoft Visual Studio 2015 Community Edition (or higher)  
-* Windows Installer XML (WiX) Toolset v3.10.3  
+* Microsoft Visual Studio 2015 Community Edition (or higher)   
 
 ###__Source Code Repositories__  
 [__djp952/build__](https://github.com/djp952/build) - build tools  
