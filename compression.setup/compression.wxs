@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+  <!-- Version -->
+  <?include $(var.ProjectDir)tmp\version.wxi ?>
+  
+  <!-- Build Environment -->
+  <?include $(var.ProjectDir)buildenv.wxi ?>
+
+  <Product Id="*"
+    Name="zuki.io.compression ($(var.Platform))"
+    Language="1033"
+    Version="$(var.ProjectVersion.4)"
+    Manufacturer="Michael G. Brehm"
+    UpgradeCode="C46D1F09-9DDF-4683-B87C-5359C584E6ED"> <!-- NEVER CHANGE THE UPGRADE CODE -->
+
+    <Package InstallerVersion="301" Compressed="yes" Platform="$(var.Platform)" InstallScope="perMachine"/>
+    <Media Id="1" Cabinet="zuki_io_compression_$(var.Platform).cab" EmbedCab="yes" />
+
+    <!-- UPGRADES -->
+    <Upgrade Id='C46D1F09-9DDF-4683-B87C-5359C584E6ED'>
+      <UpgradeVersion OnlyDetect="no" Property="PATCHFOUND" IncludeMinimum="yes" IncludeMaximum="yes"
+        Minimum="0.0.1" Maximum="127.254.32767"/>
+    </Upgrade>
+
+		<!-- DISALLOW ADVERTISED SHORTCUTS -->
+		<Property Id="DISABLEADVTSHORTCUTS" Value="1" />
+
+		<!-- ENVIRONMENTAL CONDITION: Microsoft .NET 4.5 -->
+		<PropertyRef Id="NETFRAMEWORK45" />
+		<Condition Message="The Microsoft .NET Framework version 4.5 is not installed. Please install before installing zuki.io.compression.">
+			<![CDATA[Installed OR (NETFRAMEWORK45 AND NOT NETFRAMEWORK45 = "#0")]]>
+		</Condition>
+
+    <!-- LAYOUT -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder"/>
+      <Directory Id="ProgramFiles64Folder"/>
+    </Directory>
+    
+    <!-- FEATURE: ZUKI_IO_COMPRESSION -->
+		<Feature Id="feature_zuki_io_compression" Title="zuki.io.compression" Level="1" TypicalDefault="install"
+      Description="Installs zuki.io.compression" Absent="disallow" AllowAdvertise="no">
+
+      <!-- zuki.io.compression.dll x86 -->
+      <Component Directory="ProgramFilesFolder" Id="gac32_zuki_io_compression_dll" Guid="AC06150F-4A9A-4825-8395-D2FA10DA25D8" Win64="no">
+        <File Id="gac32_zuki_io_compression_dll" Source="$(var.BinPath32)zuki.io.compression.dll" ProcessorArchitecture="$(var.Platform)" Assembly=".net" KeyPath="yes" Vital="yes"/>
+      </Component>
+
+      <!-- zuki.io.compression.dll x64 -->
+      <?if $(var.Platform) = "x64" ?>
+        <Component Directory="ProgramFiles64Folder" Id="gac64_zuki_web_server_dll" Guid="0C519488-7537-459B-8535-0E8256B2F1C0" Win64="yes">
+          <File Id="gac64_zuki_io_compression_dll" Source="$(var.BinPath64)zuki.io.compression.dll" ProcessorArchitecture="$(var.Platform)" Assembly=".net" KeyPath="yes" Vital="yes"/>
+        </Component>
+      <?endif?>
+      
+      <!-- Visual C++ Runtime Libraries (Release) -->
+      <MergeRef Id="msvcrt_x86"/>
+			<?if $(var.Platform) = "x64" ?>
+        <MergeRef Id="msvcrt_x64"/>
+			<?endif?>
+
+      <!-- Visual C++ Runtime Libraries (Debug) -->
+      <?if $(var.Configuration) = "Debug" ?>
+        <MergeRef Id="msvcrt_debug_x86"/>
+			  <?if $(var.Platform) = "x64" ?>
+          <MergeRef Id="msvcrt_debug_x64"/>
+			  <?endif?>
+      <?endif?>
+    </Feature>
+
+    <InstallExecuteSequence>
+      <RemoveExistingProducts After="InstallValidate" />
+    </InstallExecuteSequence>
+  
+  </Product>
+
+</Wix>

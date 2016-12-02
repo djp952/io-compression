@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+  <!-- MERGEMODS.WXS - External Merge Module entries -->
+  
+  <?include $(var.ProjectDir)buildenv.wxi?>
+
+  <Fragment>
+
+    <DirectoryRef Id="TARGETDIR">
+      
+      <Merge Id="msvcrt_x86" Language="0" DiskId="1" SourceFile="$(var.MergeModulePath)Microsoft_VC140_CRT_x86.msm"/>
+      <?if $(var.Configuration) = "Debug"?>
+        <Merge Id="msvcrt_debug_x86" Language="0" DiskId="1" SourceFile="$(var.MergeModulePath)Microsoft_VC140_DebugCRT_x86.msm"/>
+      <?endif?>
+
+      <?if $(var.Platform) = "x64"?>
+        <Merge Id="msvcrt_x64" Language="0" DiskId="1" SourceFile="$(var.MergeModulePath)Microsoft_VC140_CRT_x64.msm"/>
+        <?if $(var.Configuration) = "Debug"?>
+          <Merge Id="msvcrt_debug_x64" Language="0" DiskId="1" SourceFile="$(var.MergeModulePath)Microsoft_VC140_DebugCRT_x64.msm"/>
+        <?endif?>
+      <?endif?>
+
+    </DirectoryRef>
+
+    </Fragment>
+
+</Wix>

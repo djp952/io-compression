@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Include>
+
+  <!-- MergeModulePath -->
+  <!-- Set to the location of the VS2015 Merge Modules on the build machine -->
+  <?if $(env.PROCESSOR_ARCHITECTURE) = "x86" ?>
+    <?define MergeModulePath = $(env.CommonProgramFiles)\Merge Modules\ ?>
+  <?else ?>
+    <?define MergeModulePath = $(env.CommonProgramFiles(x86))\Merge Modules\ ?>
+  <?endif ?>
+
+	<!-- BinPath32 / BinPath64 -->
+  <!-- Set to the location of the 32 bit / 64 bit specific binaries -->
+  <?define BinPath32 = $(var.SolutionDir)out\Win32\$(var.Configuration)\ ?>
+  <?define BinPath64 = $(var.SolutionDir)out\x64\$(var.Configuration)\ ?>
+
+  <!-- Win64Flag -->
+  <!-- Set to either YES or NO and can be used with the Win64 attributes on various things -->
+  <?if $(var.Platform) = "x86" ?>
+    <?define Win64Flag = "no" ?>
+  <?else?>
+    <?define Win64Flag = "yes" ?>
+  <?endif?>
+
+</Include>
