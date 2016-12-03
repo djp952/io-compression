@@ -10,8 +10,9 @@
     <projectUrl>https://github.com/djp952/io-compression</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Managed C++/CLI library for compression and decompression of BZIP2, GZIP, LZ4, LZMA and XZ formatted streams. Requires Microsoft.NET version 4.5 or higher.</description>
-    <releaseNotes>Version 1.0
-* Initial release
+    <releaseNotes>Version 1.1
+* Added XzChecksum enumeration type
+* Added XzEncoder.Checksum property to control compression encoder checksum generation (default: CRC64)
     </releaseNotes>
     <copyright>Copyright (C)2016 Michael G. Brehm</copyright>
     <tags>zuki compression bzip2 gzip lz4 lzma xz</tags>

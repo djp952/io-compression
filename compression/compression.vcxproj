@@ -230,6 +230,7 @@
     <ClInclude Include="LzmaPositionBits.h" />
     <ClInclude Include="LzmaReader.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="XzChecksum.h" />
     <ClInclude Include="XzEncoder.h" />
     <ClInclude Include="XzReader.h" />
   </ItemGroup>

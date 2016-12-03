@@ -30,6 +30,7 @@
 #include "Lzma2BlockSize.h"
 #include "Lzma2MaximumThreads.h"
 #include "Lzma2ThreadsPerBlock.h"
+#include "XzChecksum.h"
 
 #pragma warning(push, 4)				// Enable maximum compiler warnings
 
@@ -96,6 +97,15 @@ public:
 	{
 		Lzma2BlockSize get(void);
 		void set(Lzma2BlockSize value);
+	}
+
+	// Checksum
+	//
+	// Indicates the checksum type to use when encoding
+	property XzChecksum Checksum
+	{
+		XzChecksum get(void);
+		void set(XzChecksum value);
 	}
 
 	// MaximumThreads
@@ -207,6 +217,7 @@ private:
 	Lzma2BlockSize				m_blocksize;			// LZMA2 block size
 	Lzma2ThreadsPerBlock		m_blockthreads;			// Threads per block
 	Lzma2MaximumThreads			m_totalthreads;			// Total LZMA2 threads
+	XzChecksum					m_checkid;				// Checksum type identifier
 };
 
 //---------------------------------------------------------------------------

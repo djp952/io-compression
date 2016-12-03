@@ -513,6 +513,7 @@ namespace zuki.io.compression.test
 
 			// Check the default values
 			Assert.AreEqual(Lzma2BlockSize.Disabled, encoder.BlockSize);
+			Assert.AreEqual(XzChecksum.Default, encoder.Checksum);
 			Assert.AreEqual(LzmaCompressionLevel.Default, encoder.CompressionLevel);
 			Assert.AreEqual(LzmaCompressionMode.Default, encoder.CompressionMode);
 			Assert.AreEqual(LzmaDictionarySize.Default, encoder.DictionarySize);
@@ -533,6 +534,11 @@ namespace zuki.io.compression.test
 			Assert.AreEqual(Int32.MaxValue, encoder.BlockSize);
 			encoder.BlockSize = Lzma2BlockSize.Disabled;
 			Assert.AreEqual(Lzma2BlockSize.Disabled, encoder.BlockSize);
+
+			encoder.Checksum = XzChecksum.SHA256;
+			Assert.AreEqual(XzChecksum.SHA256, encoder.Checksum);
+			encoder.Checksum = XzChecksum.Default;
+			Assert.AreEqual(XzChecksum.Default, encoder.Checksum);
 
 			encoder.CompressionLevel = LzmaCompressionLevel.Fastest;
 			Assert.AreEqual(LzmaCompressionLevel.Fastest, encoder.CompressionLevel);
@@ -677,6 +683,122 @@ namespace zuki.io.compression.test
 			{
 				encoder.Encode(s_sampledata, 0, s_sampledata.Length, dest);
 				Assert.IsTrue(Enumerable.SequenceEqual(expected, dest.ToArray()));			// length is known
+			}
+		}
+
+		[TestMethod(), TestCategory("Xz")]
+		public void Xz_EncoderCheckNone()
+		{
+			// Start with a MemoryStream created from the sample data
+			using (MemoryStream source = new MemoryStream(s_sampledata))
+			{
+				using (MemoryStream dest = new MemoryStream())
+				{
+					// Compress the data into the destination memory stream instance
+					XzEncoder encoder = new XzEncoder();
+					encoder.Checksum = XzChecksum.None;
+					encoder.Encode(source, dest);
+
+					// The compressed data should be smaller than the source data
+					Assert.IsTrue(dest.Length < source.Length);
+
+					source.SetLength(0);            // Clear the source stream
+					dest.Position = 0;              // Reset the destination stream
+
+					// Decompress the data back into the source memory stream
+					using (XzReader decompressor = new XzReader(dest, true)) decompressor.CopyTo(source);
+
+					// Ensure that the original data has been restored
+					Assert.AreEqual(source.Length, s_sampledata.Length);
+					Assert.IsTrue(s_sampledata.SequenceEqual(source.ToArray()));
+				}
+			}
+		}
+
+		[TestMethod(), TestCategory("Xz")]
+		public void Xz_EncoderCheckCRC32()
+		{
+			// Start with a MemoryStream created from the sample data
+			using (MemoryStream source = new MemoryStream(s_sampledata))
+			{
+				using (MemoryStream dest = new MemoryStream())
+				{
+					// Compress the data into the destination memory stream instance
+					XzEncoder encoder = new XzEncoder();
+					encoder.Checksum = XzChecksum.CRC32;
+					encoder.Encode(source, dest);
+
+					// The compressed data should be smaller than the source data
+					Assert.IsTrue(dest.Length < source.Length);
+
+					source.SetLength(0);            // Clear the source stream
+					dest.Position = 0;              // Reset the destination stream
+
+					// Decompress the data back into the source memory stream
+					using (XzReader decompressor = new XzReader(dest, true)) decompressor.CopyTo(source);
+
+					// Ensure that the original data has been restored
+					Assert.AreEqual(source.Length, s_sampledata.Length);
+					Assert.IsTrue(s_sampledata.SequenceEqual(source.ToArray()));
+				}
+			}
+		}
+
+		[TestMethod(), TestCategory("Xz")]
+		public void Xz_EncoderCheckCRC64()
+		{
+			// Start with a MemoryStream created from the sample data
+			using (MemoryStream source = new MemoryStream(s_sampledata))
+			{
+				using (MemoryStream dest = new MemoryStream())
+				{
+					// Compress the data into the destination memory stream instance
+					XzEncoder encoder = new XzEncoder();
+					encoder.Checksum = XzChecksum.CRC64;
+					encoder.Encode(source, dest);
+
+					// The compressed data should be smaller than the source data
+					Assert.IsTrue(dest.Length < source.Length);
+
+					source.SetLength(0);            // Clear the source stream
+					dest.Position = 0;              // Reset the destination stream
+
+					// Decompress the data back into the source memory stream
+					using (XzReader decompressor = new XzReader(dest, true)) decompressor.CopyTo(source);
+
+					// Ensure that the original data has been restored
+					Assert.AreEqual(source.Length, s_sampledata.Length);
+					Assert.IsTrue(s_sampledata.SequenceEqual(source.ToArray()));
+				}
+			}
+		}
+
+		[TestMethod(), TestCategory("Xz")]
+		public void Xz_EncoderCheckSHA256()
+		{
+			// Start with a MemoryStream created from the sample data
+			using (MemoryStream source = new MemoryStream(s_sampledata))
+			{
+				using (MemoryStream dest = new MemoryStream())
+				{
+					// Compress the data into the destination memory stream instance
+					XzEncoder encoder = new XzEncoder();
+					encoder.Checksum = XzChecksum.SHA256;
+					encoder.Encode(source, dest);
+
+					// The compressed data should be smaller than the source data
+					Assert.IsTrue(dest.Length < source.Length);
+
+					source.SetLength(0);            // Clear the source stream
+					dest.Position = 0;              // Reset the destination stream
+
+					// Decompress the data back into the source memory stream
+					using (XzReader decompressor = new XzReader(dest, true)) decompressor.CopyTo(source);
+
+					// Ensure that the original data has been restored
+					Assert.AreEqual(source.Length, s_sampledata.Length);
+					Assert.IsTrue(s_sampledata.SequenceEqual(source.ToArray()));
+				}
 			}
 		}
 	}

@@ -196,6 +196,9 @@
     <ClInclude Include="Lzma2ThreadsPerBlock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="XzChecksum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

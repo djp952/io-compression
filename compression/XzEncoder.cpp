@@ -49,7 +49,8 @@ static XzEncoder::XzEncoder()
 //
 //	NONE
 
-XzEncoder::XzEncoder() : m_blocksize(Lzma2BlockSize::Disabled), m_blockthreads(Lzma2ThreadsPerBlock::Default), m_totalthreads(Lzma2MaximumThreads::Default)
+XzEncoder::XzEncoder() : m_blocksize(Lzma2BlockSize::Disabled), m_blockthreads(Lzma2ThreadsPerBlock::Default), 
+	m_totalthreads(Lzma2MaximumThreads::Default), m_checkid(XzChecksum::Default)
 {
 }
 
@@ -71,6 +72,26 @@ Lzma2BlockSize XzEncoder::BlockSize::get(void)
 void XzEncoder::BlockSize::set(Lzma2BlockSize value)
 {
 	m_blocksize = value;
+}
+
+//---------------------------------------------------------------------------
+// XzEncoder::Checksum::get
+//
+// Indicates the type of checksum to use when encoding
+
+XzChecksum XzEncoder::Checksum::get(void)
+{
+	return m_checkid;
+}
+
+//---------------------------------------------------------------------------
+// XzEncoder::Checksum::set
+//
+// Indicates the type of checksum to use when encoding
+
+void XzEncoder::Checksum::set(XzChecksum value)
+{
+	m_checkid = value;
 }
 
 //---------------------------------------------------------------------------
@@ -199,7 +220,7 @@ void XzEncoder::Encode(Stream^ instream, unsigned __int64 insize, Stream^ outstr
 	// Initialize the XZ encoder properties
 	XzProps_Init(&xzprops);
 	xzprops.lzma2Props = &lzma2props;
-	xzprops.checkId = XZ_CHECK_CRC64;
+	xzprops.checkId = static_cast<unsigned int>(m_checkid);
 
 	// Create a ReaderWriter instance around the input and output streams
 	msclr::auto_handle<ReaderWriter> readerwriter(gcnew ReaderWriter(instream, outstream));
