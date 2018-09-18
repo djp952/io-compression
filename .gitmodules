@@ -1,0 +1,15 @@
+[submodule "build"]
+	path = depends/build
+	url = https://github.com/djp952/build
+[submodule "bzip2"]
+	path = depends/bzip2
+	url = https://github.com/djp952/external-bzip2
+[submodule "lz4"]
+	path = depends/lz4
+	url = https://github.com/djp952/external-lz4
+[submodule "lzma"]
+	path = depends/lzma
+	url = https://github.com/djp952/external-lzma
+[submodule "zlib"]
+	path = depends/zlib
+	url = https://github.com/djp952/external-zlib
